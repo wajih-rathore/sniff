@@ -1,0 +1,22 @@
+# local data, models and secrets
+.sniff/
+models/
+.cache/
+backend/.secrets/
+data/synth/out/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# node
+node_modules/
+frontend/dist/
+
+# os / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
