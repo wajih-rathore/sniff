@@ -22,8 +22,9 @@ def filename_search(conn, q: str, k: int) -> list[str]:
 
 
 def score(ranked: list[str], relevant: set[str]) -> tuple[float, float]:
+    """Recall@5 is capped: a query with 12 relevant bills scores 1.0 if all 5 results are relevant."""
     top = ranked[:K]
-    recall = len(relevant & set(top)) / len(relevant)
+    recall = len(relevant & set(top)) / min(len(relevant), K)
     rr = next((1 / i for i, p in enumerate(top, 1) if p in relevant), 0.0)
     return recall, rr
 
@@ -46,9 +47,9 @@ def main():
             mrr.append(rr)
             if mode == "hybrid" and r < 1:
                 failures.append({"q": q["q"], "relevant": q["relevant"], "got": ranked})
-        rows.append({"system": label, "Recall@5": sum(rec) / len(rec), "MRR": sum(mrr) / len(mrr)})
+        rows.append({"system": label, "Recall@5 (capped)": sum(rec) / len(rec), "MRR": sum(mrr) / len(mrr)})
     rec, mrr = zip(*(score([rel(p) for p in filename_search(conn, q["q"], K)], set(q["relevant"])) for q in queries))
-    rows.append({"system": "File-name search (baseline)", "Recall@5": sum(rec) / len(rec), "MRR": sum(mrr) / len(mrr)})
+    rows.append({"system": "File-name search (baseline)", "Recall@5 (capped)": sum(rec) / len(rec), "MRR": sum(mrr) / len(mrr)})
     save("search", {"n": len(queries), "rows": rows, "latency_ms": latency(ms)}, failures)
 
 

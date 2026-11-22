@@ -2,14 +2,24 @@
 from datetime import date as Date  # aliased: Receipt has a field called "date"
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 DocType = Literal["id_card", "utility_bill", "certificate", "receipt", "other"]
 DOC_TYPES: tuple[str, ...] = ("id_card", "utility_bill", "certificate", "receipt", "other")
 
 
 # ---------- facts per document type (what the LLM extracts) ----------
-class IdCard(BaseModel):
+class Facts(BaseModel):
+    @model_validator(mode="after")
+    def plausible_dates(self):
+        # a misread day-first date (21.03.2003 -> 2103-03-21) fails here, so the LLM is asked again
+        for name, v in self:
+            if isinstance(v, Date) and not 1900 <= v.year <= 2100:
+                raise ValueError(f"{name} {v} is not a plausible date; dates are written day first")
+        return self
+
+
+class IdCard(Facts):
     name: str | None = None
     id_number: str | None = None
     date_of_birth: Date | None = None
@@ -17,7 +27,7 @@ class IdCard(BaseModel):
     expiry_date: Date | None = None
 
 
-class UtilityBill(BaseModel):
+class UtilityBill(Facts):
     provider: str | None = None
     account_number: str | None = None
     billing_month: str | None = None  # YYYY-MM
@@ -25,14 +35,14 @@ class UtilityBill(BaseModel):
     due_date: Date | None = None
 
 
-class Certificate(BaseModel):
+class Certificate(Facts):
     holder_name: str | None = None
     title: str | None = None
     institution: str | None = None
     issue_date: Date | None = None
 
 
-class Receipt(BaseModel):
+class Receipt(Facts):
     merchant: str | None = None
     date: Date | None = None
     total_amount: float | None = None

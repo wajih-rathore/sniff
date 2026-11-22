@@ -83,11 +83,14 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
     pages = readers.read(path)
     pieces = readers.chunk(pages)
     vectors = embed.embed([t for _, t in pieces]) if pieces else []
-    doc_type, facts = None, []
+    doc_type, facts, ai_error = None, [], None
     if ai and pieces:
-        doc_type = classify.classify("\n".join(t for _, t in pages))
-        if doc_type in FACT_MODELS:
-            facts = extract.extract(doc_type, pages)
+        try:
+            doc_type = classify.classify("\n".join(t for _, t in pages))
+            if doc_type in FACT_MODELS:
+                facts = extract.extract(doc_type, pages)
+        except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why
+            ai_error = f"{type(e).__name__}: {e}"[:500]
 
     row = conn.execute("SELECT id FROM files WHERE path=?", (str(path),)).fetchone()
     if row:
@@ -104,8 +107,8 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
             (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"]),
         )
     conn.execute(
-        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=NULL WHERE id=?",
-        (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"), file_id),
+        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=? WHERE id=?",
+        (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"), ai_error, file_id),
     )
     db.log(conn, "indexed", str(path))
     return file_id

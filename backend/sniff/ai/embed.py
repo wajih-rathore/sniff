@@ -7,11 +7,20 @@ from openai import OpenAI
 from .. import config
 
 BATCH = 32
+# (document prefix, query prefix) each model was trained with; MiniLM takes plain text
+PREFIXES = {
+    "nomic": ("search_document: ", "search_query: "),
+    "gemma": ("title: none | text: ", "task: search result | query: "),
+}
 
 
 @lru_cache(1)
 def _client() -> OpenAI:
     return OpenAI(base_url=config.EMBED_URL, api_key="local", timeout=180)
+
+
+def _prefixes() -> tuple[str, str]:
+    return next((p for key, p in PREFIXES.items() if key in config.EMBED_MODEL.lower()), ("", ""))
 
 
 def _vectors(texts: list[str]) -> list[np.ndarray]:
@@ -22,14 +31,9 @@ def _vectors(texts: list[str]) -> list[np.ndarray]:
     return out
 
 
-def _gemma() -> bool:
-    return "gemma" in config.EMBED_MODEL.lower()
-
-
 def embed(texts: list[str]) -> list[np.ndarray]:
-    # EmbeddingGemma was trained with these task prefixes; other models take plain text
-    return _vectors([f"title: none | text: {t}" for t in texts] if _gemma() else texts)
+    return _vectors([_prefixes()[0] + t for t in texts])
 
 
 def embed_query(text: str) -> np.ndarray:
-    return _vectors([f"task: search result | query: {text}" if _gemma() else text])[0]
+    return _vectors([_prefixes()[1] + text])[0]

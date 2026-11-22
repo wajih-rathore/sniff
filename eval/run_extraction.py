@@ -43,7 +43,7 @@ def main():
 
         if g["type"] not in FACT_MODELS:
             continue
-        schema_ok += bool(r and r["status"] == "indexed")
+        schema_ok += bool(r and r["status"] == "indexed" and not r["error"])  # error = output invalid after retries
         facts = {x["field"]: x["value"] for x in conn.execute("SELECT field, value FROM facts WHERE file_id=?", (r["id"],))} if r else {}
         regex = baselines.extract_regex(g["type"], text)
         for field, gv in g["fields"].items():
