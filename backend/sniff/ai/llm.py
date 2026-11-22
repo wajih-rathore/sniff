@@ -20,6 +20,15 @@ def chat(messages: list[dict], **kw) -> str:
     return re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
 
 
+DOC_CHARS = 6000
+
+
+def document_message(pages: list[tuple[int, str]], task: str) -> list[dict]:
+    """Document first, task last: both calls per document then share a prefix, and llama-server reuses its cache."""
+    doc = "\n\n".join(f"[page {p}]\n{t}" for p, t in pages)[:DOC_CHARS]
+    return [{"role": "user", "content": f"DOCUMENT\n{doc}\n\nTASK\n{task}"}]
+
+
 T = TypeVar("T", bound=BaseModel)
 
 

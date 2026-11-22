@@ -53,6 +53,7 @@ def search(conn: sqlite3.Connection, q: str, k: int = 10, mode: str = "hybrid") 
 
 
 def snippet(text: str, q: str, width: int = 240) -> str:
+    text = re.sub(r"\s*[-=*_.~]{4,}\s*", " ", text)  # drop separator lines like "-------" from receipts
     low = text.lower()
     positions = [low.find(w) for w in re.findall(r"\w+", q.lower()) if w not in STOP and low.find(w) >= 0]
     start = max(0, min(positions) - 60) if positions else 0

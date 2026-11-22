@@ -8,12 +8,11 @@ from pydantic import ValidationError, create_model
 from ..schemas import FACT_MODELS
 from . import llm
 
-PROMPT = """Extract these fields from a {doc_type} document: {fields}.
+PROMPT = """Extract these fields from the {doc_type} document above: {fields}.
 Copy each value exactly as it is printed, including dates and amounts (for example "21.03.2003", "Rs. 4,320/-", "July 2026").
 billing_month is the month the bill is for. Use null for any field that is not in the document. Do not guess.
 Reply with JSON only."""
 
-MAX_CHARS = 6000
 MONEY_FIELDS = {"amount_due", "total_amount"}
 ID_FIELDS = {"id_number", "account_number"}
 MONTH_FIELDS = {"billing_month"}
@@ -30,9 +29,8 @@ def _raw_model(doc_type: str):
 
 def extract(doc_type: str, pages: list[tuple[int, str]]) -> list[dict]:
     model = FACT_MODELS[doc_type]
-    text = "\n\n".join(f"[page {p}]\n{t}" for p, t in pages)[:MAX_CHARS]
     prompt = PROMPT.format(doc_type=doc_type.replace("_", " "), fields=", ".join(model.model_fields))
-    printed = llm.chat_json([{"role": "system", "content": prompt}, {"role": "user", "content": text}], _raw_model(doc_type))
+    printed = llm.chat_json(llm.document_message(pages, prompt), _raw_model(doc_type))
 
     facts = []
     for field, raw in printed.model_dump().items():

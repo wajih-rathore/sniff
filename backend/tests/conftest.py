@@ -20,7 +20,7 @@ def conn(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "data" / "test.db")
     monkeypatch.setattr(embed, "embed", lambda texts: [fake_vector(t) for t in texts])
     monkeypatch.setattr(embed, "embed_query", fake_vector)
-    monkeypatch.setattr(classify, "classify", lambda text: "utility_bill" if "bill" in text.lower() else "other")
+    monkeypatch.setattr(classify, "classify", lambda pages: "utility_bill" if any("bill" in t.lower() for _, t in pages) else "other")
     monkeypatch.setattr(extract, "extract", lambda doc_type, pages: [
         {"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "source_text": None}
     ])

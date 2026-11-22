@@ -86,7 +86,7 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
     doc_type, facts, ai_error = None, [], None
     if ai and pieces:
         try:
-            doc_type = classify.classify("\n".join(t for _, t in pages))
+            doc_type = classify.classify(pages)
             if doc_type in FACT_MODELS:
                 facts = extract.extract(doc_type, pages)
         except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why
