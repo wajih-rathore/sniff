@@ -9,7 +9,7 @@ AI-4009 Generative AI term project (FAST-NUCES). The build plan is in [docs/PLAN
 | Step | What happens | AI or code |
 |---|---|---|
 | Read | PDF, DOCX, PPTX and text are read page by page; scanned pages and photos go through OCR (RapidOCR) | AI (OCR) |
-| Index | Text is split into passages, embedded (bge-small) and stored with a BM25 keyword index in SQLite | AI (embeddings) |
+| Index | Text is split into passages, embedded (EmbeddingGemma) and stored with a BM25 keyword index in SQLite | AI (embeddings) |
 | Type | A small local LLM (Qwen3-1.7B) picks the document type | AI |
 | Facts | The LLM extracts the type's fields as JSON that must match a schema; each value is then looked up on the page and marked verified or not | AI + code |
 | Ask | The LLM routes the question: either it fills a fixed facts query, which code runs (sums, counts, dates), or hybrid search finds passages and the LLM answers from them with citations | AI + code |
@@ -21,8 +21,9 @@ AI-4009 Generative AI term project (FAST-NUCES). The build plan is in [docs/PLAN
 Requirements: Python 3.11 with [uv](https://docs.astral.sh/uv/), Node 22, and about 2 GB for models.
 
 ```bash
-# 1. model server (llama.cpp, CPU). Put llama-server and the GGUF model in models/
+# 1. model servers (llama.cpp, CPU). Put llama-server and the GGUF models in models/
 models/llama/llama-server -m models/qwen3-1.7b-q4_k_m.gguf --port 8080 --jinja --reasoning-budget 0 -c 8192
+models/llama/llama-server -m models/embeddinggemma-300m.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
 
 # 2. backend
 cd backend

@@ -176,4 +176,5 @@ def open_file(req: OpenReq, conn=Depends(get_conn)):
 def eval_results():
     if not EVAL_DIR.exists():
         return []
-    return [json.loads(p.read_text(encoding="utf-8")) for p in sorted(EVAL_DIR.glob("*.json")) if not p.stem.endswith("_failures")]
+    results = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(EVAL_DIR.glob("*.json")) if not p.stem.endswith("_failures")]
+    return [r for r in results if isinstance(r, dict) and "component" in r]  # skip raw files like index_times.json

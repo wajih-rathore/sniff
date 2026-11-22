@@ -11,7 +11,9 @@ SECRETS_DIR = ROOT / "backend" / ".secrets"
 LLM_URL = os.environ.get("SNIFF_LLM_URL", "http://127.0.0.1:8080/v1")
 LLM_MODEL = os.environ.get("SNIFF_LLM_MODEL", "qwen3-1.7b")
 
-EMBED_MODEL = os.environ.get("SNIFF_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
-EMBED_DIM = int(os.environ.get("SNIFF_EMBED_DIM", "384"))
+# a second llama-server started with --embedding; EmbeddingGemma (768) by default, all-MiniLM (384) as the light option
+EMBED_URL = os.environ.get("SNIFF_EMBED_URL", "http://127.0.0.1:8081/v1")
+EMBED_MODEL = os.environ.get("SNIFF_EMBED_MODEL", "embeddinggemma")
+EMBED_DIM = int(os.environ.get("SNIFF_EMBED_DIM", "768"))
 
 SUPPORTED = {".pdf", ".docx", ".pptx", ".txt", ".md", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}

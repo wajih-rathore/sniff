@@ -11,7 +11,6 @@ dependencies = [
     "python-docx",
     "python-pptx",
     "rapidocr-onnxruntime",
-    "fastembed",
     "sqlite-vec",
     "openai",
     "mcp",
