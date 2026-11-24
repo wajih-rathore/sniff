@@ -32,7 +32,7 @@ def parse_date(s: str) -> str | None:
 
 def after(label_rx: str, value_rx: str, text: str):
     m = re.search(label_rx + r"[^\n\d]{0,25}" + value_rx, text, re.I)
-    return m.group(1) if m else None
+    return m.group(m.re.groups) if m else None
 
 
 def _date(label_rx, text):
