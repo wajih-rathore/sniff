@@ -11,6 +11,12 @@ Label notes for the evaluators:
   rows joined by newline, cells in a row joined by a space). Real OCR output order can differ on multi-column pages.
 - Some ID cards print the name in UPPER CASE; labels keep Title Case. Compare names case-insensitively.
 - Dev uses a different set of people and 2025 dates so it never collides with test answers. Index only test/ for eval.
+- Bills carry arrears: a bill left unpaid shows up as previous_balance on the next one, so amount_due includes it.
+  Spending is the sum of current_charges. Some paid bills carry a PAID stamp with the payment date.
+- The test split has exact copies (same bytes in Work/Backup), near-duplicates (the same document rendered again as a
+  photo, scan or PDF) and conflicts (one CNIC on two cards with different dates). Label rows say `duplicate_of` (the
+  original file) and `duplicate_kind` ("exact" or "near"). Gold answers count each document once.
+- A few test records are incomplete on purpose: a field is not printed and its label is null.
 """
 import argparse
 import calendar
@@ -19,6 +25,7 @@ import json
 import random
 import shutil
 import textwrap
+from collections import Counter
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -27,15 +34,11 @@ from PIL import Image, ImageChops, ImageEnhance, ImageFilter
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
+from sniff.schemas import FIELDS as SPEC  # run from backend/ with uv, as the usage line says
+
 TODAY = date(2026, 11, 22)
-# the contract from backend/sniff/schemas.py (not imported: that module currently fails to import, see report)
-FIELDS = {
-    "id_card": ["name", "id_number", "date_of_birth", "issue_date", "expiry_date"],
-    "utility_bill": ["provider", "account_number", "billing_month", "amount_due", "due_date"],
-    "certificate": ["holder_name", "title", "institution", "issue_date"],
-    "receipt": ["merchant", "date", "total_amount", "warranty_until"],
-    "other": [],
-}
+FIELDS = {t: list(f) for t, f in SPEC.items()} | {"other": []}  # the contract: backend/sniff/schemas.py
+MONEY = {f for t in SPEC.values() for f, s in t.items() if s.kind == "money"}
 DFMT = ["%d/%m/%Y", "%d %b %Y", "%Y-%m-%d", "%d.%m.%Y"]
 GRAY, WHITE, BLACK = (.45, .45, .45), (1, 1, 1), (0, 0, 0)
 
@@ -222,8 +225,8 @@ def id_inst(rng, d):
     p.rect(30, 105, 140, 175, fill=(.85, .8, .75))
     p.circle(100, 160, 30, (.6, .55, .5))
     numlbl = "Roll No." if d["sub"] == "student" else "Employee No."
-    rows = [("Name", d["name"]), (numlbl, d["id"]), ("Date of Birth", f(d["dob"])), ("Issued", f(d["issue"])),
-            ("Valid Thru", f(d["expiry"]))]
+    rows = [("Name", d["name"]), (numlbl, d["id"]), ("Date of Birth", f(d["dob"])), ("Issued", f(d["issue"]))]
+    rows += [("Valid Thru", f(d["expiry"]))] if d["expiry"] else []  # incomplete record: no expiry printed
     for i, (a, b) in enumerate(rows):
         p.t(200, 108 + i * 50, a, "Helvetica", 9, GRAY)
         p.t(200, 126 + i * 50, b, "Helvetica-Bold", 15)
@@ -232,11 +235,16 @@ def id_inst(rng, d):
 
 
 def ids(rng, rows, people, fmts):
-    out = []
+    out, cnic = [], {}
     for (who, kind, issue, expiry, inst), fmt in zip(rows, fmts):
         sub, layout = ("student", id_inst) if kind == "student" else ("staff", id_inst) if kind == "staff" else (
             kind, id_national if kind == "national" else id_licence)
-        idn = card_id(rng, kind, issue)
+        if kind == "national" and who in cnic:  # a renewed or re-issued card keeps the number: a conflict on dates
+            idn = cnic[who]
+        else:
+            idn = card_id(rng, kind, issue)
+            if kind == "national":
+                cnic[who] = idn
         d = dict(name=who, id=idn, dob=people[who], issue=issue, expiry=expiry, inst=inst, sub=sub)
         f = {"name": who, "id_number": idn, "date_of_birth": people[who].isoformat(),
              "issue_date": issue.isoformat(), "expiry_date": expiry.isoformat()}
@@ -252,6 +260,7 @@ TEST_IDS = [
     ("Ali Raza Khan", "licence", D(2023, 6, 15), D(2028, 6, 15), None),
     ("Ali Raza Khan", "staff", D(2024, 1, 8), D(2027, 1, 8), "Harbor Logistics Pvt Ltd"),
     ("Ayesha Khan", "national", D(2022, 8, 19), D(2032, 8, 19), None),
+    ("Ayesha Khan", "national", D(2024, 5, 2), D(2034, 5, 2), None),  # re-issued after a loss: same CNIC, new dates
     ("Ayesha Khan", "licence", D(2020, 7, 2), D(2025, 7, 2), None),
     ("Ayesha Khan", "staff", D(2025, 4, 1), D(2028, 4, 1), "Brightpath School"),
     ("Sara Khan", "national", D(2021, 10, 12), D(2031, 10, 12), None),
@@ -286,6 +295,11 @@ def bill_vars(rng, d):
     return mix(rng), money(rng), mon, rng.choice(d["prov"]["due"]), rng.choice(d["prov"]["amt"])
 
 
+def bill_labels(rng):
+    """Labels for current charges and arrears, drawn after bill_vars so older draws stay the same."""
+    return rng.choice(["Current Charges", "Current Bill", "Charges for the month"]), rng.choice(["Arrears", "Previous Balance", "Balance brought forward"])
+
+
 def bill_a(rng, d):
     p, c, pv = Page(595, 842), d["prov"]["color"], d["prov"]
     D_, fm, mon, dl, al = bill_vars(rng, d)
@@ -314,15 +328,25 @@ def bill_a(rng, d):
         y += 22
     p.t(48, y, d["usage"], "Helvetica-Oblique", 9, GRAY)
     y += 24
+    cl, pl = bill_labels(rng)
+    for lb, a in [(cl, d["cur"]), (pl, d["prev"])]:
+        p.t(48, y, lb, "Helvetica-Bold", 10)
+        p.t(547, y, fm(a), "Helvetica-Bold", 10, align="r")
+        y += 20
+    y += 6
     p.rect(300, y, 255, 30, fill=c)
     p.t(310, y + 20, al, "Helvetica-Bold", 11, WHITE)
     p.t(545, y + 20, fm(d["amount"]), "Helvetica-Bold", 13, WHITE, "r")
     y += 60
     p.rect(40, y, 515, 30, stroke=(.7, .1, .1))
-    p.t(50, y + 19, dl + ":", "Helvetica-Bold", 11)
-    p.t(58 + stringWidth(dl + ":", "Helvetica-Bold", 11), y + 19, D_(d["due"]), "Helvetica-Bold", 11)
+    if d["due"]:
+        p.t(50, y + 19, dl + ":", "Helvetica-Bold", 11)
+        p.t(58 + stringWidth(dl + ":", "Helvetica-Bold", 11), y + 19, D_(d["due"]), "Helvetica-Bold", 11)
     p.t(545, y + 19, "Amount after due date: " + fm(d["late"]), "Helvetica", 9, align="r")
-    p.t(40, y + 62, "Pay online, through your mobile banking app or at any authorised bank branch.", "Helvetica", 8, GRAY)
+    if d["paid_on"]:
+        p.t(50, y + 58, "PAID", "Helvetica-Bold", 20, (.1, .55, .2))
+        p.t(120, y + 58, "Paid on: " + D_(d["paid_on"]), "Helvetica-Bold", 10, (.1, .55, .2))
+    p.t(40, y + 82, "Pay online, through your mobile banking app or at any authorised bank branch.", "Helvetica", 8, GRAY)
     return p
 
 
@@ -342,17 +366,26 @@ def bill_b(rng, d):
     p.rect(40, 250, 515, 76, fill=(.96, .94, .9))
     p.t(60, 275, al, "Helvetica", 11)
     p.t(60, 307, fm(d["amount"]), "Helvetica-Bold", 24, c)
-    p.t(330, 275, dl, "Helvetica", 11)
-    p.t(330, 307, D_(d["due"]), "Helvetica-Bold", 18)
+    if d["due"]:
+        p.t(330, 275, dl, "Helvetica", 11)
+        p.t(330, 307, D_(d["due"]), "Helvetica-Bold", 18)
     p.t(40, 360, "Breakdown of charges", "Times-Bold", 14)
     y = 385
     for lb, a in d["comps"]:
         p.t(40, y, lb, "Times-Roman", 11)
         p.t(555, y, fm(a), "Times-Roman", 11, align="r")
         y += 20
+    cl, pl = bill_labels(rng)
+    for lb, a in [(cl, d["cur"])] + ([(pl, d["prev"])] if d["prev"] else []):  # arrears printed only when there are any
+        p.t(40, y + 4, lb, "Times-Bold", 11)
+        p.t(555, y + 4, fm(a), "Times-Bold", 11, align="r")
+        y += 20
     p.t(40, y + 10, d["usage"], "Times-Italic", 10)
     p.t(40, y + 50, "A late payment surcharge applies if the bill is paid after the due date: " + fm(d["late"]),
         "Helvetica", 8, GRAY)
+    if d["paid_on"]:
+        p.t(330, y + 90, "PAID", "Helvetica-Bold", 22, (.1, .55, .2))
+        p.t(410, y + 90, "Paid on " + D_(d["paid_on"]), "Helvetica", 11, (.1, .55, .2))
     return p
 
 
@@ -374,18 +407,30 @@ def bill_c(rng, d):
         y += 15
     p.t(40, y, "=" * 62, "Courier", 10)
     y += 17
+    cl, pl = bill_labels(rng)
+    for lb, a in [(cl, d["cur"]), (pl, d["prev"])]:
+        p.t(40, y, f"{lb:<36}{fm(a):>26}", "Courier", 10)
+        y += 15
     p.t(40, y, f"{al:<36}{fm(d['amount']):>26}", "Courier-Bold", 10)
     y += 17
-    p.t(40, y, f"{dl:.<20} {D_(d['due'])}", "Courier-Bold", 10)
+    if d["due"]:
+        p.t(40, y, f"{dl:.<20} {D_(d['due'])}", "Courier-Bold", 10)
     p.t(40, y + 30, d["usage"], "Courier", 9)
     p.t(40, y + 46, "Quote the account number when paying. Thank you.", "Courier", 9)
+    if d["paid_on"]:
+        p.t(40, y + 70, f"*** PAID *** Paid on {D_(d['paid_on'])}", "Courier-Bold", 10)
     return p
+
+
+UNPAID = {"electricity": {6, 11, 12}, "gas": {2, 3, 12}, "internet": set()}  # test months left unpaid: next bill has arrears
 
 
 def bills(rng, split, year, months_for, fmts):
     hh, out, it = HOUSEHOLDS[split], [], iter(fmts)
+    unpaid = UNPAID if split == "test" else {}
     for prov in PROVIDERS:
         acct = f"{prov['pre']}-{digits(rng, 4)}-{digits(rng, 4)}"
+        prev_due, prev_month = 0.0, None
         for m in months_for(prov):
             total = round(SEASON[prov["cat"]][m - 1] * rng.uniform(.9, 1.1))
             if rng.random() < .3:
@@ -393,15 +438,26 @@ def bills(rng, split, year, months_for, fmts):
             issue = add_months(date(year, m, 1), 1) + timedelta(days=rng.randint(0, 4))
             due = issue + timedelta(days=rng.randint(10, 21))
             used = round(total / rng.uniform(30, 45)) if prov["cat"] == "electricity" else rng.randint(20, 400)
+            comps = charges(rng, prov, total)
+            prev = prev_due if prev_month in unpaid.get(prov["cat"], ()) and prev_month == m - 1 else 0.0
+            amount = round(total + prev, 2)
+            pr = random.Random(f"paid-{split}-{acct}-{m}")  # own generator, so the draws above stay as they were
+            paid = m not in unpaid.get(prov["cat"], ())
+            paid_on = issue + timedelta(days=pr.randint(1, (due - issue).days)) if paid and (m == 12 or pr.random() < .45) else None
+            prev_due, prev_month = amount, m
             d = dict(prov=prov, acct=acct, cust=hh["cust"], addr=hh["addr"], month=date(year, m, 1), issue=issue,
-                     due=due, amount=float(total), late=round(total * 1.08, 2), comps=charges(rng, prov, total),
-                     phone=digits(rng, 4) + "-" + digits(rng, 3), ref=digits(rng, 9),
+                     due=due, amount=amount, cur=float(total), prev=prev, paid_on=paid_on, late=round(amount * 1.08, 2),
+                     comps=comps, phone=digits(rng, 4) + "-" + digits(rng, 3), ref=digits(rng, 9),
                      usage=f"Consumption this month: {used} {prov['unit']}")
+            tax = next(a for lb, a in comps if "Tax" in lb)
             f = {"provider": prov["name"], "account_number": acct, "billing_month": f"{year}-{m:02d}",
-                 "amount_due": float(total), "due_date": due.isoformat()}
+                 "bill_date": issue.isoformat(), "due_date": due.isoformat(), "current_charges": float(total),
+                 "previous_balance": float(prev) if prev or prov["layout"] != 1 else None,  # layout b prints arrears only when owed
+                 "tax": float(tax), "amount_due": amount, "payment_status": "paid" if paid_on else None,
+                 "payment_date": paid_on.isoformat() if paid_on else None}
             out.append(dict(type="utility_bill", fmt=next(it), fields=f, d=d, dt=issue,
                             layout=[bill_a, bill_b, bill_c][prov["layout"]],
-                            meta=dict(cat=prov["cat"], month=m, year=year)))
+                            meta=dict(cat=prov["cat"], month=m, year=year, used=used, unit=prov["unit"])))
     return out
 
 
@@ -488,7 +544,7 @@ def certs(rng, rows, fmts):
         layout = rng.choice([cert_a, cert_b] if kind != "course" else [cert_a, cert_b, cert_c, cert_c])
         f = {"holder_name": who, "title": title, "institution": inst, "issue_date": issue.isoformat()}
         out.append(dict(type="certificate", fmt=fmt, fields=f, d=d, dt=issue, layout=layout,
-                        meta=dict(person=who, kind=kind, title=title, inst=inst)))
+                        meta=dict(person=who, kind=kind, title=title, inst=inst, cid=d["cid"])))
     return out
 
 
@@ -592,7 +648,8 @@ def rec_thermal(rng, d):
     p.t(113, 41, d["addr"], "Courier", 7, align="c")
     p.t(113, 52, "Tel: 042-" + d["phone"], "Courier", 7, align="c")
     p.t(10, 66, "-" * 42, "Courier", 8)
-    p.t(10, 80, "Date: " + D_(d["date"]), "Courier", 8)
+    if d["date"]:
+        p.t(10, 80, "Date: " + D_(d["date"]), "Courier", 8)
     p.t(216, 80, "Time: " + d["time"], "Courier", 8, align="r")
     p.t(10, 92, "Receipt #" + d["no"], "Courier", 8)
     p.t(10, 104, "-" * 42, "Courier", 8)
@@ -638,7 +695,8 @@ def rec_invoice(rng, d):
     p.t(20, 46, f"{d['addr']} | Tel 042-{d['phone']}", "Helvetica", 8, WHITE)
     p.t(20, 94, rng.choice(["SALES INVOICE", "CASH MEMO", "TAX INVOICE"]), "Helvetica-Bold", 13)
     p.t(400, 94, "No. " + d["no"], "Helvetica", 10, align="r")
-    p.t(20, 114, "Date: " + D_(d["date"]), "Helvetica", 10)
+    if d["date"]:
+        p.t(20, 114, "Date: " + D_(d["date"]), "Helvetica", 10)
     p.t(400, 114, "Payment: " + d["pay"], "Helvetica", 10, align="r")
     p.rect(20, 132, 380, 20, fill=(.9, .9, .9))
     p.t(26, 146, "Qty", "Helvetica-Bold", 9)
@@ -678,7 +736,8 @@ def rec_order(rng, d):
     p.t(20, 40, d["merchant"], "Helvetica-Bold", 18)
     p.t(20, 68, "Order Confirmation", "Helvetica", 13, GRAY)
     p.t(20, 100, "Order No: " + d["no"], "Helvetica", 10)
-    p.t(20, 116, "Placed on: " + D_(d["date"]), "Helvetica", 10)
+    if d["date"]:
+        p.t(20, 116, "Placed on: " + D_(d["date"]), "Helvetica", 10)
     p.t(20, 132, "Ship to: " + d["addr"], "Helvetica", 10)
     p.line(20, 146, 400, 146, GRAY)
     y = 170
@@ -747,8 +806,8 @@ def receipts(rng, cats, fmts, dev):
         d = dict(merchant=merchant, addr=ADDR[merchant], phone=digits(rng, 7), date=dt, items=lines, sub=sub, tax=tax,
                  taxlbl=taxlbl, total=total, until=until, no=digits(rng, 7), pay=rng.choice(["Cash", "Card"]),
                  time=f"{rng.randint(9, 21):02d}:{rng.randint(0, 59):02d}")
-        f = {"merchant": merchant, "date": dt.isoformat(), "total_amount": float(total),
-             "warranty_until": until.isoformat() if until else None}
+        f = {"merchant": merchant, "date": dt.isoformat(), "subtotal": float(sub) if tax else None, "tax": float(tax) if tax else None,
+             "total_amount": float(total), "warranty_until": until.isoformat() if until else None}
         out.append(dict(type="receipt", fmt=fmt, fields=f, d=d, dt=dt, layout=rng.choice([rec_thermal, rec_invoice, rec_order]),
                         meta=dict(cat=cat, group=group, merchant=merchant, warranty=bool(until), items=[n for _, n, _ in lines])))
     return out
@@ -984,7 +1043,7 @@ def build(split, seed):
     rng = random.Random(f"{seed}-{split}")
     if split == "test":
         rows, people = TEST_IDS, TEST_PEOPLE
-        s = ids(rng, rows, people, alloc(rng, image=10, pdf_scan=4))
+        s = ids(rng, rows, people, alloc(rng, image=11, pdf_scan=4))
         s += bills(rng, split, 2026, lambda p: range(1, 13), alloc(rng, pdf_text=26, pdf_scan=10))
         s += certs(rng, cert_rows(rng, TEST_CERTS), alloc(rng, pdf_text=16, pdf_scan=10))
         cats = [c for c, n in TEST_RCATS.items() for _ in range(n)]
@@ -998,19 +1057,73 @@ def build(split, seed):
         s += receipts(rng, DEV_RCATS, alloc(rng, image=11, pdf_text=5), dev=True)
         s += others(rng, DEV_OTHER, alloc(rng, pdf_text=3, image=1))
     rng.shuffle(s)
+    if split == "test":
+        incomplete(s)
+    near = [(i, dict(sp, fmt="pdf_text" if sp["fmt"] != "pdf_text" else "image")) for i, sp in enumerate(s) if split == "test" and near_dup(sp)]
     used, recs = set(), []
     for i, sp in enumerate(s):
         rel = file_path(rng, sp, used)
         text = render(sp, random.Random(f"{seed}-{split}-doc{i}"), OUT / split / rel)
         recs.append(dict(file=f"{split}/{rel}", split=split, type=sp["type"], format=sp["fmt"], fields=sp["fields"],
-                         text=text, meta=sp["meta"]))
+                         text=text, meta=sp["meta"], duplicate_of=None, duplicate_kind=None))
+    for i, sp in near:  # the same document again in another format; same seed, so the same printed text
+        rel = file_path(rng, sp, used)
+        text = render(sp, random.Random(f"{seed}-{split}-doc{i}"), OUT / split / rel)
+        recs.append(dict(recs[i], file=f"{split}/{rel}", format=sp["fmt"], text=text, duplicate_of=recs[i]["file"], duplicate_kind="near"))
+    for r in [r for r in recs if split == "test" and not r["duplicate_of"] and exact_copy(r)]:
+        rel = f"Work/Backup/{Path(r['file']).name}"
+        while rel in used:  # two originals can share a file name
+            rel = rel.replace("Backup/", "Backup/Copy of ", 1)
+        used.add(rel)
+        (OUT / split / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(OUT / r["file"], OUT / split / rel)
+        recs.append(dict(r, file=f"{split}/{rel}", duplicate_of=r["file"], duplicate_kind="exact"))
     return recs
+
+
+def incomplete(specs):
+    """A few test records with a field that is not printed; the label is null."""
+    def blank(sp, key, field):
+        sp["d"] = dict(sp["d"], **{key: None})
+        sp["fields"] = dict(sp["fields"], **{field: None})
+    groceries = 0
+    for sp in specs:
+        m = sp["meta"]
+        if sp["type"] == "utility_bill" and (m["cat"], m["month"]) == ("gas", 9):
+            blank(sp, "due", "due_date")
+        elif sp["type"] == "id_card" and (m["person"], m["kind"]) == ("Ali Raza Khan", "staff"):
+            blank(sp, "expiry", "expiry_date")
+        elif sp["type"] == "receipt" and m["cat"] == "grocery" and groceries < 2:
+            groceries += 1
+            blank(sp, "date", "date")
+
+
+def near_dup(sp):
+    m = sp["meta"]
+    return {"utility_bill": lambda: (m["cat"], m["month"]) in {("electricity", 3), ("gas", 7), ("internet", 2)},
+            "receipt": lambda: m["cat"] in ("laptop", "phone") and NEAR_PICK.setdefault(m["cat"], m) is m,
+            "id_card": lambda: (m["person"], m["kind"]) == ("Hamza Khan", "national"),
+            "certificate": lambda: (m["person"], m["title"]) == ("Sara Khan", "Python Programming")}.get(sp["type"], lambda: False)()
+
+
+NEAR_PICK = {}  # the first laptop and phone receipt seen get a second copy
+
+
+def exact_copy(r):
+    m = r["meta"]
+    return {"utility_bill": lambda: (m["cat"], m["month"]) in {("electricity", 5), ("internet", 8)},
+            "receipt": lambda: m["cat"] in ("fuel", "pharmacy") and COPY_PICK.setdefault(m["cat"], m) is m,
+            "id_card": lambda: (m["person"], m["kind"]) == ("Sara Khan", "licence"),
+            "certificate": lambda: m["title"] == "Master of Business Administration"}.get(r["type"], lambda: False)()
+
+
+COPY_PICK = {}
 
 
 # ---------------------------------------------------------------- draft test sets
 def draft_eval(T, seed):
     rng = random.Random(f"{seed}-eval")
-    R = lambda f: sorted(r["file"] for r in T if f(r))
+    R = lambda f: sorted(r["file"] for r in T if f(r) and r["duplicate_kind"] != "exact")  # an exact copy is the same document
     of = lambda t: [r for r in T if r["type"] == t]
     MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     PW = {"electricity": ["electricity bill", "power bill", "electric supply charges", "light bill"],
@@ -1089,102 +1202,189 @@ def draft_eval(T, seed):
     keep = sorted(rng.sample(range(len(S)), 60))
     search = [S[i] for i in keep]
 
-    # ---- ask
+    # ---- ask: every gold answer is computed here by code from the labels. Each document counts once: exact copies
+    # and near-duplicates are folded into their original; both sides of a conflict are kept.
     A = []
-    srcs = lambda rs: sorted(r["file"] for r in rs)
+    U = [r for r in T if not r["duplicate_of"]]
+    copies = {}
+    for r in T:
+        if r["duplicate_of"]:
+            copies.setdefault(r["duplicate_of"], []).append(r["file"])
+    srcs = lambda rs: sorted({f for r in rs for f in [r["file"], *copies.get(r["file"], [])]})  # any copy is a right source
 
-    def ask(q, route, ans, typ, rs):
-        A.append(dict(q=q, route=route, answer=ans, answer_type=typ, sources=srcs(rs)))
+    def ask(q, route, ans, typ, rs, cat):
+        A.append(dict(q=q, route=route, answer=ans, answer_type=typ, sources=srcs(rs), category=cat))
+    of = lambda t: [r for r in U if r["type"] == t]
+    F = lambda r, k: r["fields"][k]
+    first = lambda who: who.split()[0]
+    day = lambda iso: (lambda d: f"{d.day} {MONTH[d.month - 1]} {d.year}")(date.fromisoformat(iso))
     bills_ = of("utility_bill")
     B = lambda cat=None, m=None, lo=1, hi=12: [r for r in bills_ if (cat is None or r["meta"]["cat"] == cat) and lo <= r["meta"]["month"] <= hi and (m is None or r["meta"]["month"] == m)]
-    amt = lambda rs: round(sum(r["fields"]["amount_due"] for r in rs), 2)
+    spend = lambda rs: round(sum(F(r, "current_charges") for r in rs), 2)  # never amount_due: it repeats unpaid arrears
+    due = lambda r: F(r, "amount_due")
+    X, S1, EW, DU, CF, SE, UN = "cross_doc_total", "single_fact", "expiring_window", "duplicates", "conflict", "semantic", "unanswerable"
+
+    # the original 40 facts questions, gold answers under the new rules
     for cat in PW:
-        ask(f"How much did we pay for {cat} in 2026?", "facts", num(amt(B(cat))), "number", B(cat))
-    ask("What is the total of all our utility bills for 2026?", "facts", num(amt(B())), "number", B())
+        ask(f"How much did we pay for {cat} in 2026?", "facts", num(spend(B(cat))), "number", B(cat), X)
+    ask("What is the total of all our utility bills for 2026?", "facts", num(spend(B())), "number", B(), X)
     for cat, lo, hi, q in [("electricity", 6, 8, "How much did we pay for electricity from June to August 2026?"),
                            ("gas", 1, 3, "What was the total gas bill for January to March 2026?")]:
-        ask(q, "facts", num(amt(B(cat, None, lo, hi))), "number", B(cat, None, lo, hi))
-    mx = max(B("electricity"), key=lambda r: r["fields"]["amount_due"])
-    ask("What was our highest electricity bill in 2026?", "facts", num(mx["fields"]["amount_due"]), "number", [mx])
-    mn = min(B("electricity"), key=lambda r: r["fields"]["amount_due"])
-    ask("What was the lowest electricity bill amount in 2026?", "facts", num(mn["fields"]["amount_due"]), "number", [mn])
-    mg = max(B("gas"), key=lambda r: r["fields"]["amount_due"])
-    ask("In which month was the gas bill the highest in 2026?", "facts", mg["fields"]["billing_month"], "text", [mg])
-    mg = min(B("gas"), key=lambda r: r["fields"]["amount_due"])
-    ask("What was the smallest gas bill in 2026?", "facts", num(mg["fields"]["amount_due"]), "number", [mg])
+        ask(q, "facts", num(spend(B(cat, None, lo, hi))), "number", B(cat, None, lo, hi), X)
+    mx = max(B("electricity"), key=due)
+    ask("What was our highest electricity bill in 2026?", "facts", num(due(mx)), "number", [mx], X)
+    mn = min(B("electricity"), key=due)
+    ask("What was the lowest electricity bill amount in 2026?", "facts", num(due(mn)), "number", [mn], X)
+    mg = max(B("gas"), key=due)
+    ask("In which month was the gas bill the highest in 2026?", "facts", F(mg, "billing_month"), "text", [mg], X)
+    mg = min(B("gas"), key=due)
+    ask("What was the smallest gas bill in 2026?", "facts", num(due(mg)), "number", [mg], X)
     for cat, m in [("electricity", 3), ("gas", 2), ("internet", 9), ("electricity", 7)]:
         r = B(cat, m)[0]
-        ask(f"How much was the {cat} bill for {MONTH[m - 1]} 2026?", "facts", num(r["fields"]["amount_due"]), "number", [r])
+        ask(f"How much was the {cat} bill for {MONTH[m - 1]} 2026?", "facts", num(due(r)), "number", [r], S1)
     for cat, m in [("gas", 6), ("electricity", 4), ("internet", 11)]:
         r = B(cat, m)[0]
-        ask(f"What is the due date of the {cat} bill for {MONTH[m - 1]} 2026?", "facts", r["fields"]["due_date"], "date", [r])
+        ask(f"What is the due date of the {cat} bill for {MONTH[m - 1]} 2026?", "facts", F(r, "due_date"), "date", [r], S1)
     rcs = of("receipt")
-    y = lambda r: r["fields"]["date"][:4]
+    y = lambda r: (F(r, "date") or "")[:4]
     r26, r25 = [r for r in rcs if y(r) == "2026"], [r for r in rcs if y(r) == "2025"]
-    ask("How many receipts do I have from 2026?", "facts", str(len(r26)), "number", r26)
-    ask("How many receipts do I have from 2025?", "facts", str(len(r25)), "number", r25)
-    wr = [r for r in rcs if r["fields"]["warranty_until"]]
-    ask("How many receipts include a warranty?", "facts", str(len(wr)), "number", wr)
-    ask("How many ID cards do I have?", "facts", str(len(of("id_card"))), "number", of("id_card"))
-    ask("How many certificates do I have?", "facts", str(len(of("certificate"))), "number", of("certificate"))
-    ask("How many utility bills do we have for 2026?", "facts", str(len(bills_)), "number", bills_)
-    tot = lambda rs: num(round(sum(r["fields"]["total_amount"] for r in rs), 2))
-    ask("How much did I spend in total on receipts in 2026?", "facts", tot(r26), "number", r26)
-    fb = [r for r in r26 if r["fields"]["merchant"] == "FreshBasket Grocers"]
-    ask("How much did I spend at FreshBasket Grocers in 2026?", "facts", tot(fb), "number", fb)
-    cf = [r for r in r26 if r["fields"]["merchant"] == "CityFuel Station"]
-    ask("How much did I spend at CityFuel Station in 2026?", "facts", tot(cf), "number", cf)
-    mx = max(rcs, key=lambda r: r["fields"]["total_amount"])
-    ask("What was my most expensive purchase?", "facts", num(mx["fields"]["total_amount"]), "number", [mx])
-    mn = min(rcs, key=lambda r: r["fields"]["total_amount"])
-    ask("What was the cheapest receipt amount?", "facts", num(mn["fields"]["total_amount"]), "number", [mn])
+    ask("How many receipts do I have from 2026?", "facts", str(len(r26)), "number", r26, X)
+    ask("How many receipts do I have from 2025?", "facts", str(len(r25)), "number", r25, X)
+    wr = [r for r in rcs if F(r, "warranty_until")]
+    ask("How many receipts include a warranty?", "facts", str(len(wr)), "number", wr, X)
+    ask("How many ID cards do I have?", "facts", str(len(of("id_card"))), "number", of("id_card"), X)
+    ask("How many certificates do I have?", "facts", str(len(of("certificate"))), "number", of("certificate"), X)
+    ask("How many utility bills do we have for 2026?", "facts", str(len(bills_)), "number", bills_, DU)
+    tot = lambda rs: num(round(sum(F(r, "total_amount") for r in rs), 2))
+    ask("How much did I spend in total on receipts in 2026?", "facts", tot(r26), "number", r26, X)
+    for m in ("FreshBasket Grocers", "CityFuel Station"):
+        rs = [r for r in r26 if F(r, "merchant") == m]
+        ask(f"How much did I spend at {m} in 2026?", "facts", tot(rs), "number", rs, X)
+    mx = max(rcs, key=lambda r: F(r, "total_amount"))
+    ask("What was my most expensive purchase?", "facts", num(F(mx, "total_amount")), "number", [mx], X)
+    mn = min(rcs, key=lambda r: F(r, "total_amount"))
+    ask("What was the cheapest receipt amount?", "facts", num(F(mn, "total_amount")), "number", [mn], X)
     idl = of("id_card")
-    ex = lambda r: r["fields"]["expiry_date"]
-    live = sorted((r for r in idl if ex(r) >= TODAY.isoformat()), key=ex)
+    ex = lambda r: F(r, "expiry_date")
+    live = sorted((r for r in idl if ex(r) and ex(r) >= TODAY.isoformat()), key=ex)
     T_ = " Today is 2026-11-22."
-    ask("Which ID card expires next?" + T_, "facts", ex(live[0]), "date", [live[0]])
-    ask("Whose ID card expires next?" + T_, "facts", live[0]["fields"]["name"], "text", [live[0]])
+    ask("Which ID card expires next?" + T_, "facts", ex(live[0]), "date", [live[0]], EW)
+    ask("Whose ID card expires next?" + T_, "facts", F(live[0], "name"), "text", [live[0]], EW)
     soon = [r for r in live if ex(r) <= WINDOW.isoformat()]
-    ask("Which people have an ID card expiring within the next 90 days?" + T_, "facts", ", ".join(sorted({r["fields"]["name"] for r in soon})), "list", soon)
-    gone = [r for r in idl if ex(r) < TODAY.isoformat()]
-    ask("How many ID cards have already expired?" + T_, "facts", str(len(gone)), "number", gone)
+    ask("Which people have an ID card expiring within the next 90 days?" + T_, "facts", ", ".join(sorted({F(r, "name") for r in soon})), "list", soon, EW)
+    gone = [r for r in idl if ex(r) and ex(r) < TODAY.isoformat()]
+    ask("How many ID cards have already expired?" + T_, "facts", str(len(gone)), "number", gone, EW)
     one = lambda who, kind: [r for r in idl if r["meta"]["person"] == who and r["meta"]["kind"] == kind]
-    r = [r for r in idl if r["fields"]["name"] == "Nusrat Khan"]
+    r = [r for r in idl if F(r, "name") == "Nusrat Khan"]
     assert len(r) == 1
-    ask("When does Nusrat's ID card expire?", "facts", ex(r[0]), "date", r)
+    ask("When does Nusrat's ID card expire?", "facts", ex(r[0]), "date", r, S1)
     r = one("Hamza Khan", "national")
-    ask("What is Hamza's national ID number?", "facts", r[0]["fields"]["id_number"], "text", r)
+    ask("What is Hamza's national ID number?", "facts", F(r[0], "id_number"), "text", r, S1)
     r = one("Ayesha Khan", "licence")
-    ask("When does Ayesha's driving licence expire?", "facts", ex(r[0]), "date", r)
-    r = [r for r in idl if r["fields"]["name"] == "Ali Raza Khan"]
-    ask("What is Ali's date of birth?", "facts", r[0]["fields"]["date_of_birth"], "date", r)
+    ask("When does Ayesha's driving licence expire?", "facts", ex(r[0]), "date", r, S1)
+    r = [r for r in idl if F(r, "name") == "Ali Raza Khan"]
+    ask("What is Ali's date of birth?", "facts", F(r[0], "date_of_birth"), "date", r, S1)
     r = one("Sara Khan", "licence")
-    ask("When was Sara's driving licence issued?", "facts", r[0]["fields"]["issue_date"], "date", r)
+    ask("When was Sara's driving licence issued?", "facts", F(r[0], "issue_date"), "date", r, S1)
     cl = of("certificate")
-    sc = [r for r in cl if r["fields"]["holder_name"] == "Sara Khan"]
-    ask("How many certificates does Sara have?", "facts", str(len(sc)), "number", sc)
-    r = [r for r in cl if r["fields"]["title"] == "Master of Business Administration"]
-    ask("When was Ali's Master of Business Administration issued?", "facts", r[0]["fields"]["issue_date"], "date", r)
-    nw = min((r for r in wr if r["fields"]["warranty_until"] > TODAY.isoformat()), key=lambda r: r["fields"]["warranty_until"])
-    ask("Which receipt warranty expires next?" + T_, "facts", nw["fields"]["warranty_until"], "date", [nw])
+    sc = [r for r in cl if F(r, "holder_name") == "Sara Khan"]
+    ask("How many certificates does Sara have?", "facts", str(len(sc)), "number", sc, X)
+    r = [r for r in cl if F(r, "title") == "Master of Business Administration"]
+    ask("When was Ali's Master of Business Administration issued?", "facts", F(r[0], "issue_date"), "date", r, S1)
+    nw = min((r for r in wr if F(r, "warranty_until") > TODAY.isoformat()), key=lambda r: F(r, "warranty_until"))
+    ask("Which receipt warranty expires next?" + T_, "facts", F(nw, "warranty_until"), "date", [nw], EW)
     assert len(A) == 40, len(A)
-    # search route
+
+    # ---- new: single facts, one document each
+    for cat, m in [("electricity", 1), ("electricity", 6), ("electricity", 8), ("electricity", 11), ("gas", 3), ("gas", 5),
+                   ("gas", 10), ("gas", 12), ("internet", 1), ("internet", 4), ("internet", 7), ("internet", 12)]:
+        r = B(cat, m)[0]
+        ask(f"What was the total payable on the {cat} bill for {MONTH[m - 1]} 2026?", "facts", num(due(r)), "number", [r], S1)
+    for cat, m in [("electricity", 2), ("electricity", 9), ("gas", 4), ("gas", 11), ("internet", 3), ("internet", 10)]:
+        r = B(cat, m)[0]
+        ask(f"What were the current charges on the {cat} bill for {MONTH[m - 1]} 2026?", "facts", num(F(r, "current_charges")), "number", [r], S1)
+    for cat, m in [("electricity", 5), ("electricity", 12), ("gas", 1), ("gas", 8), ("internet", 6), ("internet", 9)]:
+        r = B(cat, m)[0]
+        ask(f"When is the {cat} bill for {MONTH[m - 1]} 2026 due?", "facts", F(r, "due_date"), "date", [r], S1)
+    for who in ("Ayesha Khan", "Sara Khan", "Hamza Khan", "Nusrat Khan"):
+        r = [x for x in idl if F(x, "name") == who]
+        ask(f"What is {first(who)}'s date of birth?", "facts", F(r[0], "date_of_birth"), "date", r, S1)
+    KW = {"national": "national identity card", "licence": "driving licence", "student": "student card", "staff": "employee card"}
+    for who, kind in [("Ali Raza Khan", "licence"), ("Sara Khan", "student"), ("Ayesha Khan", "staff"), ("Sara Khan", "national"),
+                      ("Hamza Khan", "national")]:
+        r = one(who, kind)
+        assert len(r) == 1 and ex(r[0]), (who, kind)
+        ask(f"When does {first(who)}'s {KW[kind]} expire?", "facts", ex(r[0]), "date", r, S1)
+    for who, title in [("Sara Khan", "Python Programming"), ("Sara Khan", "First Aid and CPR"), ("Ayesha Khan", "Classroom Management"),
+                       ("Hamza Khan", "Robotics Workshop"), ("Nusrat Khan", "Basic Computer Literacy"), ("Ali Raza Khan", "Excel for Business")]:
+        r = [x for x in cl if F(x, "holder_name") == who and F(x, "title") == title]
+        ask(f"When was {first(who)}'s {title} certificate issued?", "facts", F(r[0], "issue_date"), "date", r, S1)
+    alone = [r for r in rcs if F(r, "date") and sum(F(x, "merchant") == F(r, "merchant") and F(x, "date") == F(r, "date") for x in rcs) == 1]
+    for r in alone[::max(1, len(alone) // 6)][:6]:
+        ask(f"How much did I pay at {F(r, 'merchant')} on {day(F(r, 'date'))}?", "facts", num(F(r, "total_amount")), "number", [r], S1)
+
+    # ---- new: cross-document totals (duplicates present in the folder), tax and outstanding balance
+    for cat in PW:
+        for lo, hi in [(1, 3), (4, 6), (7, 9), (10, 12)]:
+            rs = B(cat, None, lo, hi)
+            ask(f"How much did we pay for {cat} from {MONTH[lo - 1]} to {MONTH[hi - 1]} 2026?", "facts", num(spend(rs)), "number", rs, X)
+    tax = lambda rs: round(sum(F(r, "tax") or 0 for r in rs), 2)
+    for cat in PW:
+        ask(f"How much tax did we pay on {cat} bills in 2026?", "facts", num(tax(B(cat))), "number", B(cat), X)
+    ask("How much tax did we pay on all utility bills in 2026?", "facts", num(tax(B())), "number", B(), X)
+    latest = {cat: max(B(cat), key=lambda r: F(r, "billing_month")) for cat in PW}
+    owed = lambda r: 0.0 if F(r, "payment_status") == "paid" else due(r)  # the latest bill already carries older arrears
+    for cat, r in latest.items():
+        ask(f"How much do we still owe on the {cat} bill?", "facts", num(owed(r)), "number", [r], X)
+    ask("What is our total outstanding balance on utility bills?", "facts", num(round(sum(owed(r) for r in latest.values()), 2)), "number",
+        [r for r in latest.values() if owed(r)], X)
+    for m in sorted({F(r, "merchant") for r in r26} - {"FreshBasket Grocers", "CityFuel Station"}):
+        rs = [r for r in r26 if F(r, "merchant") == m]
+        if len(rs) >= 2:
+            ask(f"How much did I spend at {m} in 2026?", "facts", tot(rs), "number", rs, X)
+
+    # ---- new: everything expiring in a window (ID expiry and warranties; bill due dates are not expiries)
+    exp = [(r, F(r, f)) for r in U for f in ("expiry_date", "warranty_until") if r["fields"].get(f)]
+    for lo, hi in [(D(2026, 12, 1), D(2027, 1, 31)), (D(2027, 1, 1), D(2027, 6, 30)), (D(2027, 7, 1), D(2027, 12, 31)),
+                   (D(2026, 6, 1), D(2026, 11, 30)), (D(2028, 1, 1), D(2028, 12, 31)), (D(2025, 1, 1), D(2025, 6, 30))]:
+        hit = sorted((x for x in exp if lo.isoformat() <= x[1] <= hi.isoformat()), key=lambda x: x[1])
+        if hit:
+            ask(f"What expires between {day(lo.isoformat())} and {day(hi.isoformat())}?", "facts", ";".join(v for _, v in hit), "list",
+                [r for r, _ in hit], EW)
+
+    # ---- new: counts that duplicates would inflate
+    for cat in PW:
+        ask(f"How many {cat} bills do we have for 2026?", "facts", str(len(B(cat))), "number", B(cat), DU)
+    me = [r for r in rcs if F(r, "merchant") == ELEC]
+    ask("How many receipts from Metro Electronics Mart do I have?", "facts", str(len(me)), "number", me, DU)
+    nat = [r for r in idl if r["meta"]["kind"] == "national"]
+    ask("How many national identity cards do we have?", "facts", str(len(nat)), "number", nat, DU)
+
+    # ---- new: conflicts, where the answer must show both values
+    for who in ("Ali Raza Khan", "Ayesha Khan"):
+        r = one(who, "national")
+        assert len(r) == 2 and F(r[0], "id_number") == F(r[1], "id_number"), who
+        both = ";".join(sorted(ex(x) for x in r))
+        ask(f"When does {first(who)}'s national identity card expire?", "facts", both, "list", r, CF)
+        ask(f"What is the expiry date on ID card {F(r[0], 'id_number')}?", "facts", both, "list", r, CF)
+
+    # ---- search route: what documents say beyond the facts table
     def sd(q, ans, typ, rs):
-        ask(q, "search", ans, typ, rs)
+        ask(q, "search", ans, typ, rs, SE)
     f1 = lambda t, f: [r for r in of(t) if f(r)]
     r = f1("certificate", lambda r: r["meta"]["person"] == "Sara Khan" and r["meta"]["kind"] == "degree")
-    sd("What institution issued Sara's degree?", r[0]["fields"]["institution"], "text", r)
-    sd("When was Sara's degree issued?", r[0]["fields"]["issue_date"], "date", r)
+    sd("What institution issued Sara's degree?", F(r[0], "institution"), "text", r)
+    sd("When was Sara's degree issued?", F(r[0], "issue_date"), "date", r)
     for cat, w in [("gas", "gas bill"), ("internet", "internet bill"), ("electricity", "electricity bill")]:
-        sd(f"What is the account number on the {w}?", B(cat)[0]["fields"]["account_number"], "text", B(cat))
+        sd(f"What is the account number on the {w}?", F(B(cat)[0], "account_number"), "text", B(cat))
     r = f1("certificate", lambda r: r["meta"]["kind"] == "school")
-    sd("What is the title of Hamza's school certificate?", r[0]["fields"]["title"], "text", r)
+    sd("What is the title of Hamza's school certificate?", F(r[0], "title"), "text", r)
     r = f1("receipt", lambda r: r["meta"]["cat"] == "laptop")
-    sd("Where did I buy the laptop?", r[0]["fields"]["merchant"], "text", r)
-    r = f1("id_card", lambda r: r["fields"]["name"] == "Nusrat Khan")
-    sd("What is the ID number on Nusrat's identity card?", r[0]["fields"]["id_number"], "text", r)
+    sd("Where did I buy the laptop?", F(r[0], "merchant"), "text", r)
+    r = f1("id_card", lambda r: F(r, "name") == "Nusrat Khan")
+    sd("What is the ID number on Nusrat's identity card?", F(r[0], "id_number"), "text", r)
     r = f1("certificate", lambda r: r["meta"]["person"] == "Ali Raza Khan" and r["meta"]["kind"] == "degree")
-    sd("Which institution awarded Ali's MBA?", r[0]["fields"]["institution"], "text", r)
+    sd("Which institution awarded Ali's MBA?", F(r[0], "institution"), "text", r)
     r = f1("id_card", lambda r: r["meta"]["person"] == "Ali Raza Khan" and r["meta"]["kind"] == "staff")
     sd("Which company does Ali work for?", r[0]["meta"]["inst"], "text", r)
     r = f1("other", lambda r: r["meta"].get("key") == "cover_sara")
@@ -1197,10 +1397,22 @@ def draft_eval(T, seed):
     sd("Which hotel are we staying at in Murree?", "Pine View Resort", "text", r)
     r = f1("other", lambda r: r["meta"].get("key") == "notes_net")
     sd("What does TCP do when it sees three duplicate ACKs?", "fast retransmit", "text", r)
+    for cat, months in [("electricity", range(1, 13)), ("gas", (1, 4, 7, 10, 11, 12))]:
+        for m in months:
+            r = B(cat, m)[0]
+            sd(f"How many {r['meta']['unit']} of {cat} did we use in {MONTH[m - 1]} 2026?", str(r["meta"]["used"]), "number", [r])
+    for r in cl[::max(1, len(cl) // 8)][:8]:
+        sd(f"What is the certificate number on {first(F(r, 'holder_name'))}'s {F(r, 'title')} certificate?", r["meta"]["cid"], "text", [r])
+    bought = [r for r in rcs if r["meta"]["group"] in ("electronics", "appliance") and F(r, "date")]
+    for r in [r for r in bought if sum(F(x, "merchant") == F(r, "merchant") and F(x, "date") == F(r, "date") for x in rcs) == 1][:4]:
+        sd(f"What did I buy at {F(r, 'merchant')} on {day(F(r, 'date'))}?", r["meta"]["items"][0], "text", [r])
     for q in ["What is my passport number?", "How much was our water bill?", "What is my health insurance policy number?",
-              "When does my car registration expire?", "What is the salary on my payslip?"]:
-        A.append(dict(q=q, route="search", answer="", answer_type="none", sources=[]))
-    assert len(A) == 60 and sum(a["route"] == "facts" for a in A) == 40, len(A)
+              "When does my car registration expire?", "What is the salary on my payslip?", "When does my gym membership expire?",
+              "How much is our monthly house rent?", "What is my bank account balance?", "When does my visa expire?",
+              "How much was the hospital bill?"]:
+        A.append(dict(q=q, route="search", answer="", answer_type="none", sources=[], category=UN))
+    groups = Counter(a["category"] for a in A)
+    assert groups[S1] >= 50 and groups[X] + groups[EW] + groups[DU] + groups[CF] >= 50 and groups[SE] + groups[UN] >= 50, groups
     return search, A
 
 
@@ -1223,26 +1435,33 @@ def self_check(recs, search, ask):
         for k, v in f.items():
             if v and (k.endswith("_date") or k in ("date", "date_of_birth", "warranty_until")):
                 date.fromisoformat(v)
-        for k in ("amount_due", "total_amount"):
-            assert k not in f or isinstance(f[k], float)
+        for k in MONEY & set(f):
+            assert f[k] is None or isinstance(f[k], float), (r["file"], k)
+        if r["type"] == "utility_bill":
+            assert abs(f["current_charges"] + (f["previous_balance"] or 0) - f["amount_due"]) < .01, r["file"]
+        if r["type"] == "receipt" and f["subtotal"] is not None:
+            assert abs(f["subtotal"] + f["tax"] - f["total_amount"]) < .01, r["file"]
     assert len({r["file"] for r in recs}) == len(recs)
     for sp in ("dev", "test"):
         n = [r for r in recs if r["split"] == sp]
         print(sp, len(n))
     dev, test = [r for r in recs if r["split"] == "dev"], [r for r in recs if r["split"] == "test"]
-    assert 35 <= len(dev) <= 45 and 160 <= len(test) <= 180, (len(dev), len(test))
+    assert 35 <= len(dev) <= 45 and 175 <= len(test) <= 200, (len(dev), len(test))
+    assert Counter(r["duplicate_kind"] for r in test) == {None: len(test) - 13, "near": 7, "exact": 6}, Counter(r["duplicate_kind"] for r in test)
     assert sum(r["type"] != "other" for r in test) >= 100
     assert sum(r["format"] != "pdf_text" for r in test) >= 50
-    ids_ = [r["fields"]["id_number"] for r in recs if r["type"] == "id_card"]
-    assert len(ids_) == len(set(ids_))
+    holder = {}
+    for r in recs:  # one ID number belongs to one person; two cards with it are the planned conflicts
+        if r["type"] == "id_card":
+            assert holder.setdefault(r["fields"]["id_number"], r["fields"]["name"]) == r["fields"]["name"], r["file"]
     for t, e in (("id_card", "expiry_date"), ("receipt", "warranty_until")):
         ex = [r["fields"][e] for r in test if r["type"] == t and r["fields"][e]]
         assert any(x < TODAY.isoformat() for x in ex) and any(TODAY.isoformat() <= x <= WINDOW.isoformat() for x in ex) \
             and any(x > WINDOW.isoformat() for x in ex), f"{t} expiry buckets"
     blob = " ".join(r["text"] for r in recs).lower()
-    for w in ("passport", "water bill", "insurance", "salary", "registration"):
+    for w in ("passport", "water bill", "insurance", "salary", "registration", "gym", "house rent", "visa", "hospital", "account balance"):
         assert w not in blob, w
-    assert len(search) == 60 and len(ask) == 60
+    assert len(search) == 60 and len(ask) >= 150
     assert all(set(s["relevant"]) <= {r["file"] for r in test} and s["relevant"] for s in search)
     assert all(a["answer_type"] == "none" or a["sources"] for a in ask)
 
@@ -1260,7 +1479,8 @@ def main():
     recs = build("dev", a.seed) + build("test", a.seed)
     with open(OUT / "labels.jsonl", "w", encoding="utf-8", newline="\n") as fh:
         for r in recs:
-            fh.write(json.dumps({k: r[k] for k in ("file", "split", "type", "format", "fields", "text")}, ensure_ascii=False) + "\n")
+            fh.write(json.dumps({k: r[k] for k in ("file", "split", "type", "format", "fields", "text", "duplicate_of", "duplicate_kind")},
+                                ensure_ascii=False) + "\n")
     search, ask = draft_eval([r for r in recs if r["split"] == "test"], a.seed)
     ev = Path(__file__).resolve().parent.parent / "eval"
     ev.mkdir(parents=True, exist_ok=True)
