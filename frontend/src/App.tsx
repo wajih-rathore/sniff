@@ -28,8 +28,13 @@ export default function App() {
         setFocus((n) => n + 1)
       }
     }
+    const onGo = (e: Event) => go({ view: (e as CustomEvent<Nav['view']>).detail }) // the desktop tray's Settings item
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('sniff:go', onGo)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('sniff:go', onGo)
+    }
   }, [])
 
   return (

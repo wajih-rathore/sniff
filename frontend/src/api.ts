@@ -1,5 +1,7 @@
 // Typed client. Shapes mirror backend/sniff/schemas.py. With VITE_MOCK=1 every call is answered by src/mock.ts.
-export const BASE: string = import.meta.env.VITE_API ?? 'http://127.0.0.1:8000'
+// The built desktop app runs its own back end on 8765 (backend/sniff/desktop.py), so a dev back end on 8000 can run beside it.
+export const DESKTOP = '__TAURI_INTERNALS__' in window && !import.meta.env.DEV
+export const BASE: string = import.meta.env.VITE_API ?? (DESKTOP ? 'http://127.0.0.1:8765' : 'http://127.0.0.1:8000')
 export const MOCK = import.meta.env.VITE_MOCK === '1'
 
 export type FactStatus = 'verified' | 'needs_review' | 'corrected' | 'approved'
