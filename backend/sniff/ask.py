@@ -14,10 +14,10 @@ from pydantic import BaseModel
 
 from . import records, verify
 from .ai import llm
-from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, Answer, Conflict, Source
+from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Source
 from .search import search
 
-Op = Literal["list", "sum", "count", "min", "max", "next_expiring", "outstanding"]
+Op = Literal["list", "sum", "count", "min", "max", "next_expiring", "outstanding", "latest"]
 Period = Literal["this_year", "last_year", "this_month", "last_month", "next_30_days", "next_90_days"]
 
 
@@ -33,7 +33,7 @@ class Filters(BaseModel):
 
 class Route(BaseModel):
     route: Literal["facts", "search"]
-    doc_type: Literal["id_card", "utility_bill", "certificate", "receipt"] | None = None
+    doc_type: Literal[tuple(FIELDS)] | None = None  # type: ignore[valid-type]
     field: str | None = None
     op: Op | None = None
     filters: Filters = Filters()
@@ -43,8 +43,10 @@ ROUTER_PROMPT = """You turn a question about a person's documents into a query. 
 Use route "facts" when the question asks for a value, total, count, earliest/latest, next expiry or unpaid balance of one of these fields:
 {fields}
 Then set doc_type, field, op and filters.
-op: list, sum, count, min, max, next_expiring, or outstanding (what is still unpaid on the latest bills, field amount_due).
+op: list, sum, count, min, max, next_expiring, outstanding (what is still unpaid on the latest bills, field amount_due),
+or latest (the value on the newest document, e.g. someone's current passport or CGPA).
 Money paid for a utility is current_charges; amount_due also includes old unpaid bills.
+A bank balance is closing_balance with op sum; money paid in is total_credits, money paid out is total_debits.
 For things expiring across all kinds of documents, leave doc_type empty and use field expiry_date.
 filters:
 - holder: a person's name if one is mentioned
@@ -57,8 +59,10 @@ Use route "search" for anything else, such as questions about what a document sa
 Reply with JSON only."""
 
 # the date each document type is "about", used for date filters when the asked field is not itself a date
-PERIOD_FIELD = {"utility_bill": "billing_month", "receipt": "date", "certificate": "issue_date", "id_card": "expiry_date"}
-NAME_FIELDS = {"provider", "merchant", "institution"}
+PERIOD_FIELD = {"utility_bill": "billing_month", "receipt": "date", "certificate": "issue_date", "id_card": "expiry_date",
+                "passport": "expiry_date", "transcript": "issue_date", "bank_statement": "period_end", "warranty_card": "purchase_date",
+                "offer_letter": "offer_date", "insurance_policy": "start_date", "tenancy_agreement": "start_date", "fee_voucher": "due_date"}
+NAME_FIELDS = set(ORG_FIELDS)
 
 ANSWER_PROMPT = """Answer the question using only the numbered passages from the user's documents.
 Cite passages like [1]. Keep it to one or two sentences.
@@ -170,6 +174,10 @@ def answer_from_facts(conn, question: str, r: Route, today: date) -> Answer:
     query, note = r.model_dump(), ""
     if r.op == "outstanding":
         used, text = _outstanding(res.kept)
+    elif r.op == "latest" and not (r.doc_type == "bank_statement" and r.field == "closing_balance"):
+        used, text = _latest(res.kept, r.field)
+    elif r.doc_type == "bank_statement" and r.field == "closing_balance" and r.op in ("sum", "latest"):
+        used, text = _balances(res.kept)
     else:
         field = r.field
         accounts = {(d.get("provider"), d.get("account_number")) for d in res.kept}
@@ -216,6 +224,33 @@ def _outstanding(kept: list[records.Doc]):
         return [(d, d.facts["amount_due"]) for d in latest.values()], "0 outstanding: the latest bills are marked paid."
     parts = "; ".join(f"{d.get('provider')} {d.get('billing_month')}: {_show(fr)}" for d, fr in unpaid)
     return unpaid, f"{_fmt(sum(float(fr['value']) for _, fr in unpaid))} outstanding, from the latest unpaid bills ({parts})."
+
+
+def _latest(kept: list[records.Doc], field: str):
+    """The field on the newest document, by the date each type is about (PERIOD_FIELD). Ties (a conflict) show both."""
+    dated = [(d, d.get(PERIOD_FIELD[d.doc_type])) for d in kept if field in d.facts and d.get(PERIOD_FIELD[d.doc_type])]
+    if not dated:
+        return [], ""
+    top = max(v for _, v in dated)
+    used = [(d, d.facts[field]) for d, v in dated if v == top]
+    return used, "; ".join(f"{_show(fr)} ({_name(d)})" for d, fr in used) + f", from the newest document ({top})."
+
+
+def _balances(kept: list[records.Doc]):
+    """Bank balance: per account, the closing balance of the newest statement. Each statement's balance already holds
+    the money of the earlier ones, so adding the balances of several statements of one account counts it again."""
+    latest: dict[tuple, records.Doc] = {}
+    for d in kept:
+        if not (d.get("period_end") and d.get("closing_balance")):
+            continue
+        k = tuple(records.norm(d.doc_type, f, d.get(f) or "") for f in ("bank", "account_number"))
+        if k not in latest or d.get("period_end") > latest[k].get("period_end"):
+            latest[k] = d
+    if not latest:
+        return [], ""
+    used = [(d, d.facts["closing_balance"]) for d in latest.values()]
+    parts = "; ".join(f"{d.get('bank')} on {d.get('period_end')}: {_show(fr)}" for d, fr in used)
+    return used, f"{_fmt(sum(float(fr['value']) for _, fr in used))} in total, from the newest statement of each account ({parts})."
 
 
 def _sum(items, field: str):

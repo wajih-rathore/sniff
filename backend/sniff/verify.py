@@ -21,14 +21,14 @@ HEADER_ROWS = 3
 DATE_FORMATS = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%d %b %Y", "%d %B %Y", "%d-%b-%Y", "%d-%B-%Y",
                 "%b %d %Y", "%B %d %Y", "%d/%m/%y")
 MONTH_FORMATS = ("%Y-%m", "%m/%Y", "%m-%Y", "%m.%Y", "%b %Y", "%B %Y", "%b-%Y", "%B-%Y", "%b-%y", "%b %y")
-VALUE_TYPES = {"date": "date", "money": "money", "id": "id"}  # stored value_type per kind; the rest are "text"
+VALUE_TYPES = {"date": "date", "money": "money", "id": "id", "passport": "id", "serial": "id"}  # stored value_type per kind; the rest are "text"
 
 
 # ---------- reading a printed value ----------
 def parse(kind: str, raw: str):
     """The printed text as a typed value (date, "YYYY-MM", float, "paid"/"unpaid" or str), or None if unreadable."""
     s = re.sub(r"\s+", " ", raw.replace(",", " ")).strip()
-    if kind == "money":
+    if kind in ("money", "gpa"):
         m = re.search(r"\d+(?:\.\d+)?", raw.replace(",", ""))
         return float(m.group()) if m else None
     if kind == "month":
@@ -44,8 +44,10 @@ def parse(kind: str, raw: str):
     if kind == "status":
         low = raw.lower()
         return "unpaid" if re.search(r"unpaid|not paid|outstanding", low) else "paid" if "paid" in low else None
-    if kind == "id":
+    if kind in ("id", "serial"):
         return re.sub(r"\s*-\s*", "-", raw.strip()) or None
+    if kind == "passport":
+        return re.sub(r"\s+", "", raw).upper() or None
     return raw.strip() or None
 
 
@@ -67,7 +69,7 @@ def stored(value) -> str:
 
 def typed(kind: str, text: str):
     """A value as stored in the facts table, back to its Python type."""
-    return date.fromisoformat(text) if kind == "date" else float(text) if kind == "money" else text
+    return date.fromisoformat(text) if kind == "date" else float(text) if kind in ("money", "gpa") else text
 
 
 # ---------- rules on one value ----------
@@ -91,6 +93,14 @@ def field_problem(kind: str, value, required: bool = False) -> str | None:
         return None
     if kind == "status":
         return None if value in ("paid", "unpaid") else "status is not paid or unpaid"
+    if kind == "passport":
+        ok = re.fullmatch(r"[A-Z0-9]{6,9}", value) and sum(c.isdigit() for c in value) >= 4
+        return None if ok else "not a passport number (6 to 9 letters and digits)"
+    if kind == "serial":
+        ok = re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{3,29}", value) and any(c.isdigit() for c in value)
+        return None if ok else "not a serial number (4 to 30 letters and digits)"
+    if kind == "gpa":
+        return None if 0 < value <= 4 and abs(value * 100 - round(value * 100)) < 1e-6 else "CGPA is not between 0 and 4"
     return None if 2 <= len(value) <= 120 and re.search(r"[A-Za-z]", value) else "text is empty or too long"
 
 
@@ -115,7 +125,40 @@ def cross_problems(doc_type: str, v: dict) -> list[tuple[tuple[str, ...], str]]:
         rule(("subtotal", "total_amount"), lambda: abs(v["subtotal"] + (v.get("tax") or 0) - v["total_amount"]) <= TOLERANCE,
              "total is not subtotal + tax")
         rule(("date", "warranty_until"), lambda: v["warranty_until"] > v["date"], "warranty ends before the purchase date")
+    elif doc_type == "passport":
+        rule(("issue_date", "expiry_date"), lambda: v["expiry_date"] > v["issue_date"], "expiry date not after issue date")
+        rule(("date_of_birth", "issue_date"), lambda: v["date_of_birth"] < v["issue_date"], "date of birth not before issue date")
+        rule(("issue_date", "expiry_date"), lambda: v["expiry_date"] <= v["issue_date"] or passport_term_ok(v["issue_date"], v["expiry_date"]),
+             "passport is not valid for 5 or 10 years")
+    elif doc_type == "transcript":
+        rule(("issue_date",), lambda: v["issue_date"] <= date.today(), "issue date is in the future")
+    elif doc_type == "bank_statement":
+        rule(("period_start", "period_end"), lambda: v["period_start"] < v["period_end"], "period start not before period end")
+        rule(("opening_balance", "total_credits", "total_debits", "closing_balance"),
+             lambda: abs(v["opening_balance"] + v["total_credits"] - v["total_debits"] - v["closing_balance"]) <= TOLERANCE,
+             "opening balance + credits - debits is not the closing balance")
+    elif doc_type == "warranty_card":
+        rule(("purchase_date", "warranty_until"), lambda: v["warranty_until"] > v["purchase_date"], "warranty ends before the purchase date")
+        rule(("purchase_date", "warranty_until"), lambda: v["warranty_until"] <= add_years(v["purchase_date"], 10), "warranty longer than 10 years")
+    elif doc_type == "offer_letter":
+        rule(("offer_date", "start_date"), lambda: v["offer_date"] <= v["start_date"], "start date before the offer date")
+    elif doc_type in ("insurance_policy", "tenancy_agreement"):
+        rule(("start_date", "end_date"), lambda: v["end_date"] > v["start_date"], "end date not after start date")
+    elif doc_type == "fee_voucher":
+        rule(("issue_date", "due_date"), lambda: v["due_date"] >= v["issue_date"], "due date before issue date")
     return out
+
+
+def add_years(d: date, n: int) -> date:
+    try:
+        return d.replace(year=d.year + n)
+    except ValueError:  # 29 February
+        return d.replace(year=d.year + n, day=28)
+
+
+def passport_term_ok(issue: date, expiry: date) -> bool:
+    """Passports run 5 or 10 years; some end the day before the anniversary."""
+    return any(0 <= (add_years(issue, n) - expiry).days <= 1 for n in (5, 10))
 
 
 def bill_adds_up(v: dict) -> bool:
@@ -255,7 +298,8 @@ def _distance(vrow: Row, vs: int, ve: int, arow: Row, as_: int, ae: int, same: b
     h = max(vrow.h, arow.h)
     below = arow.y0 >= vrow.y1 - h * 0.25
     dy = max(0.0, arow.y0 - vrow.y1, vrow.y0 - arow.y1)
-    if dy > 1.6 * h or dx > 8 * h:
+    # a label below is measured in the smaller line height, so a big letterhead does not reach the small labels under it
+    if dy > 1.6 * (min(vrow.h, arow.h) if below else h) or dx > 8 * h:
         return None
     return (1, dy + dx + (h if below else 0))  # labels sit above or left of their values far more often than below
 

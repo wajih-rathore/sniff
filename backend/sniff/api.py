@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from . import config, db, gcal, records, verify
 from .ask import ask
 from .ingest import readers, scan
-from .schemas import (ACTION_DATE_FIELDS, EXPIRY_FIELDS, FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
+from .schemas import (ACTION_DATE_FIELDS, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
                       ReviewItem, UpcomingItem)
 from .search import search
 
@@ -23,7 +23,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 STATUS = {"running": False, "done": 0, "total": 0, "current": None, "errors": 0}
 EVAL_DIR = config.ROOT / "eval" / "results"
-REMINDER_TITLES = {"expiry_date": "expires", "due_date": "payment due", "warranty_until": "warranty ends"}
+REMINDER_TITLES = {"expiry_date": "expires", "due_date": "payment due", "warranty_until": "warranty ends", "end_date": "ends"}
 
 
 def get_conn():
@@ -264,7 +264,8 @@ def add_reminder(req: ReminderReq, conn=Depends(get_conn)):
     r = conn.execute("SELECT fa.*, f.path, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id WHERE fa.id=?", (req.fact_id,)).fetchone()
     if not r or r["field"] not in ACTION_DATE_FIELDS:
         raise HTTPException(400, "This fact is not a date Sniff can remind you about")
-    holder = conn.execute("SELECT value FROM facts WHERE file_id=? AND field IN ('name','holder_name','provider','merchant')", (r["file_id"],)).fetchone()
+    who = HOLDER_FIELDS + ORG_FIELDS
+    holder = conn.execute(f"SELECT value FROM facts WHERE file_id=? AND field IN ({','.join('?' * len(who))})", (r["file_id"], *who)).fetchone()
     title = f"{(r['doc_type'] or 'document').replace('_', ' ').capitalize()} {REMINDER_TITLES[r['field']]}" + (f" ({holder['value']})" if holder else "")
     try:
         event_id = gcal.create_event(title, date.fromisoformat(r["value"]), f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only: the full path stays on the laptop
