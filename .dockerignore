@@ -1,0 +1,12 @@
+.git
+.sniff
+models
+.cache
+data
+eval
+docs
+frontend
+backend/.venv
+backend/.secrets
+backend/tests
+**/__pycache__

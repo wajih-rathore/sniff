@@ -1,0 +1,29 @@
+# Back end plus the two model servers. Models are not in the image: put the .gguf files in ./models first
+# (the same files scripts/dev.ps1 uses). Start with:  docker compose up
+# Index a folder by mounting it at /docs (SNIFF_DOCS) and calling POST /index {"folder": "/docs"}.
+services:
+  chat:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    command: ["-m", "/models/qwen3-1.7b-q4_k_m.gguf", "--host", "0.0.0.0", "--port", "8080", "--jinja", "--reasoning-budget", "0", "-c", "8192"]
+    volumes:
+      - ./models:/models:ro
+  embed:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    command: ["-m", "/models/all-minilm-l6-v2.gguf", "--embedding", "--host", "0.0.0.0", "--port", "8081", "-c", "2048", "-b", "2048", "-ub", "2048"]
+    volumes:
+      - ./models:/models:ro
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      SNIFF_LLM_URL: http://chat:8080/v1
+      SNIFF_EMBED_URL: http://embed:8081/v1
+    volumes:
+      - sniff-data:/data
+      - ${SNIFF_DOCS:-./data/own}:/docs:ro
+    depends_on:
+      - chat
+      - embed
+volumes:
+  sniff-data:
