@@ -87,3 +87,13 @@ def test_bad_file_does_not_stop_scan(conn, tmp_path):
     counts = scan.scan(conn, tmp_path)
     assert counts["indexed"] == 1 and counts["errors"] == 1
     assert conn.execute("SELECT status FROM files WHERE path LIKE '%broken.pdf'").fetchone()[0] == "error"
+
+
+def test_scanning_one_folder_leaves_a_sibling_with_the_same_prefix_alone(conn, tmp_path):
+    for name in ("docs", "docs2"):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "a.txt").write_text(f"Electricity bill {name}")
+    scan.scan(conn, tmp_path / "docs")
+    scan.scan(conn, tmp_path / "docs2")
+    assert scan.scan(conn, tmp_path / "docs")["removed"] == 0
+    assert count(conn, "files") == 2

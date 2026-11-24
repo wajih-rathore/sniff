@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS reminders(
   status TEXT NOT NULL,                 -- created | failed
   created_at TEXT
 );
+CREATE TABLE IF NOT EXISTS watched(folder TEXT PRIMARY KEY, added_at TEXT);  -- folders kept in step live; read again on restart
 CREATE TABLE IF NOT EXISTS actions(id INTEGER PRIMARY KEY, ts TEXT, kind TEXT, payload TEXT);
 """
 

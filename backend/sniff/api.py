@@ -2,6 +2,7 @@ import json
 import threading
 from collections import Counter
 import webbrowser
+from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
 
@@ -11,17 +12,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
-from . import config, db, gcal, records, verify
+from . import config, db, gcal, records, verify, watch
 from .ask import ask
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
                       ReviewItem, UpcomingItem)
 from .search import search
 
-app = FastAPI(title="Sniff")
+STATUS = {"running": False, "done": 0, "total": 0, "current": None, "errors": 0, "watching": []}
+WATCHER = watch.Watcher(STATUS)
+
+
+@asynccontextmanager
+async def lifespan(_):
+    WATCHER.restore()  # folders watched before the last shutdown
+    yield
+    WATCHER.stop()
+
+
+app = FastAPI(title="Sniff", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-STATUS = {"running": False, "done": 0, "total": 0, "current": None, "errors": 0}
 EVAL_DIR = config.ROOT / "eval" / "results"
 REMINDER_TITLES = {"expiry_date": "expires", "due_date": "payment due", "warranty_until": "warranty ends", "end_date": "ends"}
 
@@ -37,6 +48,10 @@ def get_conn():
 class IndexReq(BaseModel):
     folder: str
     ai: bool = True
+
+
+class WatchReq(BaseModel):
+    folder: str
 
 
 class AskReq(BaseModel):
@@ -80,6 +95,27 @@ def index(req: IndexReq):
 @app.get("/index/status")
 def index_status():
     return STATUS
+
+
+@app.get("/watch")
+def watch_list():
+    return {"folders": WATCHER.folders(), "last": STATUS.get("watch_last"), "error": STATUS.get("watch_error")}
+
+
+@app.post("/watch")
+def watch_add(req: WatchReq):
+    folder = Path(req.folder).expanduser()
+    if not folder.is_dir():
+        raise HTTPException(400, f"Folder not found: {folder}")
+    WATCHER.add(folder)
+    return watch_list()
+
+
+@app.delete("/watch")
+def watch_remove(req: WatchReq):
+    if not WATCHER.remove(req.folder):
+        raise HTTPException(404, "This folder is not being watched")
+    return watch_list()
 
 
 @app.get("/search", response_model=list[Hit])

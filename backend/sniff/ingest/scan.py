@@ -1,5 +1,6 @@
 """Index a folder and keep the index in step with the disk: new, changed, renamed and deleted files."""
 import hashlib
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -29,7 +30,7 @@ def scan(conn: sqlite3.Connection, folder, ai: bool = True, status: dict | None 
     folder = Path(folder).resolve()
     status = status if status is not None else {}
     on_disk = {str(p): p for p in iter_files(folder)}
-    known = {r["path"]: r for r in conn.execute("SELECT * FROM files") if r["path"].startswith(str(folder))}
+    known = {r["path"]: r for r in conn.execute("SELECT * FROM files") if r["path"].startswith(str(folder).rstrip(os.sep) + os.sep)}  # "docs" must not claim "docs2"
     gone = {p: r for p, r in known.items() if p not in on_disk}
     gone_by_hash = {r["sha256"]: r for r in gone.values() if r["sha256"]}
 

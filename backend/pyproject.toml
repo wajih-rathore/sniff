@@ -16,6 +16,7 @@ dependencies = [
     "mcp",
     "google-api-python-client",
     "google-auth-oauthlib",
+    "watchdog>=7.1.1",
 ]
 
 [dependency-groups]
