@@ -13,6 +13,9 @@ D = date
     ("date", "05/04/2026", D(2026, 4, 5)),
     ("date", "12 Mar 2026", D(2026, 3, 12)),
     ("date", "10th day of July, 2025", D(2025, 7, 10)),
+    ("date", "06Sep2026", D(2026, 9, 6)),  # OCR drops the spaces
+    ("date", "04NoV2026", D(2026, 11, 4)),
+    ("date", "30thday of June,2008", D(2008, 6, 30)),
     ("date", "sometime soon", None),
     ("month", "March 2026", "2026-03"),
     ("month", "Mar-2026", "2026-03"),

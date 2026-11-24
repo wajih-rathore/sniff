@@ -50,7 +50,8 @@ def parse(kind: str, raw: str):
 
 
 def parse_date(s: str) -> date | None:
-    s = re.sub(r"(\d)(st|nd|rd|th)\b", r"\1", s)
+    s = re.sub(r"(\d)(st|nd|rd|th)", r"\1 ", s)
+    s = re.sub(r"(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)", " ", s)  # OCR drops spaces: "06Sep2026", "04NoV2026"
     s = re.sub(r"\s+", " ", re.sub(r"\bday of\b", " ", s)).strip()  # "10th day of July, 2025"
     for fmt in DATE_FORMATS:
         try:
