@@ -3,10 +3,12 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]  # repo root
-DATA_DIR = Path(os.environ.get("SNIFF_DATA", ROOT / ".sniff"))
+# The desktop app sets SNIFF_HOME (%LOCALAPPDATA%\Sniff): data, models and secrets then live under it.
+HOME = os.environ.get("SNIFF_HOME")
+DATA_DIR = Path(os.environ.get("SNIFF_DATA", Path(HOME, "data") if HOME else ROOT / ".sniff"))
 DB_PATH = Path(os.environ.get("SNIFF_DB", DATA_DIR / "sniff.db"))
-MODELS_DIR = Path(os.environ.get("SNIFF_MODELS", ROOT / "models"))
-SECRETS_DIR = ROOT / "backend" / ".secrets"
+MODELS_DIR = Path(os.environ.get("SNIFF_MODELS", Path(HOME, "models") if HOME else ROOT / "models"))
+SECRETS_DIR = Path(HOME, "secrets") if HOME else ROOT / "backend" / ".secrets"
 
 # any OpenAI-compatible server: llama.cpp llama-server (default), Ollama, or the team server
 LLM_URL = os.environ.get("SNIFF_LLM_URL", "http://127.0.0.1:8080/v1")
