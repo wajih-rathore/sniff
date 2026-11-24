@@ -3,7 +3,8 @@ import { api } from '../api'
 import { Async, Tag, label, useFetch, type Go, type Nav } from '../ui'
 import DocumentReview from './Document'
 
-const TYPES = ['id_card', 'utility_bill', 'certificate', 'receipt', 'other']
+const TYPES = ['id_card', 'passport', 'utility_bill', 'bank_statement', 'receipt', 'warranty_card', 'certificate', 'transcript',
+  'fee_voucher', 'offer_letter', 'insurance_policy', 'tenancy_agreement', 'other']
 
 export default function Library({ open, go }: { open: Nav['doc']; go: Go }) {
   const [type, setType] = useState('')
