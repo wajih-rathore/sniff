@@ -107,10 +107,12 @@ def wait_healthy(port: int, timeout: float = 180) -> None:
 
 
 def start_servers(a) -> list[subprocess.Popen]:
+    if find_servers({"chat": a.chat_port, "embedding": a.embed_port}):  # else we would measure the old servers
+        raise SystemExit(f"a llama-server already uses port {a.chat_port} or {a.embed_port}: stop it, or leave out --start-servers")
     exe = str(ROOT / "models" / "llama" / ("llama-server.exe" if os.name == "nt" else "llama-server"))
     t = ["-t", str(a.threads), "-tb", str(a.threads)] if a.threads else []
     cmds = [
-        [exe, "-m", a.chat_model, "--port", str(a.chat_port), "--jinja", "--reasoning-budget", "0", "-c", "8192", *t],
+        [exe, "-m", a.chat_model, "--port", str(a.chat_port), "--jinja", "--reasoning-budget", "0", "-c", "8192", *t, *a.chat_args.split()],
         [exe, "-m", a.embed_model, "--embedding", "--port", str(a.embed_port), "-c", "2048", "-b", "2048", "-ub", "2048", *t],
     ]
     procs = [subprocess.Popen(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) for c in cmds]
@@ -182,6 +184,9 @@ def pct(xs: list[float], p: float) -> int:
 
 
 def main(a) -> None:
+    # the back end must talk to the servers we measure (read by sniff.config on first import, below)
+    os.environ["SNIFF_LLM_URL"] = f"http://127.0.0.1:{a.chat_port}/v1"
+    os.environ["SNIFF_EMBED_URL"] = f"http://127.0.0.1:{a.embed_port}/v1"
     servers = start_servers(a) if a.start_servers else []
     try:
         procs = {"backend (python)": psutil.Process()}
@@ -259,4 +264,5 @@ if __name__ == "__main__":
     ap.add_argument("--embed-model", default=str(ROOT / "models" / "all-minilm-l6-v2.gguf"))
     ap.add_argument("--chat-port", type=int, default=8080)
     ap.add_argument("--embed-port", type=int, default=8081)
+    ap.add_argument("--chat-args", default="", help="with --start-servers: extra chat llama-server flags, e.g. \"--cache-ram 512 -np 1\"")
     main(ap.parse_args())

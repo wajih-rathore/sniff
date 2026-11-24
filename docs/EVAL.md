@@ -157,6 +157,17 @@ planned.
 To attach to servers that are already running instead (as in the smoke test), leave out `--start-servers`;
 the thread count is then whatever the servers were started with.
 
+**Watch the chat server's memory.** In two smoke tests (attached to the shared servers, which other agents were
+also using) the chat server's working set was 3.4 GB and then 4.4 GB, and all Sniff processes together peaked at
+3.6 GB and 4.7 GB. Qwen3-1.7B's weights are only 1.4 GB. We have not confirmed the cause. One likely part:
+llama-server keeps a prompt cache in RAM of up to 8 GiB by default (`--cache-ram 8192`), on top of the KV cache
+for `-c 8192` across several slots. So run the benchmark twice and report both:
+```
+uv run --with psutil python ../scripts/benchmark.py --start-servers --threads 4 --n 20 --m 20
+uv run --with psutil python ../scripts/benchmark.py --start-servers --threads 4 --n 20 --m 20 --chat-args "--cache-ram 512 -np 1"
+```
+If the second stays inside 4.5 GB at a similar latency, those flags belong in `scripts/dev.ps1` and the installer.
+
 ## Run order for the final evaluation
 
 Run from `backend/` with the chat server (8080) and embedding server (8081) up, as `scripts/dev.ps1` starts them.
