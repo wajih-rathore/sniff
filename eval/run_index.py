@@ -1,33 +1,38 @@
-"""Step 1: index the synthetic test split into the evaluation database, timing each file.
-Needs llama-server running. Takes a while on a CPU (two LLM calls per document)."""
-import json
-import time
+"""Step 1: index a test set into its own evaluation database through the real pipeline, timing each file.
+Needs both llama-server processes running. The full test split takes about an hour on a laptop CPU.
 
-from common import EVAL_DB, RESULTS, SYNTH
+    uv run python ../eval/run_index.py                  # synthetic test split -> .sniff/eval.db
+    uv run python ../eval/run_index.py --set hard       # data/hard  -> .sniff/eval-hard.db
+    uv run python ../eval/run_index.py --set real       # data/real  -> .sniff/eval-real.db
+    uv run python ../eval/run_index.py --limit 10       # a fixed subset, stratified by type (quick check)
+
+Resumable: files already indexed are skipped, so it can be stopped and started again. --fresh starts over."""
+import argparse
+
+from common import RESULTS, db_path, index, labels, path_of, stratified
 
 from sniff import db
-from sniff.ingest import scan
 
 
-def main():
-    EVAL_DB.unlink(missing_ok=True)
-    conn = db.connect()
-    times = {}
-    folder = SYNTH / "test"
-    files = list(scan.iter_files(folder))
-    for i, p in enumerate(files, 1):
-        t = time.perf_counter()
-        try:
-            scan.index_file(conn, p, scan.sha256(p))
-        except Exception as e:
-            conn.rollback()
-            scan._mark_error(conn, p, scan.sha256(p), p.stat(), e)
-        conn.commit()
-        times[str(p)] = (time.perf_counter() - t) * 1000
-        print(f"[{i}/{len(files)}] {p.name} {times[str(p)]:.0f} ms", flush=True)
-    RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / "index_times.json").write_text(json.dumps(times, indent=2), encoding="utf-8")
+def times_path(split: str):
+    return RESULTS / ("index_times.json" if split == "test" else f"index_times_{split}.json")
+
+
+def main(split: str, limit: int | None, fresh: bool):
+    path, times = db_path(split), times_path(split)
+    if fresh:
+        path.unlink(missing_ok=True)
+        times.unlink(missing_ok=True)
+    gold = stratified(labels(split), limit)
+    if not gold:
+        raise SystemExit(f"no labels for '{split}': build the set first (see docs/EVAL.md)")
+    index(db.connect(path), [path_of(g) for g in gold], times)
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--set", default="test", choices=["test", "hard", "real", "own"])
+    ap.add_argument("--limit", type=int)
+    ap.add_argument("--fresh", action="store_true")
+    a = ap.parse_args()
+    main(a.set, a.limit, a.fresh)

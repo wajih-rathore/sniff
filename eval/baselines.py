@@ -74,5 +74,15 @@ def extract_regex(doc_type: str, text: str) -> dict:
     return {}
 
 
+FACTS_WORDS = re.compile(r"\b(how much|how many|total|sum|spen[dt]|pa(y|id)|cost|highest|lowest|largest|smallest|cheapest|"
+                         r"most expensive|average|count|when|expir\w*|due|next|earliest|latest|oldest|newest|tax|"
+                         r"balance|arrears|outstanding|duplicates?)\b", re.I)
+
+
+def route_keywords(question: str) -> str:
+    """Router baseline: questions with calculation or date words go to the facts table, the rest to search."""
+    return "facts" if FACTS_WORDS.search(question) else "search"
+
+
 def today() -> date:
     return date.today()

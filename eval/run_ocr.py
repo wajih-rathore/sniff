@@ -1,9 +1,14 @@
-"""OCR: character error rate (CER) of RapidOCR vs Tesseract on scanned PDFs and photos with known text."""
+"""OCR: character error rate (CER) of RapidOCR vs Tesseract on scanned PDFs and photos with known text.
+
+    uv run python ../eval/run_ocr.py                 # synthetic test scans and photos -> ocr.json
+    uv run python ../eval/run_ocr.py --set hard      # phone photos, low-res scans, handwriting -> ocr_hard.json
+    uv run python ../eval/run_ocr.py --limit 10      # quick check"""
+import argparse
 import shutil
 from pathlib import Path
 
 import pymupdf
-from common import SYNTH, Timer, labels, latency, norm, save
+from common import Timer, labels, latency, norm, path_of, save, stratified
 
 from sniff.ingest import ocr
 
@@ -39,19 +44,19 @@ def cer(pred: str, gold: str) -> float:
     return prev[-1] / max(len(b), 1)
 
 
-def main():
-    items = [l for l in labels("test") if l["format"] in ("image", "pdf_scan")]
+def main(split: str, limit: int | None):
+    items = stratified([l for l in labels(split) if l.get("format") in ("image", "pdf_scan") and l.get("text")], limit)
     rapid, tess, ms, failures = [], [], [], []
     for l in items:
-        data = image_bytes(SYNTH / l["file"])
+        data = image_bytes(path_of(l))
         with Timer() as t:
             text = ocr.image_bytes(data)
         ms.append(t.ms)
         rapid.append(cer(text, l["text"]))
         tess.append(cer(tesseract(data), l["text"]))
         if rapid[-1] > 0.1:
-            failures.append({"file": l["file"], "cer": round(rapid[-1], 3), "pred": text[:300], "gold": l["text"][:300]})
-    save("ocr", {
+            failures.append({"file": l["file"], "variant": l.get("variant"), "effects": l.get("effects"), "cer": round(rapid[-1], 3), "pred": text[:300], "gold": l["text"][:300]})
+    save("ocr" if split == "test" else f"ocr_{split}", {
         "n": len(items),
         "rows": [
             {"system": "RapidOCR (PaddleOCR models)", "CER": sum(rapid) / len(rapid)},
@@ -62,4 +67,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--set", default="test", choices=["test", "hard"])
+    ap.add_argument("--limit", type=int)
+    a = ap.parse_args()
+    main(a.set, a.limit)
