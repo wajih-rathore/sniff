@@ -49,6 +49,28 @@ def test_month_and_date_range_filters(docs, monkeypatch):
     assert a.answer.startswith("12,999 in total, from 2 documents")
 
 
+def test_names_from_the_question(docs, monkeypatch):
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
+                                     filters=Filters(provider="electricity", year=2026)))  # the bill says "Electric"
+    assert a.answer.startswith("5,500.50 in total, from 2 documents")
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="amount_due", op="list",
+                                     filters=Filters(holder="gas")))  # bills name no person: holder means the company
+    assert a.answer == "700 (gas.pdf)."
+
+
+def test_amount_due_of_one_bill_is_not_switched(docs, monkeypatch):
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="amount_due", op="sum",
+                                     filters=Filters(provider="electric", month="January 2026")))
+    assert a.answer == "3,000 in total, from 1 documents."  # one bill per account: nothing can be counted twice
+
+
+def test_router_expiry_on_a_type_without_one_means_every_type(monkeypatch):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: Route(route="facts", doc_type="utility_bill", field="expiry_date", op="list"))
+    r = ask.route("What expires between 1 December 2026 and 31 January 2027?")
+    assert r.doc_type is None and ask.valid(r)
+
+
 def test_next_expiring_skips_expired(docs, monkeypatch):
     a = run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="expiry_date", op="next_expiring"))
     assert a.answer == "id_sara.jpg: expiry date 2026-12-05, in 13 days."

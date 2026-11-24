@@ -125,7 +125,7 @@ def test_outstanding_is_the_latest_unpaid_bill(conn, add_doc, monkeypatch):
     a = run(conn, monkeypatch, doc_type="utility_bill", field="amount_due", op="outstanding")
     assert a.answer.startswith("9,000 outstanding") and [s.name for s in a.counted] == ["nov.pdf"]
     a = run(conn, monkeypatch, doc_type="utility_bill", field="amount_due", op="outstanding", filters=Filters(provider="gas"))
-    assert a.answer == "Nothing outstanding: the latest bills are marked paid."
+    assert a.answer == "0 outstanding: the latest bills are marked paid."
 
 
 # ---------- conflicts ----------

@@ -69,10 +69,13 @@ def route(question: str) -> Route:
     def show(f, spec):
         return f"{f} ({spec.meaning})" if spec.kind in ("money", "status") else f
     fields = "\n".join(f"- {t}: {', '.join(show(f, s) for f, s in specs.items())}" for t, specs in FIELDS.items())
-    return llm.chat_json(
+    r = llm.chat_json(
         [{"role": "system", "content": ROUTER_PROMPT.format(fields=fields)}, {"role": "user", "content": question}],
         Route,
     )
+    if r.field in EXPIRY_FIELDS and r.doc_type and r.field not in FIELDS[r.doc_type]:
+        r.doc_type = None  # an expiry asked of a type that has none: the question is about every type
+    return r
 
 
 def valid(r: Route) -> bool:
@@ -138,11 +141,19 @@ def asked_field(r: Route, doc_type: str) -> str | None:
     return next((f for f in EXPIRY_FIELDS if f in FIELDS[doc_type]), None)
 
 
+def named(want: str, have: str | None) -> bool:
+    """Does a name from the question match a stored name? "electricity" matches "Northern Electric Supply Co." by
+    the first 6 letters of a long word."""
+    want, have = want.lower(), (have or "").lower()
+    return want in have or any(len(w) >= 6 and w[:6] in have for w in want.split())
+
+
 def keep(d: records.Doc, r: Route, today: date) -> bool:
     f = r.filters
-    if f.holder and not any(f.holder.lower() in (d.get(h) or "").lower() for h in HOLDER_FIELDS):
+    people = [h for h in HOLDER_FIELDS if h in FIELDS[d.doc_type]] or NAME_FIELDS  # bills and receipts have no person
+    if f.holder and not any(named(f.holder, d.get(h)) for h in people):
         return False
-    if f.provider and not any(f.provider.lower() in (d.get(n) or "").lower() for n in NAME_FIELDS):
+    if f.provider and not any(named(f.provider, d.get(n)) for n in NAME_FIELDS):
         return False
     if rng := date_range(f, today):
         field = asked_field(r, d.doc_type)
@@ -161,8 +172,9 @@ def answer_from_facts(conn, question: str, r: Route, today: date) -> Answer:
         used, text = _outstanding(res.kept)
     else:
         field = r.field
-        if r.doc_type == "utility_bill" and r.op == "sum" and field == "amount_due":
-            field = "current_charges"  # amount_due repeats last month's unpaid amount, so summing it counts arrears twice
+        accounts = {(d.get("provider"), d.get("account_number")) for d in res.kept}
+        if r.doc_type == "utility_bill" and r.op == "sum" and field == "amount_due" and len(res.kept) > len(accounts):
+            field = "current_charges"  # each amount_due repeats the last bill's unpaid amount: summing them counts it twice
             note = " Counted current charges, not amount due, so unpaid amounts carried from one bill to the next are not counted twice."
         items = [(d, d.facts[f]) for d in res.kept if (f := field if r.doc_type else asked_field(r, d.doc_type)) and f in d.facts]
         used, text = items, ""
@@ -201,7 +213,7 @@ def _outstanding(kept: list[records.Doc]):
     if not latest:
         return [], ""
     if not unpaid:
-        return [(d, d.facts["amount_due"]) for d in latest.values()], "Nothing outstanding: the latest bills are marked paid."
+        return [(d, d.facts["amount_due"]) for d in latest.values()], "0 outstanding: the latest bills are marked paid."
     parts = "; ".join(f"{d.get('provider')} {d.get('billing_month')}: {_show(fr)}" for d, fr in unpaid)
     return unpaid, f"{_fmt(sum(float(fr['value']) for _, fr in unpaid))} outstanding, from the latest unpaid bills ({parts})."
 
