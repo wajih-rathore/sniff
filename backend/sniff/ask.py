@@ -66,7 +66,8 @@ NAME_FIELDS = set(ORG_FIELDS)
 
 ANSWER_PROMPT = """Answer the question using only the numbered passages from the user's documents.
 Cite passages like [1]. Keep it to one or two sentences.
-If the passages do not contain the answer, reply exactly: NOT FOUND"""
+If the passages do not contain the answer, reply exactly: NOT FOUND
+""" + llm.DATA_RULE
 
 
 def route(question: str) -> Route:
@@ -319,7 +320,7 @@ def answer_from_search(conn, question: str, k: int = 5) -> Answer:
     passages = "\n\n".join(f"[{i}] ({h.name}, page {h.page}) {t}" for i, (h, t) in enumerate(zip(hits, texts), 1))
     text = llm.chat([
         {"role": "system", "content": ANSWER_PROMPT},
-        {"role": "user", "content": f"Passages:\n{passages}\n\nQuestion: {question}"},
+        {"role": "user", "content": f"{llm.fenced('PASSAGES', passages)}\n\nQuestion: {question}"},
     ])
     if "NOT FOUND" in text:
         return Answer(question=question, answer="I couldn't find this in your documents.", route="none")
