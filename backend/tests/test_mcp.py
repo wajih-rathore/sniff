@@ -76,3 +76,26 @@ def test_every_call_is_logged(docs, monkeypatch):
     assert [(r["tool"], r["args"], r["ids"]) for r in rows] == [("list_documents", {"doc_type": None}, [bill]),
                                                                ("search_documents", {"query": "power bill", "k": 3}, [bill])]
     assert all(r["time"] for r in rows)
+
+
+@pytest.mark.parametrize("text, masked", [
+    ("Licence KHI-21-725642 valid", "Licence KHI-••-••5642 valid"),  # the licence the ui agent found unmasked
+    ("CNIC 35202-1234567-8", "CNIC •••••-•••••67-8"),
+    ("Account 04112233344556", "Account ••••••••••4556"),
+    ("Due 2026-11-24 or 24/11/2026, 2024-2026, Rs. 1,250,000 and 4320.50", "Due 2026-11-24 or 24/11/2026, 2024-2026, Rs. 1,250,000 and 4320.50"),
+    ("scan_2026-11-24.pdf", "scan_2026-11-24.pdf"),
+])
+def test_mask_ids(text, masked):
+    assert mcp_server.mask_ids(text) == masked
+
+
+def test_unclassified_licence_is_masked_in_every_output(conn, monkeypatch):
+    """A driving licence the classifier called 'other': its number must not leave through any tool."""
+    fid = conn.execute("INSERT INTO files(path, doc_type, status) VALUES ('C:/docs/licence.jpg', 'other', 'indexed')").lastrowid
+    conn.execute("INSERT INTO facts(file_id, field, value, value_type) VALUES (?, 'licence_no', 'KHI-21-725642', 'text')", (fid,))
+    conn.commit()
+    assert "KHI-21-725642" not in str(mcp_server.list_documents())
+    monkeypatch.setattr(mcp_server, "search", lambda conn, q, k: [hit(fid, "other", "Licence No KHI-21-725642")])
+    assert mcp_server.search_documents("licence")[0]["snippet"] == "Licence No KHI-••-••5642"
+    monkeypatch.setattr(mcp_server.ask_mod, "ask", lambda conn, q: Answer(question=q, answer="It is KHI-21-725642.", route="search"))
+    assert mcp_server.ask("licence number?")["answer"] == "It is KHI-••-••5642."

@@ -25,14 +25,20 @@ mcp = MCPServer("sniff")
 WITHHELD = "Withheld: the answer would use documents or fields this agent is not allowed to read."
 
 
+DATE = re.compile(r"\d{4}-\d{2}-\d{2}(?:T\d+)?|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}")
+
+
 def mask_ids(text: str) -> str:
-    """Hide long ID-like numbers (keep the last 4 digits); leave dates alone."""
+    """Hide ID-like tokens (keep the last 4 characters), whatever the document type. A token is a run of letters,
+    digits and hyphens (no underscores). It is an ID if it has 9 or more digits (35202-1234567-8), or 6 or more digits
+    plus a letter (KHI-21-725642). Dates, year ranges and plain amounts (1200, 4,320.50) are left alone."""
     def hide(m):
         s = m.group()
-        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", s) or sum(c.isdigit() for c in s) < 9:
+        digits = sum(c.isdigit() for c in s)
+        if DATE.fullmatch(s) or (digits < 9 and not (digits >= 6 and re.search("[A-Za-z]", s))):
             return s
         return re.sub(r"\d", "•", s[:-4]) + s[-4:]
-    return re.sub(r"\d[\d-]{7,}\d", hide, text)
+    return re.sub(r"(?<![A-Za-z0-9-])[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9](?![A-Za-z0-9-])", hide, text)
 
 
 def allowed(doc_type: str | None, field: str | None = None) -> bool:
