@@ -4,10 +4,10 @@ from ..schemas import DocType
 from . import llm
 
 PROMPT = """Sort the document above into one type:
-- id_card: a national identity card or similar ID card
-- utility_bill: an electricity, gas, water, internet or phone bill
+- id_card: an identity card of any kind, such as a national identity card, driving licence, student card or staff card
+- utility_bill: a bill or statement for electricity, gas, water, internet or phone service, even when it is called an invoice
 - certificate: a degree, diploma, course or award certificate
-- receipt: a purchase receipt or invoice from a shop or website
+- receipt: a receipt or invoice for things bought from a shop or website
 - other: anything else, such as notes, letters, slides or forms
 Reply with JSON only, for example {"doc_type": "receipt"}."""
 
