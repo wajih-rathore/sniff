@@ -4,12 +4,12 @@ from ..schemas import DocType
 from . import llm
 
 PROMPT = """Sort the document above into one type:
-- id_card: a national identity card, driving licence, student or staff card
+- id_card: an identity card of any kind, such as a national identity card, driving licence, student card or staff card
 - passport: a passport
-- utility_bill: an electricity, gas, water, internet or phone bill
+- utility_bill: a bill or statement for electricity, gas, water, internet or phone service, even when it is called an invoice
 - certificate: a degree, diploma, course or award certificate
 - transcript: a transcript or result card with grades and a GPA
-- receipt: a purchase receipt or invoice from a shop or website
+- receipt: a receipt or invoice for things bought from a shop or website
 - warranty_card: a product warranty card
 - bank_statement: a bank account statement
 - offer_letter: a job offer letter

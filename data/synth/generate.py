@@ -17,6 +17,11 @@ Label notes for the evaluators:
   photo, scan or PDF) and conflicts (one CNIC on two cards with different dates). Label rows say `duplicate_of` (the
   original file) and `duplicate_kind` ("exact" or "near"). Gold answers count each document once.
 - A few test records are incomplete on purpose: a field is not printed and its label is null.
+- The eight A4 types (passport, transcript, bank statement, warranty card, offer letter, insurance policy, tenancy
+  agreement, fee voucher) are built after the A3 set with their own random generators, so every A3 file keeps its bytes
+  and path. They add near-duplicates and exact copies, and four planned conflicts: a revised offer letter, a draft and a
+  signed tenancy agreement, a re-issued fee voucher and an extended travel policy. Passport names are printed in capitals
+  on one layout, like the ID cards.
 """
 import argparse
 import calendar
@@ -34,11 +39,11 @@ from PIL import Image, ImageChops, ImageEnhance, ImageFilter
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
-from sniff.schemas import FIELDS as SPEC  # run from backend/ with uv, as the usage line says
+from sniff.schemas import EXPIRY_FIELDS, FIELDS as SPEC  # run from backend/ with uv, as the usage line says
 
 TODAY = date(2026, 11, 22)
 FIELDS = {t: list(f) for t, f in SPEC.items()} | {"other": []}  # the contract: backend/sniff/schemas.py
-MONEY = {f for t in SPEC.values() for f, s in t.items() if s.kind == "money"}
+MONEY = {f for t in SPEC.values() for f, s in t.items() if s.kind in ("money", "gpa")}
 DFMT = ["%d/%m/%Y", "%d %b %Y", "%Y-%m-%d", "%d.%m.%Y"]
 GRAY, WHITE, BLACK = (.45, .45, .45), (1, 1, 1), (0, 0, 0)
 
@@ -942,6 +947,955 @@ def others(rng, keys, fmts):
     return out
 
 
+# ---------------------------------------------------------------- A4 types
+# The eight A4 types, plus a few more ID cards and "other" pages, are built after the A3 set with their own random
+# generators, so every A3 file and label stays exactly as it was. As before, code computes every total and date.
+WOMEN = {"Ayesha Khan", "Sara Khan", "Nusrat Khan", "Zainab Malik"}
+COLORS = [(.1, .25, .5), (.5, .1, .15), (.15, .4, .3), (.3, .2, .5), (.45, .3, .05)]
+
+
+def fields_of(t, **v):
+    """A label row in the contract's field order. A field that is not given is null: it is not printed."""
+    return {f: v.get(f) for f in FIELDS[t]}
+
+
+def iso(d):
+    return d.isoformat() if d else None
+
+
+def a4_spec(t, fmt, f, d, dt, layouts, rng, **meta):
+    return dict(type=t, fmt=fmt, fields=f, d=d, dt=dt, layout=rng.choice(layouts), meta=meta)
+
+
+def label_value(p, rows, x, vx, y, step, size=10, font="Helvetica"):
+    """Rows of 'Label:' and value on one line. Returns the y below the last row."""
+    bold = font.replace("-Roman", "") + "-Bold"
+    for a, b in rows:
+        p.t(x, y, a + ":", font, size, GRAY)
+        p.t(vx, y, b, bold, size)
+        y += step
+    return y
+
+
+# ---- passports
+def passport_no(rng):
+    return "".join(rng.choice("ABCDEFGHJKLMNPRSTUVWXYZ") for _ in range(2)) + digits(rng, 7)
+
+
+def mrz(d):
+    given, _, sur = d["name"].upper().rpartition(" ")
+    return (f"P<EAS{sur}<<{given.replace(' ', '<')}".ljust(44, "<"),
+            f"{d['no']}<0EAS{d['dob']:%y%m%d}0{d['sex']}{d['expiry']:%y%m%d}0".ljust(42, "<") + "00")
+
+
+def pass_a(rng, d):
+    p, f = Page(640, 450), fixed(rng)
+    p.rect(0, 0, 640, 450, fill=(.94, .95, .98))
+    p.rect(0, 0, 640, 56, fill=(.08, .3, .2))
+    p.t(320, 26, "REPUBLIC OF EASTLAND", "Helvetica-Bold", 16, WHITE, "c")
+    p.t(320, 46, "PASSPORT", "Helvetica", 12, WHITE, "c")
+    p.rect(25, 80, 140, 180, fill=(.78, .8, .82))
+    p.circle(95, 140, 30, (.52, .55, .58))
+    p.rect(50, 185, 90, 75, fill=(.52, .55, .58))
+    rows = [[("Type", "P", 190), ("Country Code", "EAS", 290), ("Passport No.", d["no"], 430)],
+            [("Name", d["name"].upper(), 190)],
+            [("Nationality", d["nat"].upper(), 190), ("Sex", d["sex"], 430)],
+            [("Date of Birth", f(d["dob"]), 190), ("Place of Birth", d["pob"].upper(), 430)],
+            [("Date of Issue", f(d["issue"]), 190), ("Date of Expiry", f(d["expiry"]), 430)],
+            [("Issuing Authority", "DIRECTORATE OF IMMIGRATION, LAKESHORE", 190)]]
+    for i, row in enumerate(rows):
+        for a, b, x in row:
+            p.t(x, 84 + i * 44, a, "Helvetica", 8, GRAY)
+            p.t(x, 100 + i * 44, b, "Helvetica-Bold", 12)
+    l1, l2 = mrz(d)
+    p.t(25, 400, l1, "Courier-Bold", 13)
+    p.t(25, 422, l2, "Courier-Bold", 13)
+    return p
+
+
+def pass_b(rng, d):
+    p, f = Page(420, 600), fixed(rng)
+    p.rect(0, 0, 420, 600, fill=(.97, .96, .92))
+    p.t(210, 40, "EASTLAND", "Times-Bold", 22, (.1, .3, .2), "c")
+    p.t(210, 62, "Passport", "Times-Italic", 13, align="c")
+    p.rect(30, 90, 110, 140, fill=(.8, .8, .78))
+    p.circle(85, 140, 25, (.55, .55, .5))
+    nl, il, el = rng.choice([("Full Name", "Issue Date", "Expiry Date"), ("Name", "Date of Issue", "Date of Expiry")])
+    y = 262
+    for a, b in [("Passport Number", d["no"]), (nl, d["name"]), ("Nationality", d["nat"]), ("Date of Birth", f(d["dob"])),
+                 ("Place of Birth", d["pob"]), (il, f(d["issue"])), (el, f(d["expiry"])), ("Booklet No", d["booklet"])]:
+        p.t(30, y, a, "Helvetica", 10, GRAY)
+        p.t(170, y, b, "Helvetica-Bold", 11)
+        y += 24
+    l1, l2 = mrz(d)
+    p.t(20, 540, l1, "Courier-Bold", 9.5)
+    p.t(20, 560, l2, "Courier-Bold", 9.5)
+    return p
+
+
+def passports(rng, rows, people, fmts):
+    out = []
+    for (who, issue, years, *flags), fmt in zip(rows, fmts):
+        expiry = add_months(issue, 12 * years)
+        d = dict(name=who, no=passport_no(rng), nat="Eastlander", sex="F" if who in WOMEN else "M", dob=people[who], issue=issue,
+                 expiry=expiry, pob="Lakeshore City", booklet=f"B{digits(rng, 8)}")
+        f = fields_of("passport", name=who, passport_number=d["no"], nationality="Eastlander", date_of_birth=iso(people[who]),
+                      issue_date=iso(issue), expiry_date=iso(expiry))
+        out.append(a4_spec("passport", fmt, f, d, issue, [pass_a, pass_b], rng, person=who, near="near" in flags))
+    return out
+
+
+TEST_PASSPORTS = [  # (person, issue date, years valid); a renewal is a new passport with a new number
+    ("Ali Raza Khan", D(1996, 6, 1), 5), ("Ali Raza Khan", D(2001, 5, 20), 5), ("Ali Raza Khan", D(2006, 5, 8), 5),
+    ("Ali Raza Khan", D(2011, 4, 26), 5), ("Ali Raza Khan", D(2016, 4, 14), 10), ("Ali Raza Khan", D(2026, 2, 20), 10, "near"),
+    ("Ayesha Khan", D(1999, 8, 14), 5), ("Ayesha Khan", D(2004, 8, 1), 5), ("Ayesha Khan", D(2009, 7, 20), 5),
+    ("Ayesha Khan", D(2014, 7, 11), 5), ("Ayesha Khan", D(2019, 7, 2), 5), ("Ayesha Khan", D(2024, 6, 25), 5),
+    ("Sara Khan", D(2008, 5, 12), 5), ("Sara Khan", D(2013, 5, 2), 5), ("Sara Khan", D(2018, 4, 20), 5), ("Sara Khan", D(2023, 4, 11), 5),
+    ("Hamza Khan", D(2012, 1, 9), 5), ("Hamza Khan", D(2017, 1, 2), 5), ("Hamza Khan", D(2021, 12, 20), 5),
+    ("Nusrat Khan", D(2010, 10, 5), 5), ("Nusrat Khan", D(2015, 9, 28), 5), ("Nusrat Khan", D(2020, 9, 15), 5),
+]
+DEV_PASSPORTS = [("Bilal Ahmed", D(2019, 3, 4), 10), ("Zainab Malik", D(2021, 8, 9), 5), ("Omar Farooq", D(2015, 1, 12), 10),
+                 ("Omar Farooq", D(2025, 1, 5), 10)]
+
+
+# ---- transcripts
+GRADES = [("A", 4.0), ("A-", 3.67), ("B+", 3.33), ("B", 3.0), ("B-", 2.67), ("C+", 2.33), ("C", 2.0)]
+COURSES = {
+    "BS Computer Science": ("CS", ["Programming Fundamentals", "Calculus I", "English Composition", "Object Oriented Programming",
+        "Discrete Structures", "Digital Logic Design", "Data Structures", "Linear Algebra", "Computer Organization", "Database Systems",
+        "Probability and Statistics", "Software Engineering", "Operating Systems", "Design and Analysis of Algorithms", "Technical Writing",
+        "Computer Networks", "Theory of Automata", "Artificial Intelligence", "Machine Learning", "Information Security",
+        "Final Year Project I", "Parallel Computing", "Human Computer Interaction", "Final Year Project II"]),
+    "Master of Business Administration": ("MBA", ["Financial Accounting", "Business Statistics", "Organizational Behavior",
+        "Managerial Economics", "Marketing Management", "Corporate Finance", "Operations Management", "Human Resource Management",
+        "Business Research Methods", "Strategic Management", "Supply Chain Management", "Entrepreneurship"]),
+    "Bachelor of Education": ("EDU", ["Philosophy of Education", "Child Development", "General Methods of Teaching",
+        "Educational Psychology", "Classroom Management", "Teaching of English", "Teaching of Mathematics", "Curriculum Development",
+        "Assessment and Evaluation", "Educational Technology", "Guidance and Counselling", "School Management", "Teaching of Science",
+        "Inclusive Education", "Research in Education", "Comparative Education", "Teaching Practice I", "Lesson Planning",
+        "Early Childhood Education", "Educational Leadership", "Teaching Practice II", "Action Research", "Language Development",
+        "Final Project"]),
+    "BS Software Engineering": ("SE", ["Programming Fundamentals", "Applied Physics", "Functional English", "Object Oriented Programming",
+        "Discrete Structures", "Software Requirements"]),
+    "Master of Fine Arts": ("MFA", ["Studio Practice I", "Art History", "Drawing Techniques", "Studio Practice II", "Art Criticism",
+        "Printmaking"]),
+}
+
+
+def transcripts(rng, rows, fmts):
+    """One transcript after each semester. A later transcript repeats the earlier semesters with the same grades."""
+    out, it = [], iter(fmts)
+    for who, dob, inst, prog, reg, season, year, n, best, flags in rows:
+        pre, titles = COURSES[prog]
+        tno, color, sems, points = f"{pre}-T-{digits(rng, 5)}", rng.choice(COLORS), [], []
+        for k in range(n):
+            term = f"{season} {year}"
+            rows_, pts = [], []
+            for j in range(3):
+                g, gp = rng.choice(GRADES[best:best + 4])
+                rows_.append((f"{pre}-{(k // 2 + 1) * 100 + (k % 2) * 3 + j + 1}", titles[(k * 3 + j) % len(titles)], 3, g))
+                pts.append(gp)
+            points += pts
+            sems.append((term, rows_, round(sum(pts) / 3, 2)))
+            cgpa = round(sum(points) / len(points), 2)
+            issue = D(year + 1, 2, rng.randint(5, 25)) if season == "Fall" else D(year, 7, rng.randint(5, 25))
+            d = dict(name=who, dob=dob, inst=inst, prog=prog, reg=reg, issue=issue, sems=list(sems), cgpa=cgpa, credits=9 * (k + 1),
+                     tno=f"{tno}{k + 1}", color=color)
+            f = fields_of("transcript", student_name=who, registration_number=reg, institution=inst, program=prog, cgpa=cgpa,
+                          issue_date=iso(issue))
+            out.append(a4_spec("transcript", next(it), f, d, issue, [tr_a, tr_b], rng, person=who, term=term, sems=list(sems),
+                               copy=k == n - 1 and "copy" in flags))
+            season, year = ("Spring", year + 1) if season == "Fall" else ("Fall", year)
+    return out
+
+
+def tr_a(rng, d):
+    p, f, c = Page(595, 842), fixed(rng), d["color"]
+    p.t(297, 50, d["inst"].upper(), "Times-Bold", 20, c, "c")
+    p.t(297, 70, "Office of the Controller of Examinations", "Times-Italic", 11, align="c")
+    p.t(297, 98, "TRANSCRIPT OF ACADEMIC RECORD", "Helvetica-Bold", 13, align="c")
+    p.line(40, 108, 555, 108, c, 1.2)
+    for y, (a, b), (e, g) in [(130, ("Student Name", d["name"]), ("Registration No", d["reg"])),
+                              (146, ("Program", d["prog"]), (rng.choice(["Date of Issue", "Issue Date"]), f(d["issue"]))),
+                              (162, ("Date of Birth", f(d["dob"])), ("Transcript No", d["tno"]))]:
+        label_value(p, [(a, b)], 40, 118, y, 0, 9)
+        label_value(p, [(e, g)], 340, 438, y, 0, 9)
+    y = 192
+    p.rect(40, y - 11, 515, 15, fill=(.92, .92, .92))
+    for x, h, al in [(46, "Code", "l"), (110, "Course Title", "l"), (470, "Credit Hours", "c"), (535, "Grade", "c")]:
+        p.t(x, y, h, "Helvetica-Bold", 8.5, align=al)
+    y += 18
+    for term, rows, sgpa in d["sems"]:
+        p.t(46, y, term, "Helvetica-Bold", 9)
+        y += 12
+        for code, title, cr, g in rows:
+            p.t(46, y, code, "Helvetica", 8.5)
+            p.t(110, y, title, "Helvetica", 8.5)
+            p.t(470, y, str(cr), "Helvetica", 8.5, align="c")
+            p.t(535, y, g, "Helvetica", 8.5, align="c")
+            y += 11
+        p.t(555, y, f"Semester GPA: {sgpa:.2f}", "Helvetica-Oblique", 8, GRAY, "r")
+        y += 15
+    p.line(40, y, 555, y, c, .8)
+    cl = rng.choice(["Cumulative GPA (CGPA)", "CGPA", "Cumulative Grade Point Average"])
+    p.t(40, y + 20, cl + ":", "Helvetica-Bold", 11)
+    p.t(60 + stringWidth(cl + ":", "Helvetica-Bold", 11), y + 20, f"{d['cgpa']:.2f} / 4.00", "Helvetica-Bold", 11)
+    p.t(555, y + 20, f"Total Credit Hours: {d['credits']}", "Helvetica", 9, align="r")
+    p.line(400, 810, 555, 810)
+    p.t(477, 822, "Controller of Examinations", "Times-Roman", 9, align="c")
+    return p
+
+
+def tr_b(rng, d):
+    p, f, c = Page(842, 595), fixed(rng), d["color"]
+    p.rect(0, 0, 842, 66, fill=c)
+    p.t(40, 32, d["inst"], "Helvetica-Bold", 20, WHITE)
+    p.t(40, 52, "Academic Transcript", "Helvetica", 11, WHITE)
+    for a, b, x in [("Name of Student", d["name"], 40), ("Reg No", d["reg"], 230), ("Programme", d["prog"], 400),
+                    ("Issued on", f(d["issue"]), 690)]:
+        p.t(x, 90, a, "Helvetica", 8, GRAY)
+        p.t(x, 105, b, "Helvetica-Bold", 10)
+    for i, (term, rows, sgpa) in enumerate(d["sems"]):
+        x, y = 40 + (i // 4) * 400, 135 + (i % 4) * 62
+        p.t(x, y, term, "Helvetica-Bold", 9.5, c)
+        for j, (code, title, cr, g) in enumerate(rows):
+            p.t(x, y + 13 + j * 11, f"{code}  {title}", "Helvetica", 8.5)
+            p.t(x + 330, y + 13 + j * 11, f"{cr}  {g}", "Helvetica", 8.5)
+        p.t(x + 330, y + 50, f"SGPA {sgpa:.2f}", "Helvetica-Oblique", 8, GRAY)
+    p.line(40, 400, 802, 400, c, 1)
+    p.t(40, 428, "CGPA", "Helvetica-Bold", 13)
+    p.t(100, 428, f"{d['cgpa']:.2f}", "Helvetica-Bold", 13)
+    p.t(300, 428, f"Credits completed: {d['credits']}", "Helvetica", 10)
+    p.t(40, 470, "Grades: A = 4.00, A- = 3.67, B+ = 3.33, B = 3.00, B- = 2.67, C+ = 2.33, C = 2.00", "Helvetica", 8, GRAY)
+    p.line(620, 540, 800, 540)
+    p.t(710, 553, "Controller of Examinations", "Helvetica", 9, align="c")
+    return p
+
+
+TEST_TRANSCRIPTS = [  # (student, date of birth, institution, programme, registration no, first season, year, semesters, grade level, flags)
+    ("Sara Khan", D(2003, 3, 21), "Lakeshore University", "BS Computer Science", "2021-LU-CS-117", "Fall", 2021, 8, 0, ("copy",)),
+    ("Ali Raza Khan", D(1978, 5, 14), "Northfield College", "Master of Business Administration", "2006-NC-MBA-058", "Fall", 2006, 4, 2, ()),
+    ("Ayesha Khan", D(1982, 9, 3), "Northfield College", "Bachelor of Education", "2000-NC-EDU-213", "Fall", 2000, 8, 1, ()),
+    ("Hamza Khan", D(2007, 11, 3), "Northfield College", "BS Software Engineering", "2025-NC-SE-089", "Fall", 2025, 2, 2, ()),
+]
+DEV_TRANSCRIPTS = [
+    ("Zainab Malik", D(1999, 12, 9), "Lakeshore University", "Master of Fine Arts", "2024-LU-FA-031", "Fall", 2024, 2, 1, ()),
+    ("Bilal Ahmed", D(1985, 2, 11), "Lakeshore University", "Master of Business Administration", "2024-LU-MBA-077", "Fall", 2024, 2, 2, ()),
+]
+
+
+# ---- bank statements
+BANKS = {"Crescent Bank Limited": ((.1, .25, .45), "CRES", "Garden Town Branch (0412)"),
+         "Lakeshore Commercial Bank Ltd": ((.45, .1, .2), "LCBK", "Mall Road Branch (0127)"),
+         "Unity Bank Limited": ((.05, .4, .35), "UNTY", "University Road Branch (0233)"),
+         "Orchard Bank Ltd": ((.3, .2, .5), "ORCH", "Block C Branch (0310)")}
+DEBITS = ["ATM cash withdrawal", "POS purchase - FreshBasket Grocers", "Bill payment - Northern Electric Supply Co.",
+          "Bill payment - Metro Gas Ltd", "Mobile top-up", "Card payment - CityFuel Station", "Online transfer to Nusrat Khan",
+          "POS purchase - Urban Threads", "Bill payment - FastLink Internet", "Card payment - Green Leaf Pharmacy"]
+
+
+def month_starts(start, end):
+    m = start
+    while m <= end:
+        yield m
+        m = add_months(m, 1)
+
+
+def statements(rng, rows, fmts, cust_addr):
+    out, it = [], iter(fmts)
+    for who, bank, step, first, n, opening, pays, flags in rows:
+        color, short, branch = BANKS[bank]
+        acct = f"{digits(rng, 4)}-{digits(rng, 8)}-{digits(rng, 2)}"  # 14 digits: 13 would read as a CNIC
+        iban = f"EA{rng.randint(10, 99)}{short}{acct.replace('-', '').rjust(16, '0')}"
+        bal = opening
+        for k in range(n):
+            start = add_months(first, k * step)
+            end = add_months(start, step) - timedelta(days=1)
+            txns = []
+            for m in month_starts(start, end):
+                amt, payer = next((a, p) for since, a, p in pays if since <= m)
+                txns.append((m, f"Salary credit - {payer}", 0, float(amt)))  # on the 1st, so no debit comes before it
+                if rng.random() < .3:
+                    txns.append((m + timedelta(days=rng.randint(10, 26)), "Profit on savings", 0, round(rng.uniform(800, 3500), 2)))
+                for _ in range(rng.randint(3, 6)):
+                    txns.append((m + timedelta(days=rng.randint(1, 27)), rng.choice(DEBITS), float(round(amt * rng.uniform(.02, .12))), 0))
+            txns.sort(key=lambda x: x[0])
+            rows_, run = [], bal
+            for dt, desc, db, cr in txns:
+                run = round(run - db + cr, 2)
+                rows_.append((dt, desc, db, cr, run))
+            credits, debits = round(sum(x[3] for x in txns), 2), round(sum(x[2] for x in txns), 2)
+            close = round(bal + credits - debits, 2)
+            assert close == run and min(r[4] for r in rows_) > 0, (who, start)
+            d = dict(bank=bank, color=color, branch=branch, acct=acct, iban=iban, cust=who, addr=cust_addr, start=start, end=end,
+                     sdate=end + timedelta(days=rng.randint(1, 4)), open=bal, cr=credits, db=debits, close=close, rows=rows_)
+            f = fields_of("bank_statement", bank=bank, account_number=acct, period_start=iso(start), period_end=iso(end),
+                          opening_balance=bal, total_credits=credits, total_debits=debits, closing_balance=close)
+            out.append(a4_spec("bank_statement", next(it), f, d, end, [bank_a, bank_b], rng, person=who, bank=bank, iban=iban,
+                               near=(k, "near") in flags, copy=(k, "copy") in flags))
+            bal = close
+    return out
+
+
+def amt(a):
+    return f"{a:,.2f}"
+
+
+def bank_table(p, d, f, y, x_amt=(395, 470, 550)):
+    p.rect(40, y - 11, 515, 15, fill=(.9, .9, .9))
+    for x, h, al in [(44, "Date", "l"), (112, "Description", "l"), (x_amt[0], "Debit", "r"), (x_amt[1], "Credit", "r"), (x_amt[2], "Balance", "r")]:
+        p.t(x, y, h, "Helvetica-Bold", 8.5, align=al)
+    y += 16
+    p.t(44, y, f(d["start"]), "Helvetica", 8.5)
+    p.t(112, y, "Balance brought forward", "Helvetica", 8.5)
+    p.t(x_amt[2], y, amt(d["open"]), "Helvetica", 8.5, align="r")
+    for dt, desc, db, cr, run in d["rows"]:
+        y += 13
+        p.t(44, y, f(dt), "Helvetica", 8.5)
+        p.t(112, y, desc, "Helvetica", 8.5)
+        if db:
+            p.t(x_amt[0], y, amt(db), "Helvetica", 8.5, align="r")
+        if cr:
+            p.t(x_amt[1], y, amt(cr), "Helvetica", 8.5, align="r")
+        p.t(x_amt[2], y, amt(run), "Helvetica", 8.5, align="r")
+    return y + 13
+
+
+def bank_a(rng, d):
+    p, f, c = Page(595, 842), fixed(rng), d["color"]
+    p.rect(0, 0, 595, 66, fill=c)
+    p.t(40, 32, d["bank"], "Helvetica-Bold", 19, WHITE)
+    p.t(40, 52, "Account Statement", "Helvetica", 11, WHITE)
+    p.t(40, 92, d["cust"], "Helvetica-Bold", 11)
+    p.t(40, 107, d["addr"], "Helvetica", 8.5)
+    label_value(p, [(rng.choice(["Account Number", "Account No."]), d["acct"]), ("IBAN", d["iban"]), ("Branch", d["branch"]),
+                    ("Statement Period", f"{f(d['start'])} to {f(d['end'])}"), ("Statement Date", f(d["sdate"]))], 300, 388, 132, 14, 8.5)
+    ol, cl = rng.choice([("Opening Balance", "Closing Balance"), ("Balance B/F", "Balance C/F")])
+    crl, dbl = rng.choice([("Total Credits", "Total Debits"), ("Total Deposits", "Total Withdrawals")])
+    p.rect(40, 214, 515, 46, stroke=c)
+    for i, (a, v) in enumerate([(ol, d["open"]), (crl, d["cr"]), (dbl, d["db"]), (cl, d["close"])]):
+        x, y = (52, 230 + (i // 2) * 20) if i % 2 == 0 else (310, 230 + (i // 2) * 20)
+        p.t(x, y, a + ":", "Helvetica", 9.5, GRAY)
+        p.t(x + 235, y, amt(v), "Helvetica-Bold", 9.5, align="r")
+    y = bank_table(p, d, f, 290)
+    p.t(40, y + 20, "This is a computer generated statement and needs no signature.", "Helvetica-Oblique", 8, GRAY)
+    return p
+
+
+def bank_b(rng, d):
+    p, f, c = Page(595, 842), fixed(rng), d["color"]
+    p.t(40, 50, d["bank"].upper(), "Times-Bold", 17, c)
+    p.t(40, 67, d["branch"], "Times-Roman", 10)
+    p.t(555, 50, "e-Statement", "Helvetica-Oblique", 11, GRAY, "r")
+    p.line(40, 78, 555, 78, c, 1.2)
+    label_value(p, [("Customer", d["cust"]), ("Account No.", d["acct"]), ("IBAN", d["iban"]), ("Period From", f(d["start"])),
+                    ("Period To", f(d["end"]))], 40, 140, 100, 15, 9)
+    y = bank_table(p, d, f, 190)
+    crl, dbl = rng.choice([("Total Credits", "Total Debits"), ("Total Deposits", "Total Withdrawals")])
+    for a, v in [("Opening Balance", d["open"]), (crl, d["cr"]), (dbl, d["db"]), ("Closing Balance", d["close"])]:
+        y += 15
+        p.t(330, y, a, "Helvetica-Bold", 9)
+        p.t(550, y, amt(v), "Helvetica-Bold", 9, align="r")
+    p.t(40, y + 30, "Please report any error in this statement within 15 days.", "Helvetica", 8, GRAY)
+    return p
+
+
+TEST_ACCOUNTS = [  # (holder, bank, months per statement, first period start, statements, opening balance, [(from, salary, payer)], flags)
+    ("Ali Raza Khan", "Crescent Bank Limited", 1, D(2026, 1, 1), 10, 412500.0, [(D(2024, 1, 8), 285000, "Harbor Logistics Pvt Ltd")],
+     {(7, "near")}),
+    ("Ayesha Khan", "Lakeshore Commercial Bank Ltd", 3, D(2025, 1, 1), 7, 96350.0,
+     [(D(2025, 4, 1), 120000, "Brightpath School"), (D(2020, 1, 1), 95000, "Brightpath School")], set()),
+    ("Sara Khan", "Unity Bank Limited", 1, D(2026, 6, 1), 5, 18200.0,
+     [(D(2026, 10, 1), 140000, "Cedarline Analytics"), (D(2025, 8, 18), 95000, "Brightwave Systems")], {(3, "copy")}),
+]
+DEV_ACCOUNTS = [("Bilal Ahmed", "Orchard Bank Ltd", 1, D(2025, 1, 1), 4, 54000.0, [(D(2020, 1, 1), 160000, "Cedar Books")], set())]
+
+
+# ---- warranty cards
+def wc_a(rng, d):
+    p, f, c = Page(520, 330), fixed(rng), d["color"]
+    p.rect(0, 0, 520, 330, fill=(.98, .98, .96))
+    p.rect(0, 0, 520, 56, fill=c)
+    p.t(24, 36, d["brand"].upper(), "Helvetica-Bold", 22, WHITE)
+    p.t(496, 36, "WARRANTY CARD", "Helvetica-Bold", 12, WHITE, "r")
+    pl, sl, wl = rng.choice([("Product", "Serial No.", "Warranty valid until"), ("Product Name", "Serial Number", "Valid Till"),
+                             ("Item", "S/N", "Warranty expires")])
+    rows = [(pl, d["product"]), ("Model No.", d["model"])] + ([(sl, d["serial"])] if d["serial"] else []) + [
+        ("Date of Purchase", f(d["purchase"])), ("Warranty Period", f"{d['years']} year{'s' if d['years'] > 1 else ''}"),
+        (wl, f(d["until"])), ("Dealer", d["dealer"]), ("Customer Name", d["cust"])]
+    label_value(p, rows, 24, 190, 82, 26)
+    p.t(24, 318, "Keep this card with your purchase receipt.", "Helvetica-Oblique", 8, GRAY)
+    return p
+
+
+def wc_b(rng, d):
+    p, f, c = Page(420, 595), fixed(rng), d["color"]
+    p.rect(20, 20, 380, 555, stroke=c, lw=2)
+    p.t(210, 64, d["brand"], "Times-Bold", 26, c, "c")
+    p.t(210, 92, "WARRANTY CERTIFICATE", "Helvetica-Bold", 13, align="c")
+    p.t(210, 110, f"Covered against manufacturing defects for {d['years']} year{'s' if d['years'] > 1 else ''}.", "Helvetica", 8.5, GRAY, "c")
+    cells = [(rng.choice(["Product", "Appliance"]), d["product"]), ("Model", d["model"]), ("Serial Number", d["serial"] or ""),
+             ("Purchase Date", f(d["purchase"])), ("Valid until", f(d["until"])), ("Dealer", d["dealer"])]
+    for i, (a, b) in enumerate(cells):
+        x, y = 40 + (i % 2) * 180, 136 + (i // 2) * 62
+        p.rect(x, y, 170, 52, stroke=(.7, .7, .7))
+        p.t(x + 8, y + 16, a, "Helvetica", 8, GRAY)
+        if b:
+            p.t(x + 8, y + 37, b, "Helvetica-Bold", 10)
+    p.t(40, 345, "Customer Name: " + d["cust"], "Helvetica", 10)
+    for i, ln in enumerate(["The warranty covers parts and labour for faults in normal home use.",
+                            "It does not cover damage from misuse, power surges or unauthorised repair.",
+                            "Show this certificate and the purchase invoice when you ask for service."]):
+        p.t(40, 380 + i * 14, ln, "Helvetica", 8, GRAY)
+    return p
+
+
+def warranty_cards(rng, rows, fmts):
+    out = []
+    for (who, brand, product, short, model, purchase, years, dealer, *flags), fmt in zip(rows, fmts):
+        until = add_months(purchase, 12 * years)
+        serial = None if "no_serial" in flags else f"{model.split('-')[0]}{digits(rng, 2)}{rng.choice('ABCDEFGHJK')}{digits(rng, 7)}"
+        d = dict(brand=brand, product=product, model=model, serial=serial, purchase=purchase, until=until, years=years, dealer=dealer,
+                 cust=who, color=rng.choice(COLORS))
+        f = fields_of("warranty_card", product=product, brand=brand, serial_number=serial, purchase_date=iso(purchase), warranty_until=iso(until))
+        out.append(a4_spec("warranty_card", fmt, f, d, purchase, [wc_a, wc_b], rng, person=who, brand=brand, short=short,
+                           near="near" in flags))
+    return out
+
+
+G, CE, ON = "Galaxy Home Store", "City Electronics", "Online order"
+TEST_WARRANTY = [  # (buyer, brand, product, short name, model, purchase date, years, dealer, flags)
+    ("Ali Raza Khan", "Kelvon", "Microwave Oven 30L", "microwave", "KV-30MG", D(2025, 1, 12), 2, G),
+    ("Ayesha Khan", "Sunwave", "Washing Machine 8kg", "washing machine", "SW-W80", D(2021, 6, 5), 5, G),
+    ("Ali Raza Khan", "Orbitec", "LED TV 43in", "TV", "OR-43U", D(2024, 12, 1), 2, CE),
+    ("Ayesha Khan", "Homestar", "Ceiling Fan 56in", "ceiling fan", "HS-CF56", D(2020, 4, 18), 5, G),
+    ("Nusrat Khan", "Homestar", "Room Heater", "room heater", "HS-RH2", D(2023, 11, 25), 3, G),
+    ("Ali Raza Khan", "Voltix", "UPS 1000VA", "UPS", "VX-1000", D(2025, 9, 10), 2, CE),
+    ("Ali Raza Khan", "Voltix", "Solar Inverter 3kW", "solar inverter", "VX-SI3", D(2024, 3, 2), 10, CE),
+    ("Ayesha Khan", "Nordik", "Deep Freezer 12cft", "deep freezer", "NK-DF12", D(2022, 7, 20), 10, G, "near"),
+    ("Nusrat Khan", "Pearl", "Sewing Machine", "sewing machine", "PL-SM5", D(2019, 2, 14), 3, G),
+    ("Sara Khan", "Zenkai", "Smart Watch", "smart watch", "ZK-W2", D(2025, 12, 26), 1, ON),
+    ("Hamza Khan", "Boomix", "Bluetooth Speaker", "bluetooth speaker", "BX-S10", D(2024, 8, 8), 1, ON),
+    ("Ayesha Khan", "Brightline", "Vacuum Cleaner", "vacuum cleaner", "BL-VC9", D(2023, 5, 30), 2, G),
+    ("Ayesha Khan", "Brewsy", "Electric Kettle", "kettle", "BW-EK1", D(2026, 2, 11), 1, G),
+    ("Sara Khan", "Lumio", "Tablet 10in", "tablet", "LM-T10", D(2026, 1, 20), 1, CE),
+    ("Ali Raza Khan", "Purexa", "Air Purifier", "air purifier", "PX-AP3", D(2025, 3, 15), 2, G),
+    ("Ayesha Khan", "Mixora", "Blender 1.5L", "blender", "MX-BL15", D(2022, 10, 1), 2, G),
+    ("Ali Raza Khan", "Heatwell", "Gas Geyser 35 Gallon", "geyser", "HW-GG35", D(2021, 12, 5), 3, G),
+    ("Nusrat Khan", "Pressa", "Steam Iron", "steam iron", "PS-SI2", D(2026, 6, 30), 2, G, "no_serial"),
+    ("Ali Raza Khan", "Gridsafe", "Voltage Stabilizer 5kVA", "stabilizer", "GS-ST5", D(2023, 1, 9), 3, CE),
+    ("Hamza Khan", "Quanta", "Gaming Console", "gaming console", "QT-GX", D(2025, 11, 28), 1, ON),
+    ("Sara Khan", "Netora", "Wi-Fi Router AX3000", "router", "NT-R3", D(2026, 4, 4), 3, ON),
+    ("Ayesha Khan", "Chillex", "Air Cooler", "air cooler", "CX-AC40", D(2026, 5, 15), 1, G),
+]
+DEV_WARRANTY = [
+    ("Bilal Ahmed", "Kelvon", "Microwave Oven 25L", "microwave", "KV-25MG", D(2025, 2, 3), 1, G),
+    ("Zainab Malik", "Lumio", "Tablet 8in", "tablet", "LM-T8", D(2025, 6, 14), 1, ON),
+    ("Omar Farooq", "Sunwave", "Refrigerator 12cft", "fridge", "SW-R12", D(2025, 4, 22), 10, G),
+    ("Bilal Ahmed", "Voltix", "UPS 1500VA", "UPS", "VX-1500", D(2025, 8, 30), 2, CE),
+]
+
+
+# ---- offer letters
+def offer_letters(rng, rows, fmts, addr):
+    out = []
+    for (who, emp, eaddr, pos, dept, sal, odate, start, *flags), fmt in zip(rows, fmts):
+        basic = round(sal * .6, -2)
+        hra = round(sal * .3, -2)
+        d = dict(emp=emp, eaddr=eaddr, cand=who, caddr=addr, pos=pos, dept=dept, sal=sal, basic=basic, hra=hra, med=sal - basic - hra,
+                 odate=odate, start=start, reply=odate + timedelta(days=rng.randint(7, 14)), ref=f"HR/{odate.year}/{digits(rng, 3)}",
+                 hr=rng.choice(["Rehana Qamar", "Adnan Shafiq", "Mariam Yousuf", "Kashif Nadeem"]), color=rng.choice(COLORS))
+        f = fields_of("offer_letter", employer=emp, candidate_name=who, position=pos, monthly_salary=float(sal), offer_date=iso(odate),
+                      start_date=iso(start))
+        out.append(a4_spec("offer_letter", fmt, f, d, odate, [of_a, of_b], rng, person=who, employer=emp, copy="copy" in flags,
+                           probation="3 months", medical=float(d["med"])))
+    return out
+
+
+def of_a(rng, d):
+    p, f, fm, c = Page(595, 842), fixed(rng), money(rng), d["color"]
+    p.t(40, 56, d["emp"], "Helvetica-Bold", 18, c)
+    p.t(40, 74, d["eaddr"], "Helvetica", 9, GRAY)
+    p.line(40, 84, 555, 84, c, 1)
+    p.t(40, 110, "Ref: " + d["ref"], "Helvetica", 10)
+    p.t(555, 110, "Date: " + f(d["odate"]), "Helvetica", 10, align="r")
+    p.t(40, 140, d["cand"], "Helvetica-Bold", 11)
+    p.t(40, 155, d["caddr"], "Helvetica", 10)
+    p.t(40, 190, "Subject: Offer of Employment", "Helvetica-Bold", 11)
+    p.t(40, 216, f"Dear {d['cand']},", "Helvetica", 11)
+    y = 240
+    for ln in textwrap.wrap(f"We are pleased to offer you the position of {d['pos']} at {d['emp']}. The main terms of the offer "
+                            "are given below. The full terms are in the employment contract you will sign on joining.", 95):
+        p.t(40, y, ln, "Helvetica", 10)
+        y += 15
+    y += 12
+    rows = [("Position", d["pos"]), ("Department", d["dept"]),
+            (rng.choice(["Joining Date", "Date of Joining"]), f(d["start"]) if d["start"] else "to be confirmed"),
+            (rng.choice(["Monthly Gross Salary", "Gross Monthly Salary"]), fm(d["sal"]))]
+    y = label_value(p, rows, 40, 230, y, 18)
+    y = label_value(p, [("Basic Salary", fm(d["basic"])), ("House Rent Allowance", fm(d["hra"])), ("Medical Allowance", fm(d["med"]))],
+                    60, 230, y, 16, 9)
+    y = label_value(p, [("Probation", "3 months"), ("Working Hours", "9:00 am to 5:30 pm, Monday to Friday")], 40, 230, y + 4, 18)
+    for ln in textwrap.wrap("Please sign and return a copy of this letter to accept the offer. This offer lapses if we do not hear "
+                            "from you by the date below.", 95):
+        p.t(40, y + 8, ln, "Helvetica", 10)
+        y += 15
+    label_value(p, [("Reply by", f(d["reply"]))], 40, 230, y + 14, 18)
+    p.t(40, y + 70, "Yours sincerely,", "Helvetica", 10)
+    p.t(40, y + 110, d["hr"], "Helvetica-Bold", 10)
+    p.t(40, y + 124, "Head of Human Resources", "Helvetica", 10)
+    p.t(40, y + 138, "for and on behalf of " + d["emp"], "Helvetica", 10)
+    return p
+
+
+def of_b(rng, d):
+    p, f, fm, c = Page(595, 842), fixed(rng), money(rng), d["color"]
+    p.rect(0, 0, 595, 64, fill=c)
+    p.t(297, 30, d["emp"].upper(), "Helvetica-Bold", 17, WHITE, "c")
+    p.t(297, 50, "Human Resources Department", "Helvetica", 10, WHITE, "c")
+    p.t(40, 100, "OFFER LETTER", "Helvetica-Bold", 15)
+    p.t(555, 100, "Dated: " + f(d["odate"]), "Helvetica", 10, align="r")
+    p.t(40, 130, "To: " + d["cand"], "Helvetica-Bold", 11)
+    p.t(40, 145, d["caddr"], "Helvetica", 10)
+    p.t(40, 178, f"Dear {d['cand'].split()[0]},", "Helvetica", 11)
+    y = 200
+    for ln in textwrap.wrap(f"Following your interview, we are happy to offer you a job with us. Please read the terms below "
+                            "and let us know your decision.", 95):
+        p.t(40, y, ln, "Helvetica", 10)
+        y += 15
+    y += 14
+    rows = [("Candidate Name", d["cand"]), ("Designation", d["pos"]), ("Department", d["dept"]),
+            ("Date of Joining", f(d["start"]) if d["start"] else "to be confirmed"), ("Gross Salary", fm(d["sal"]) + " per month"),
+            ("Basic Salary", fm(d["basic"])), ("Allowance", fm(d["hra"] + d["med"])), ("Probation", "3 months")]
+    for a, b in rows:
+        p.rect(40, y - 13, 515, 20, stroke=(.75, .75, .75))
+        p.t(50, y, a, "Helvetica", 10, GRAY)
+        p.t(230, y, b, "Helvetica-Bold", 10)
+        y += 20
+    p.t(40, y + 20, "Reply by: " + f(d["reply"]), "Helvetica", 10)
+    p.t(40, y + 60, "Regards,", "Helvetica", 10)
+    p.t(40, y + 96, d["hr"], "Helvetica-Bold", 10)
+    p.t(40, y + 110, "Manager, Human Resources", "Helvetica", 10)
+    return p
+
+
+HL, BW = "Harbor Logistics Pvt Ltd", "Brightwave Systems (Pvt) Ltd"
+TEST_OFFERS = [  # (candidate, employer, employer address, position, department, monthly salary, offer date, start date, flags)
+    ("Ali Raza Khan", "Metro Textiles Pvt Ltd", "Industrial Estate, Lakeshore City", "Accounts Officer", "Finance", 18000, D(2001, 1, 10), D(2001, 2, 1)),
+    ("Ali Raza Khan", HL, "Port Road, Lakeshore City", "Assistant Manager Operations", "Operations", 65000, D(2008, 8, 4), D(2008, 9, 1)),
+    ("Ali Raza Khan", "Lakeshore Foods Ltd", "Canal Bank Road, Lakeshore City", "Operations Manager", "Operations", 120000, D(2013, 3, 15), D(2013, 4, 15)),
+    ("Ali Raza Khan", HL, "Port Road, Lakeshore City", "Senior Manager Operations", "Operations", 210000, D(2018, 11, 20), D(2019, 1, 1)),
+    ("Ali Raza Khan", HL, "Port Road, Lakeshore City", "General Manager Operations", "Operations", 285000, D(2023, 12, 1), D(2024, 1, 8)),
+    ("Ali Raza Khan", "Crescent Shipping Ltd", "Harbour Tower, Lakeshore City", "Head of Operations", "Operations", 340000, D(2026, 10, 5),
+     D(2027, 1, 4), "copy"),
+    ("Ayesha Khan", "Brightpath School", "Garden Town, Lakeshore City", "Primary Teacher", "Primary Section", 15000, D(2004, 8, 10), D(2004, 9, 1)),
+    ("Ayesha Khan", "Greenfield Grammar School", "Model Town, Lakeshore City", "Senior Teacher", "English", 45000, D(2012, 7, 20), D(2012, 8, 15)),
+    ("Ayesha Khan", "Brightpath Academy", "Main Boulevard, Lakeshore City", "Part-time English Tutor", "Languages", 30000, D(2019, 1, 5), D(2019, 2, 1)),
+    ("Ayesha Khan", "Northfield College", "College Road, Lakeshore City", "Visiting Lecturer", "Education", 60000, D(2022, 8, 1), D(2022, 9, 5)),
+    ("Ayesha Khan", "Brightpath School", "Garden Town, Lakeshore City", "Head of Primary Section", "Primary Section", 120000, D(2025, 3, 10), D(2025, 4, 1)),
+    ("Sara Khan", "Summit Online Learning", "Online", "Teaching Assistant Intern", "Data Science", 25000, D(2024, 5, 20), D(2024, 6, 10)),
+    ("Sara Khan", "Orchard Software", "Tech Park, Lakeshore City", "Software Intern", "Engineering", 40000, D(2024, 12, 1), D(2025, 1, 6)),
+    ("Sara Khan", BW, "12 Canal Road, Lakeshore City", "Junior Data Analyst", "Analytics", 85000, D(2025, 7, 25), D(2025, 8, 18)),
+    ("Sara Khan", BW, "12 Canal Road, Lakeshore City", "Junior Data Analyst", "Analytics", 95000, D(2025, 8, 4), D(2025, 9, 1)),  # revised offer
+    ("Sara Khan", "Cedarline Analytics", "Tech Park, Lakeshore City", "Data Analyst", "Analytics", 140000, D(2026, 9, 15), D(2026, 10, 1)),
+    ("Hamza Khan", "Brightpath Academy", "Main Boulevard, Lakeshore City", "Typing Tutor (part-time)", "Computer Skills", 12000, D(2024, 6, 1), D(2024, 6, 10)),
+    ("Hamza Khan", "FastLink Internet", "Blue Area, Lakeshore City", "Customer Support Intern", "Customer Care", 22000, D(2025, 6, 2), D(2025, 6, 16)),
+    ("Hamza Khan", "Metro Institute of Technology", "University Road, Lakeshore City", "Lab Assistant (part-time)", "Robotics Lab", 18000,
+     D(2025, 9, 10), D(2025, 10, 1)),
+    ("Hamza Khan", "Orchard Software", "Tech Park, Lakeshore City", "Summer Intern", "Engineering", 20000, D(2026, 5, 28), D(2026, 6, 15)),
+    ("Nusrat Khan", "Lakeshore Garments", "Industrial Estate, Lakeshore City", "Tailoring Supervisor", "Stitching", 6500, D(1998, 3, 1), None),
+    ("Nusrat Khan", "Lifeline Training Center", "Clinic Road, Lakeshore City", "Sewing Instructor", "Vocational Training", 9000, D(2012, 4, 2), D(2012, 5, 1)),
+]
+DEV_OFFERS = [
+    ("Zainab Malik", "Cedar Books", "Mall Avenue, Lakeshore City", "Library Assistant", "Store", 45000, D(2025, 2, 10), D(2025, 3, 1)),
+    ("Bilal Ahmed", "Cedar Books", "Mall Avenue, Lakeshore City", "Store Manager", "Store", 160000, D(2019, 11, 4), D(2020, 1, 1)),
+    ("Bilal Ahmed", "Orchard Software", "Tech Park, Lakeshore City", "Finance Manager", "Finance", 230000, D(2025, 9, 1), D(2025, 10, 1)),
+    ("Omar Farooq", "Metro Institute of Technology", "University Road, Lakeshore City", "Lab Engineer", "Electrical", 150000, D(2025, 1, 2), D(2025, 1, 6)),
+]
+
+
+# ---- insurance policies
+INSURERS = {
+    "health": ("CareFirst Health Insurance Ltd", "Your health, our care", "CF-HL"),
+    "car": ("Highway Motor Insurance Co.", "Motor cover you can count on", "HM-MTR"),
+    "bike": ("Highway Motor Insurance Co.", "Motor cover you can count on", "HM-MCY"),
+    "life": ("Evergreen Life Assurance", "Protecting families since 1972", "EL-LF"),
+    "home": ("SafeNest Home Insurance", "Home and contents cover", "SN-HC"),
+    "travel": ("GlobeGuard Travel Insurance", "Cover wherever you go", "GG-TR"),
+}
+COVER = {"health": "Family Health Plan (in-patient and out-patient)", "car": "Comprehensive private car", "bike": "Comprehensive motorcycle",
+         "life": "Term life, 20 years", "home": "Home contents", "travel": "Single trip travel cover"}
+
+
+def policies(rng, rows, fmts, members):
+    out = []
+    for (kind, who, start, end, premium, insured_sum, *flags), fmt in zip(rows, fmts):
+        insurer, tag, pre = INSURERS[kind]
+        no = flags[0] if flags and flags[0].startswith(pre) else f"{pre}-{start.year}-{digits(rng, 6)}"
+        d = dict(insurer=insurer, tag=tag, no=no, who=who, start=start, end=end, premium=premium, sum=insured_sum, kind=kind,
+                 cover=COVER[kind], issue=start - timedelta(days=rng.randint(2, 12)), color=rng.choice(COLORS),
+                 vehicle={"car": "Sakura Sedan 1.6 (2019), Reg. LEA-19-4521", "bike": "Falcon 125cc (2025), Reg. LEB-25-7310"}.get(kind),
+                 members=members if kind == "health" else None, agent=rng.choice(["Imran Sadiq", "Nadia Rauf", "Direct (online)"]))
+        f = fields_of("insurance_policy", insurer=insurer, policy_number=no, insured_name=who, premium=float(premium),
+                      start_date=iso(start), end_date=iso(end))
+        out.append(a4_spec("insurance_policy", fmt, f, d, start, [ins_a, ins_b], rng, person=who, kind=kind, insurer=insurer,
+                           near="near" in flags, sum_insured=float(insured_sum), vehicle=d["vehicle"]))
+    return out
+
+
+def ins_a(rng, d):
+    p, f, fm, c = Page(595, 842), fixed(rng), money(rng), d["color"]
+    p.rect(0, 0, 595, 76, fill=c)
+    p.t(40, 38, d["insurer"], "Helvetica-Bold", 19, WHITE)
+    p.t(40, 60, d["tag"], "Helvetica-Oblique", 10, WHITE)
+    p.t(40, 112, "POLICY SCHEDULE", "Helvetica-Bold", 15)
+    rows = [("Policy No.", d["no"]), (rng.choice(["Name of Insured", "Policy Holder"]), d["who"]), ("Cover Type", d["cover"]),
+            ("Period of Insurance", f"From {f(d['start'])} To {f(d['end'])}"), ("Sum Insured", fm(d["sum"])),
+            (rng.choice(["Annual Premium", "Total Premium"]), fm(d["premium"])), ("Issue Date", f(d["issue"])), ("Agent", d["agent"])]
+    if d["vehicle"]:
+        rows.insert(3, ("Vehicle", d["vehicle"]))
+    y = label_value(p, rows, 40, 190, 145, 22)
+    if d["members"]:
+        p.t(40, y + 6, "Covered members: " + ", ".join(d["members"]), "Helvetica", 9.5)
+        y += 22
+    p.t(40, y + 20, "Conditions", "Helvetica-Bold", 11)
+    for i, ln in enumerate(["1. This schedule forms part of the policy wording, which explains what is and is not covered.",
+                            "2. Claims must be reported within 30 days of the event, with the original bills and reports.",
+                            "3. The premium is payable in full before the cover starts.",
+                            "4. Cover ends on the date shown unless the policy is renewed."]):
+        p.t(40, y + 40 + i * 15, ln, "Helvetica", 9)
+    return p
+
+
+def ins_b(rng, d):
+    p, f, fm, c = Page(595, 420), fixed(rng), money(rng), d["color"]
+    p.rect(15, 15, 565, 390, stroke=c, lw=2)
+    p.t(297, 50, d["insurer"].upper(), "Helvetica-Bold", 15, c, "c")
+    p.t(297, 72, "CERTIFICATE OF INSURANCE", "Helvetica-Bold", 12, align="c")
+    sl, el = rng.choice([("Start Date", "End Date"), ("Effective Date", "Expiry Date")])
+    cells = [("Policy Number", d["no"]), (rng.choice(["Insured Person", "Policyholder"]), d["who"]), (sl, f(d["start"])),
+             (el, f(d["end"])), ("Premium", fm(d["premium"])), ("Sum Insured", fm(d["sum"]))]
+    for i, (a, b) in enumerate(cells):
+        x, y = 40 + (i % 2) * 265, 100 + (i // 2) * 56
+        p.rect(x, y, 250, 46, stroke=(.75, .75, .75))
+        p.t(x + 8, y + 15, a, "Helvetica", 8, GRAY)
+        p.t(x + 8, y + 35, b, "Helvetica-Bold", 11)
+    p.t(40, 290, "Cover: " + d["cover"], "Helvetica", 9.5)
+    if d["vehicle"]:
+        p.t(40, 306, "Vehicle: " + d["vehicle"], "Helvetica", 9.5)
+    p.t(40, 350, "Keep this certificate with you. It is valid only for the period shown above.", "Helvetica-Oblique", 8.5, GRAY)
+    return p
+
+
+HOUSEHOLD = ["Ali Raza Khan", "Ayesha Khan", "Sara Khan", "Hamza Khan"]
+TEST_POLICIES = [  # (kind, insured, start, end, premium, sum insured, flags)
+    *[("health", "Ali Raza Khan", D(y, 7, 1), D(y + 1, 6, 30), p, 1500000, *(("near",) if y == 2026 else ()))
+      for y, p in [(2022, 62000), (2023, 68500), (2024, 74000), (2025, 81500), (2026, 89000)]],
+    *[("car", "Ali Raza Khan", D(y, 3, 15), D(y + 1, 3, 14), p, s) for y, p, s in
+      [(2021, 52000, 3200000), (2022, 55500, 3400000), (2023, 61000, 3900000), (2024, 66000, 4200000), (2025, 68500, 4300000),
+       (2026, 71000, 4400000)]],
+    ("life", "Ali Raza Khan", D(2015, 1, 1), D(2034, 12, 31), 96000, 10000000),
+    ("life", "Ayesha Khan", D(2018, 5, 1), D(2038, 4, 30), 72000, 6000000),
+    *[("home", "Ali Raza Khan", D(y, 11, 1), D(y + 1, 10, 31), p, 2500000) for y, p in [(2023, 14500), (2024, 15800), (2025, 17200), (2026, 18900)]],
+    ("travel", "Sara Khan", D(2025, 12, 20), D(2026, 1, 10), 6500, 7500000, "GG-TR-2025-406118"),
+    ("travel", "Sara Khan", D(2025, 12, 20), D(2026, 1, 25), 9200, 7500000, "GG-TR-2025-406118"),  # trip extended: same policy, new end date
+    ("travel", "Hamza Khan", D(2026, 12, 10), D(2026, 12, 30), 5800, 7500000),
+    ("bike", "Hamza Khan", D(2025, 9, 1), D(2026, 8, 31), 9800, 420000),
+    ("bike", "Hamza Khan", D(2026, 9, 1), D(2027, 8, 31), 10400, 400000),
+]
+DEV_POLICIES = [
+    ("health", "Bilal Ahmed", D(2025, 2, 1), D(2026, 1, 31), 58000, 1200000),
+    ("car", "Bilal Ahmed", D(2025, 5, 10), D(2026, 5, 9), 47000, 2900000),
+    ("life", "Omar Farooq", D(2010, 3, 1), D(2030, 2, 28), 54000, 4000000),
+    ("travel", "Zainab Malik", D(2025, 7, 2), D(2025, 7, 20), 4900, 5000000),
+]
+
+
+# ---- tenancy agreements
+def tenancies(rng, rows, fmts):
+    out = []
+    for (landlord, tenant, addr, start, months, rent, deposit, *flags), fmt in zip(rows, fmts):
+        end = add_months(start, months) - timedelta(days=1)
+        d = dict(landlord=landlord, tenant=tenant, addr=addr, start=start, end=end, months=months, rent=rent, dep=deposit,
+                 made=start - timedelta(days=rng.randint(5, 20)), draft="draft" in flags, stamp=rng.choice([300, 500, 1200]),
+                 sno=digits(rng, 6), witnesses=rng.sample(["Kamran Yousaf", "Waqas Hameed", "Shazia Perveen", "Naeem Anwar", "Tahir Mehmood"], 2))
+        f = fields_of("tenancy_agreement", landlord=landlord, tenant=tenant, property_address=addr, monthly_rent=float(rent),
+                      security_deposit=float(deposit) if deposit else None, start_date=iso(start), end_date=iso(end))
+        out.append(a4_spec("tenancy_agreement", fmt, f, d, start, [ten_a, ten_b], rng, landlord=landlord, tenant=tenant,
+                           copy="copy" in flags))
+    return out
+
+
+def ten_a(rng, d):
+    p, f, fm = Page(595, 842), fixed(rng), money(rng)
+    p.rect(40, 30, 515, 86, fill=(.9, .95, .88), stroke=(.3, .5, .3))
+    p.t(297, 56, "EASTLAND", "Times-Bold", 14, (.2, .4, .2), "c")
+    p.t(297, 76, f"NON-JUDICIAL STAMP PAPER   Rs. {d['stamp']}", "Times-Roman", 10, align="c")
+    p.t(297, 98, f"Stamp paper No. {d['sno']}", "Courier", 9, GRAY, "c")
+    if d["draft"]:
+        p.t(555, 140, "DRAFT", "Helvetica-Bold", 18, (.7, .2, .2), "r")
+    p.t(297, 150, "TENANCY AGREEMENT", "Times-Bold", 18, align="c")
+    p.t(50, 180, f"This agreement is made on {f(d['made'])} at Lakeshore City between the parties named below.", "Times-Roman", 10.5)
+    rows = [("Landlord", d["landlord"]), ("Tenant", d["tenant"]), ("Property Address", d["addr"]), ("Monthly Rent", fm(d["rent"]))]
+    rows += [("Security Deposit", fm(d["dep"]))] if d["dep"] else []
+    rows += [("Commencement Date", f(d["start"])), ("Expiry Date", f(d["end"]))]
+    y = label_value(p, rows, 50, 195, 210, 20, 10.5, "Times-Roman")
+    clauses = [f"The Tenant shall pay the monthly rent of {fm(d['rent'])} in advance by the 5th day of each month.",
+               (f"The security deposit of {fm(d['dep'])} will be returned at the end of the tenancy, less any unpaid dues."
+                if d["dep"] else "No security deposit is payable under this agreement."),
+               f"The tenancy runs for {d['months']} months, ending on {f(d['end'])}. It may be renewed by mutual consent.",
+               "On renewal the rent will rise by an annual increase of 10 percent.",
+               "Either party may end this agreement by giving one month's notice in writing.",
+               "The Tenant shall pay the electricity, gas and internet bills for the property.",
+               "The Tenant shall not sublet the property or use it for any business."]
+    y += 14
+    for i, cl in enumerate(clauses, 1):
+        for j, ln in enumerate(textwrap.wrap(cl, 92)):
+            p.t(50 if j == 0 else 64, y, (f"{i}. " if j == 0 else "") + ln, "Times-Roman", 10.5)
+            y += 15
+        y += 3
+    y = max(y + 40, 640)
+    for x, who, role in [(50, d["landlord"], "Landlord"), (330, d["tenant"], "Tenant")]:
+        p.line(x, y, x + 200, y)
+        p.t(x, y + 14, f"{role}: {who}", "Times-Roman", 10)
+    p.t(50, y + 60, f"Witness 1: {d['witnesses'][0]}", "Times-Roman", 10)
+    p.t(330, y + 60, f"Witness 2: {d['witnesses'][1]}", "Times-Roman", 10)
+    return p
+
+
+def ten_b(rng, d):
+    p, f, fm = Page(595, 842), fixed(rng), money(rng)
+    p.t(297, 60, "RENT AGREEMENT", "Helvetica-Bold", 20, align="c")
+    if d["draft"]:
+        p.t(297, 84, "DRAFT - NOT SIGNED", "Helvetica-Bold", 12, (.7, .2, .2), "c")
+    rows = [(rng.choice(["Owner", "Lessor"]), d["landlord"]), ("Lessee", d["tenant"]), ("Premises", d["addr"]),
+            ("Rent per month", fm(d["rent"]))] + ([("Deposit", fm(d["dep"]))] if d["dep"] else []) + [
+            ("Start Date", f(d["start"])), ("End Date", f(d["end"])), ("Agreement Date", f(d["made"])), ("Notice period", "one month")]
+    y = 120
+    for a, b in rows:
+        p.rect(50, y - 14, 495, 22, stroke=(.7, .7, .7))
+        p.t(60, y, a, "Helvetica", 10, GRAY)
+        p.t(200, y, b, "Helvetica-Bold", 10)
+        y += 22
+    y += 20
+    for ln in ["Terms", "- Rent is paid in advance by the 5th of every month.", "- Utility bills are paid by the lessee.",
+               "- The deposit is returned when the premises are handed back in good condition.",
+               "- Repairs from normal wear are the owner's responsibility."]:
+        p.t(50, y, ln, "Helvetica-Bold" if ln == "Terms" else "Helvetica", 10)
+        y += 16
+    p.line(50, 700, 250, 700)
+    p.line(345, 700, 545, 700)
+    p.t(50, 714, "Signature of owner", "Helvetica", 9, GRAY)
+    p.t(345, 714, "Signature of lessee", "Helvetica", 9, GRAY)
+    return p
+
+
+H14, FLAT = "House 14, Street 7, Garden Town, Lakeshore City", "Flat 2, Block B, Canal View Apartments, Lakeshore City"
+TEST_TENANCIES = [  # (landlord, tenant, property, start, months, monthly rent, deposit, flags)
+    *[("Tariq Mehmood", "Ali Raza Khan", H14, D(y, 7, 1), 11, r, 2 * r, *(("copy",) if y == 2026 else ()))
+      for y, r in zip(range(2015, 2027), [45000, 49500, 54500, 60000, 66000, 72500, 80000, 88000, 96500, 106000, 116500, 128000])],
+    ("Nusrat Khan", "Faisal Iqbal", FLAT, D(2019, 3, 1), 11, 32000, 64000), ("Nusrat Khan", "Faisal Iqbal", FLAT, D(2020, 3, 1), 11, 35000, 64000),
+    ("Nusrat Khan", "Mehwish Anwar", FLAT, D(2021, 4, 1), 11, 38000, 76000), ("Nusrat Khan", "Mehwish Anwar", FLAT, D(2022, 4, 1), 11, 41500, 76000),
+    ("Nusrat Khan", "Mehwish Anwar", FLAT, D(2023, 4, 1), 11, 45500, 76000),
+    ("Nusrat Khan", "Junaid Akram", FLAT, D(2024, 6, 1), 11, 52000, 104000, "draft"),
+    ("Nusrat Khan", "Junaid Akram", FLAT, D(2024, 6, 1), 12, 52000, 104000),  # the signed copy: 12 months, not 11
+    ("Nusrat Khan", "Danish Rauf", FLAT, D(2025, 7, 1), 11, 58000, 116000), ("Nusrat Khan", "Danish Rauf", FLAT, D(2026, 7, 1), 11, 63500, 116000),
+    ("Rubina Siddiqui", "Sara Khan", "Room 3, 22 University Road, Lakeshore City", D(2022, 9, 1), 10, 18000, None),
+]
+DEV_TENANCIES = [
+    ("Sohail Anjum", "Bilal Ahmed", "Flat 3B, Block C, Orchard Heights, Lakeshore City", D(2024, 3, 1), 11, 70000, 140000),
+    ("Sohail Anjum", "Bilal Ahmed", "Flat 3B, Block C, Orchard Heights, Lakeshore City", D(2025, 3, 1), 11, 77000, 140000),
+    ("Rubina Siddiqui", "Zainab Malik", "Room 1, 22 University Road, Lakeshore City", D(2025, 9, 1), 10, 21000, 21000),
+    ("Omar Farooq", "Tasneem Bakers", "Shop 5, Block C Commercial, Lakeshore City", D(2025, 1, 1), 12, 90000, 270000),
+]
+
+
+# ---- fee vouchers
+FEE_LINES = {"Lakeshore University": [("Tuition Fee", 1.0), ("Lab Fee", .06), ("Library Fee", .02), ("Exam Fee", .04)],
+             "Northfield College": [("Tuition Fee", 1.0), ("Lab Fee", .07), ("Exam Fee", .04), ("Sports Fee", .015)],
+             "Brightpath School": [("Tuition Fee", 1.0), ("Computer Lab", .06), ("Sports Fee", .025)]}
+COLLECT = {"Lakeshore University": "Crescent Bank Limited", "Northfield College": "Unity Bank Limited", "Brightpath School": "Crescent Bank Limited"}
+
+
+def vouchers(rng, rows, fmts):
+    out = []
+    for (who, inst, prog, reg, sem, issue, due, tuition, *flags), fmt in zip(rows, fmts):
+        lines = [(lb, round(tuition * w, -2)) for lb, w in FEE_LINES[inst]]
+        total = float(sum(a for _, a in lines))
+        d = dict(who=who, inst=inst, prog=prog, reg=reg, sem=sem, issue=issue, due=due, lines=lines, total=total,
+                 late=rng.choice([1000, 1500, 2000]), cno=digits(rng, 8), bank=COLLECT[inst], school=inst.endswith("School"))
+        f = fields_of("fee_voucher", student_name=who, registration_number=reg, institution=inst, semester=sem, amount=total,
+                      issue_date=iso(issue), due_date=iso(due))
+        out.append(a4_spec("fee_voucher", fmt, f, d, issue or due, [fv_a, fv_b], rng, person=who, inst=inst, sem=sem,
+                           near="near" in flags, tuition=float(lines[0][1])))
+    return out
+
+
+def fv_a(rng, d):
+    p, f, fm = Page(842, 595), fixed(rng), money(rng)
+    sl, nl = ("Term", "Roll No") if d["school"] else ("Semester", "Registration No")
+    for k, copy in enumerate(["BANK COPY", "INSTITUTION COPY", "STUDENT COPY"]):
+        x = 20 + k * 274
+        p.rect(x, 20, 260, 555, stroke=(.4, .4, .4))
+        p.t(x + 130, 42, d["inst"].upper(), "Helvetica-Bold", 11, align="c")
+        p.t(x + 130, 56, "FEE VOUCHER - " + copy, "Helvetica", 7.5, GRAY, "c")
+        p.t(x + 130, 68, "Payable at any branch of " + d["bank"], "Helvetica", 7, GRAY, "c")
+        rows = [("Challan No", d["cno"])] + ([("Issue Date", f(d["issue"]))] if d["issue"] else []) + [
+            ("Due Date", f(d["due"])), ("Student Name", d["who"]), (nl, d["reg"]), ("Class" if d["school"] else "Program", d["prog"]),
+            (sl, d["sem"])]
+        y = label_value(p, rows, x + 10, x + 92, 92, 15, 8)
+        p.line(x + 10, y - 4, x + 250, y - 4, GRAY)
+        y += 8
+        for lb, a in d["lines"]:
+            p.t(x + 10, y, lb, "Helvetica", 8)
+            p.t(x + 250, y, fm(a), "Helvetica", 8, align="r")
+            y += 13
+        p.line(x + 10, y - 6, x + 250, y - 6, GRAY)
+        p.t(x + 10, y + 6, "Total Payable", "Helvetica-Bold", 9)
+        p.t(x + 250, y + 6, fm(d["total"]), "Helvetica-Bold", 9, align="r")
+        p.t(x + 10, y + 22, "Payable after due date", "Helvetica", 8)
+        p.t(x + 250, y + 22, fm(d["total"] + d["late"]), "Helvetica", 8, align="r")
+        p.t(x + 10, 540, "Cashier's stamp and signature", "Helvetica-Oblique", 7.5, GRAY)
+    return p
+
+
+def fv_b(rng, d):
+    p, f, fm = Page(420, 620), fixed(rng), money(rng)
+    p.rect(0, 0, 420, 60, fill=(.15, .25, .45))
+    p.t(210, 30, d["inst"], "Helvetica-Bold", 16, WHITE, "c")
+    p.t(210, 48, "Fee Voucher", "Helvetica", 10, WHITE, "c")
+    sl = "Term" if d["school"] else rng.choice(["Semester", "Session"])
+    rows = [("Voucher No", d["cno"]), ("Name of Student", d["who"]), ("Roll No" if d["school"] else "Reg No", d["reg"]),
+            ("Class" if d["school"] else "Program", d["prog"]), (sl, d["sem"])] + (
+        [("Date of Issue", f(d["issue"]))] if d["issue"] else []) + [("Last Date", f(d["due"]))]
+    y = label_value(p, rows, 30, 150, 90, 18, 9.5)
+    p.rect(30, y, 360, 18, fill=(.9, .9, .9))
+    p.t(36, y + 13, "Particulars", "Helvetica-Bold", 9)
+    p.t(384, y + 13, "Amount", "Helvetica-Bold", 9, align="r")
+    y += 34
+    for lb, a in d["lines"]:
+        p.t(36, y, lb, "Helvetica", 9.5)
+        p.t(384, y, fm(a), "Helvetica", 9.5, align="r")
+        y += 16
+    p.t(36, y + 6, "Total Amount", "Helvetica-Bold", 10.5)
+    p.t(384, y + 6, fm(d["total"]), "Helvetica-Bold", 10.5, align="r")
+    p.t(36, y + 26, "Amount after due date", "Helvetica", 9)
+    p.t(384, y + 26, fm(d["total"] + d["late"]), "Helvetica", 9, align="r")
+    p.t(36, y + 60, f"Pay at any branch of {d['bank']}. Keep the stamped copy as proof of payment.", "Helvetica", 8, GRAY)
+    return p
+
+
+LU, NC, BP = "Lakeshore University", "Northfield College", "Brightpath School"
+TEST_VOUCHERS = [  # (student, institution, programme, registration no, semester, issue date, due date, tuition fee, flags)
+    *[("Sara Khan", LU, "BS Computer Science", "2021-LU-CS-117", s, i, du, t) for s, i, du, t in [
+        ("Fall 2021", D(2021, 8, 2), D(2021, 8, 20), 85000), ("Spring 2022", D(2022, 1, 5), D(2022, 1, 25), 85000),
+        ("Fall 2022", D(2022, 8, 1), D(2022, 8, 19), 89000), ("Spring 2023", D(2023, 1, 4), D(2023, 1, 24), 89000),
+        ("Fall 2023", D(2023, 8, 1), D(2023, 8, 21), 94000), ("Spring 2024", D(2024, 1, 5), D(2024, 1, 25), 94000),
+        ("Fall 2024", D(2024, 8, 2), D(2024, 8, 22), 99000), ("Spring 2025", D(2025, 1, 6), D(2025, 1, 24), 99000)]],
+    ("Sara Khan", LU, "MS Data Science", "2026-LU-DS-042", "Fall 2026", D(2026, 8, 3), D(2026, 8, 25), 145000),
+    *[("Hamza Khan", BP, "Class 9", "BPS-1734", s, i, du, 27000) for s, i, du in [
+        ("January to March 2022", D(2021, 12, 20), D(2022, 1, 10)), ("April to June 2022", None, D(2022, 4, 10)),
+        ("July to September 2022", D(2022, 6, 20), D(2022, 7, 10)), ("October to December 2022", D(2022, 9, 20), D(2022, 10, 10))]],
+    *[("Hamza Khan", BP, "Class 10", "BPS-1734", s, i, du, 29500) for s, i, du in [
+        ("January to March 2023", D(2022, 12, 20), D(2023, 1, 10)), ("April to June 2023", D(2023, 3, 20), D(2023, 4, 10)),
+        ("July to September 2023", D(2023, 6, 20), D(2023, 7, 10)), ("October to December 2023", D(2023, 9, 20), D(2023, 10, 10))]],
+    ("Hamza Khan", NC, "BS Software Engineering", "2025-NC-SE-089", "Fall 2025", D(2025, 8, 4), D(2025, 8, 22), 68000),
+    ("Hamza Khan", NC, "BS Software Engineering", "2025-NC-SE-089", "Spring 2026", D(2026, 1, 5), D(2026, 1, 24), 68000),
+    ("Hamza Khan", NC, "BS Software Engineering", "2025-NC-SE-089", "Spring 2026", D(2026, 1, 28), D(2026, 2, 10), 68000),  # re-issued, new due date
+    ("Hamza Khan", NC, "BS Software Engineering", "2025-NC-SE-089", "Fall 2026", D(2026, 8, 3), D(2026, 8, 21), 72000, "near"),
+    ("Hamza Khan", NC, "BS Software Engineering", "2025-NC-SE-089", "Spring 2027", D(2026, 11, 16), D(2027, 1, 12), 72000),
+]
+DEV_VOUCHERS = [
+    ("Zainab Malik", LU, "Master of Fine Arts", "2024-LU-FA-031", "Fall 2024", D(2024, 8, 5), D(2024, 8, 23), 120000),
+    ("Zainab Malik", LU, "Master of Fine Arts", "2024-LU-FA-031", "Spring 2025", D(2025, 1, 6), D(2025, 1, 27), 120000),
+    ("Bilal Ahmed", LU, "Master of Business Administration", "2024-LU-MBA-077", "Fall 2024", D(2024, 8, 5), D(2024, 8, 23), 135000),
+    ("Bilal Ahmed", LU, "Master of Business Administration", "2024-LU-MBA-077", "Spring 2025", D(2025, 1, 6), D(2025, 1, 27), 135000),
+]
+
+# a few more ID cards (20 per type in the test split) and "other" pages that look like the new types
+A4_TEST_IDS = [
+    ("Ali Raza Khan", "student", D(2006, 9, 1), D(2008, 8, 31), "Northfield College"),
+    ("Ayesha Khan", "student", D(2000, 9, 1), D(2004, 8, 31), "Northfield College"),
+    ("Sara Khan", "staff", D(2026, 10, 1), D(2027, 9, 30), "Cedarline Analytics"),
+    ("Hamza Khan", "licence", D(2026, 1, 15), D(2027, 1, 14), None),
+    ("Hamza Khan", "staff", D(2026, 6, 15), D(2026, 9, 15), "Orchard Software"),
+]
+OTHER.update({
+    "advert_job": ("advert", "Job Opening: Operations Executive", [
+        "Harbor Logistics Pvt Ltd is hiring an Operations Executive for its Port Road office.", "",
+        "Requirements: a bachelor's degree, two years of experience in logistics and good spoken English.",
+        "We offer a competitive salary, medical cover and paid leave.", "",
+        "Send your CV to careers@harborlogistics.example by 30 November 2026. Only shortlisted candidates will be contacted."],
+        dict(company="Harbor Logistics Pvt Ltd")),
+    "advert_rent": ("advert", "House for Rent", [
+        "Upper portion of a house near Garden Town Market.", "3 bedrooms, 2 bathrooms, kitchen, TV lounge and a small lawn.", "",
+        "Rent: Rs. 70,000 per month, two months in advance.", "Separate electricity and gas meters.", "",
+        "Families only. Call the owner after 6 pm."], dict(rent="70,000")),
+    "outline_db": ("course_outline", "Course Outline - Database Systems (Fall 2026)", [
+        "Lakeshore University, Department of Computer Science", "",
+        "Week 1-2: the relational model and ER diagrams", "Week 3-5: SQL queries, joins and views", "Week 6-7: normalization",
+        "Week 8: midterm exam", "Week 9-11: transactions and concurrency control", "Week 12-14: indexing and query processing", "",
+        "Grading: quizzes 10%, assignments 15%, midterm 25%, final exam 50%."], dict(topic="database course outline")),
+    "notice_bank": ("notice", "Notice to Customers", [
+        "Our Garden Town branch will be closed on Saturday 6 December 2026 for system upgrades.", "",
+        "ATMs, the mobile app and internet banking will work as usual during this time.",
+        "We are sorry for any inconvenience.", "", "Crescent Bank Limited"], dict(bank="Crescent Bank Limited")),
+})
+A4_TEST_OTHER = ["advert_job", "advert_rent", "outline_db", "notice_bank"]
+
+
+def build_a4(split, seed, used):
+    """The A4 types for one split. Own generator, so the A3 files above do not change."""
+    rng = random.Random(f"{seed}-{split}-a4")
+    test = split == "test"
+    hh = HOUSEHOLDS[split]
+    if test:
+        s = passports(rng, TEST_PASSPORTS, TEST_PEOPLE, alloc(rng, image=10, pdf_scan=9, pdf_text=3))
+        s += transcripts(rng, TEST_TRANSCRIPTS, alloc(rng, pdf_text=12, pdf_scan=6, image=4))
+        s += statements(rng, TEST_ACCOUNTS, alloc(rng, pdf_text=16, pdf_scan=4, image=2), hh["addr"])
+        s += warranty_cards(rng, TEST_WARRANTY, alloc(rng, image=12, pdf_scan=6, pdf_text=4))
+        s += offer_letters(rng, TEST_OFFERS, alloc(rng, pdf_text=14, pdf_scan=5, image=3), hh["addr"])
+        s += policies(rng, TEST_POLICIES, alloc(rng, pdf_text=14, pdf_scan=5, image=3), HOUSEHOLD)
+        s += tenancies(rng, TEST_TENANCIES, alloc(rng, pdf_scan=10, image=6, pdf_text=6))
+        s += vouchers(rng, TEST_VOUCHERS, alloc(rng, image=9, pdf_text=9, pdf_scan=4))
+        s += ids(rng, A4_TEST_IDS, TEST_PEOPLE, alloc(rng, image=3, pdf_scan=2))
+        s += others(rng, A4_TEST_OTHER, alloc(rng, pdf_text=3, image=1))
+    else:
+        s = passports(rng, DEV_PASSPORTS, DEV_PEOPLE, alloc(rng, image=2, pdf_scan=1, pdf_text=1))
+        s += transcripts(rng, DEV_TRANSCRIPTS, alloc(rng, pdf_text=2, pdf_scan=1, image=1))
+        s += statements(rng, DEV_ACCOUNTS, alloc(rng, pdf_text=2, pdf_scan=1, image=1), hh["addr"])
+        s += warranty_cards(rng, DEV_WARRANTY, alloc(rng, image=2, pdf_scan=1, pdf_text=1))
+        s += offer_letters(rng, DEV_OFFERS, alloc(rng, pdf_text=2, pdf_scan=1, image=1), hh["addr"])
+        s += policies(rng, DEV_POLICIES, alloc(rng, pdf_text=2, pdf_scan=1, image=1), ["Bilal Ahmed"])
+        s += tenancies(rng, DEV_TENANCIES, alloc(rng, pdf_scan=2, image=1, pdf_text=1))
+        s += vouchers(rng, DEV_VOUCHERS, alloc(rng, image=2, pdf_text=1, pdf_scan=1))
+    rng.shuffle(s)
+    recs = []
+    for i, sp in enumerate(s):
+        rel = file_path(rng, sp, used)
+        text = render(sp, random.Random(f"{seed}-{split}-a4doc{i}"), OUT / split / rel)
+        recs.append(dict(file=f"{split}/{rel}", split=split, type=sp["type"], format=sp["fmt"], fields=sp["fields"], text=text,
+                         meta=sp["meta"], duplicate_of=None, duplicate_kind=None))
+    for i, sp in enumerate(s):
+        if sp["meta"].get("near"):  # the same document again in another format, from the same seed
+            sp = dict(sp, fmt="pdf_text" if sp["fmt"] != "pdf_text" else "image")
+            rel = file_path(rng, sp, used)
+            text = render(sp, random.Random(f"{seed}-{split}-a4doc{i}"), OUT / split / rel)
+            recs.append(dict(recs[i], file=f"{split}/{rel}", format=sp["fmt"], text=text, duplicate_of=recs[i]["file"], duplicate_kind="near"))
+    return recs + [backup_copy(r, split, used) for r in recs if not r["duplicate_of"] and r["meta"].get("copy")]
+
+
+def backup_copy(r, split, used):
+    """An exact copy (the same bytes) in a backup folder."""
+    rel = f"Work/Backup/{Path(r['file']).name}"
+    while rel in used:  # two originals can share a file name
+        rel = rel.replace("Backup/", "Backup/Copy of ", 1)
+    used.add(rel)
+    (OUT / split / rel).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(OUT / r["file"], OUT / split / rel)
+    return dict(r, file=f"{split}/{rel}", duplicate_of=r["file"], duplicate_kind="exact")
+
+
 # ---------------------------------------------------------------- rendering (scans and photos)
 DESKS = [(120, 90, 60), (70, 70, 75), (190, 180, 165), (40, 60, 50), (200, 200, 205)]
 
@@ -990,7 +1944,7 @@ def render(s, rr, path):
     if s["fmt"] == "pdf_scan":
         dpi = 150
         img = raster(pdf, dpi)
-        if s["type"] == "id_card":  # a card photocopied on an A4 sheet
+        if s["type"] in ("id_card", "passport", "warranty_card"):  # a card photocopied on an A4 sheet
             img.thumbnail((1050, 1050))
             sheet = Image.new("RGB", (1240, 1754), (255, 255, 255))
             sheet.paste(img, (rr.randint(60, 250), rr.randint(80, 400)))
@@ -1070,15 +2024,8 @@ def build(split, seed):
         rel = file_path(rng, sp, used)
         text = render(sp, random.Random(f"{seed}-{split}-doc{i}"), OUT / split / rel)
         recs.append(dict(recs[i], file=f"{split}/{rel}", format=sp["fmt"], text=text, duplicate_of=recs[i]["file"], duplicate_kind="near"))
-    for r in [r for r in recs if split == "test" and not r["duplicate_of"] and exact_copy(r)]:
-        rel = f"Work/Backup/{Path(r['file']).name}"
-        while rel in used:  # two originals can share a file name
-            rel = rel.replace("Backup/", "Backup/Copy of ", 1)
-        used.add(rel)
-        (OUT / split / rel).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(OUT / r["file"], OUT / split / rel)
-        recs.append(dict(r, file=f"{split}/{rel}", duplicate_of=r["file"], duplicate_kind="exact"))
-    return recs
+    recs += [backup_copy(r, split, used) for r in recs if split == "test" and not r["duplicate_of"] and exact_copy(r)]
+    return recs + build_a4(split, seed, used)
 
 
 def incomplete(specs):
@@ -1344,7 +2291,7 @@ def draft_eval(T, seed):
             ask(f"How much did I spend at {m} in 2026?", "facts", tot(rs), "number", rs, X)
 
     # ---- new: everything expiring in a window (ID expiry and warranties; bill due dates are not expiries)
-    exp = [(r, F(r, f)) for r in U for f in ("expiry_date", "warranty_until") if r["fields"].get(f)]
+    exp = [(r, F(r, f)) for r in U for f in EXPIRY_FIELDS if r["fields"].get(f)]
     for lo, hi in [(D(2026, 12, 1), D(2027, 1, 31)), (D(2027, 1, 1), D(2027, 6, 30)), (D(2027, 7, 1), D(2027, 12, 31)),
                    (D(2026, 6, 1), D(2026, 11, 30)), (D(2028, 1, 1), D(2028, 12, 31)), (D(2025, 1, 1), D(2025, 6, 30))]:
         hit = sorted((x for x in exp if lo.isoformat() <= x[1] <= hi.isoformat()), key=lambda x: x[1])
@@ -1406,13 +2353,207 @@ def draft_eval(T, seed):
     bought = [r for r in rcs if r["meta"]["group"] in ("electronics", "appliance") and F(r, "date")]
     for r in [r for r in bought if sum(F(x, "merchant") == F(r, "merchant") and F(x, "date") == F(r, "date") for x in rcs) == 1][:4]:
         sd(f"What did I buy at {F(r, 'merchant')} on {day(F(r, 'date'))}?", r["meta"]["items"][0], "text", [r])
-    for q in ["What is my passport number?", "How much was our water bill?", "What is my health insurance policy number?",
-              "When does my car registration expire?", "What is the salary on my payslip?", "When does my gym membership expire?",
-              "How much is our monthly house rent?", "What is my bank account balance?", "When does my visa expire?",
-              "How much was the hospital bill?"]:
+
+    # ---- A4 types. Same rules: gold answers come from the labels, and each document counts once.
+    newest = lambda rs, f: max(rs, key=lambda r: F(r, f))
+    total = lambda rs, f: num(round(sum(F(r, f) for r in rs), 2))
+    future = lambda rs, f: sorted((r for r in rs if F(r, f) and F(r, f) >= TODAY.isoformat()), key=lambda r: F(r, f))
+    past = lambda rs, f: [r for r in rs if F(r, f) and F(r, f) < TODAY.isoformat()]
+    named_ = lambda t, f, who: [r for r in of(t) if F(r, f) == who]
+    both = lambda rs, f: ";".join(sorted(F(r, f) for r in rs))
+
+    pp = of("passport")
+    for who, q in [("Hamza Khan", "When does Hamza's current passport expire?"), ("Sara Khan", "When does Sara's current passport expire?"),
+                   ("Nusrat Khan", "When does Nusrat's latest passport expire?")]:
+        r = newest(named_("passport", "name", who), "expiry_date")
+        ask(q, "facts", F(r, "expiry_date"), "date", [r], S1)
+    for who in ("Ali Raza Khan", "Ayesha Khan"):
+        r = newest(named_("passport", "name", who), "expiry_date")
+        ask(f"What is the number of {first(who)}'s latest passport?", "facts", F(r, "passport_number"), "text", [r], S1)
+    r = newest(named_("passport", "name", "Sara Khan"), "expiry_date")
+    ask("When was Sara's current passport issued?", "facts", F(r, "issue_date"), "date", [r], S1)
+    nx = future(pp, "expiry_date")[0]
+    ask("When does the next passport expire?" + T_, "facts", F(nx, "expiry_date"), "date", [nx], EW)
+    gone = past(pp, "expiry_date")
+    ask("How many passports have already expired?" + T_, "facts", str(len(gone)), "number", gone, EW)
+    ask("How many passports do we have?", "facts", str(len(pp)), "number", pp, DU)
+
+    for who, q in [("Sara Khan", "What CGPA did Sara graduate with?"), ("Hamza Khan", "What is Hamza's current CGPA?"),
+                   ("Ali Raza Khan", "What CGPA did Ali finish his MBA with?"), ("Ayesha Khan", "What was Ayesha's final CGPA?")]:
+        r = newest(named_("transcript", "student_name", who), "issue_date")
+        ask(q, "facts", num(F(r, "cgpa")), "number", [r], S1)
+    st = named_("transcript", "student_name", "Sara Khan")
+    r = [x for x in st if F(x, "issue_date")[:7] == "2023-02"]
+    assert len(r) == 1
+    ask("What was Sara's CGPA on the transcript issued in February 2023?", "facts", num(F(r[0], "cgpa")), "number", r, S1)
+    ask("How many transcripts does Sara have?", "facts", str(len(st)), "number", st, X)
+    ay = named_("transcript", "student_name", "Ayesha Khan")
+    top = max(F(x, "cgpa") for x in ay)
+    ask("What was Ayesha's highest CGPA?", "facts", num(top), "number", [x for x in ay if F(x, "cgpa") == top], X)
+
+    bs = of("bank_statement")
+    acct = lambda b: [r for r in bs if F(r, "bank") == b]
+    for b, q in [("Crescent Bank Limited", "What is the current balance in the Crescent Bank account?"),
+                 ("Unity Bank Limited", "What is the balance in the Unity Bank account now?")]:
+        r = newest(acct(b), "period_end")
+        ask(q, "facts", num(F(r, "closing_balance")), "number", [r], S1)
+    last = [newest(acct(b), "period_end") for b in sorted({F(r, "bank") for r in bs})]
+    ask("What is our total balance across all bank accounts?", "facts", total(last, "closing_balance"), "number", last, X)
+    rs = [r for r in acct("Crescent Bank Limited") if F(r, "period_end")[:4] == "2026"]
+    ask("How much money was paid into the Crescent Bank account in 2026?", "facts", total(rs, "total_credits"), "number", rs, X)
+    rs = [r for r in acct("Unity Bank Limited") if "2026-07-01" <= F(r, "period_end") <= "2026-09-30"]
+    ask("How much was paid out of the Unity Bank account from July to September 2026?", "facts", total(rs, "total_debits"), "number", rs, X)
+    rs = [r for r in acct("Lakeshore Commercial Bank Ltd") if F(r, "period_end")[:4] == "2025"]
+    ask("How much was deposited in the Lakeshore Commercial Bank account in 2025?", "facts", total(rs, "total_credits"), "number", rs, X)
+    r = [x for x in acct("Crescent Bank Limited") if F(x, "period_end") == "2026-03-31"]
+    ask("What was the closing balance of the Crescent Bank account at the end of March 2026?", "facts", num(F(r[0], "closing_balance")),
+        "number", r, S1)
+    rs = [r for r in bs if F(r, "period_end")[:4] == "2026"]
+    ask("How many bank statements do we have for 2026?", "facts", str(len(rs)), "number", rs, DU)
+
+    wc = of("warranty_card")
+    single = [r for r in wc if sum(F(x, "brand") == F(r, "brand") for x in wc) == 1]
+    for r in single[:4]:
+        ask(f"When does the warranty on the {F(r, 'brand')} {r['meta']['short']} end?", "facts", F(r, "warranty_until"), "date", [r], S1)
+    for r in [x for x in single if F(x, "serial_number")][4:7]:
+        ask(f"What is the serial number of the {F(r, 'brand')} {r['meta']['short']}?", "facts", F(r, "serial_number"), "text", [r], S1)
+    for r in single[8:10]:
+        ask(f"When did we buy the {F(r, 'brand')} {r['meta']['short']}?", "facts", F(r, "purchase_date"), "date", [r], S1)
+    nx = future(wc, "warranty_until")[0]
+    ask("Which warranty card expires next?" + T_, "facts", F(nx, "warranty_until"), "date", [nx], EW)
+    soon = [r for r in future(wc, "warranty_until") if F(r, "warranty_until") <= WINDOW.isoformat()]
+    ask("Which warranty cards expire within the next 90 days?" + T_, "facts", both(soon, "warranty_until"), "list", soon, EW)
+    gone = past(wc, "warranty_until")
+    ask("How many warranty cards have already expired?" + T_, "facts", str(len(gone)), "number", gone, EW)
+    ask("How many warranty cards do I have?", "facts", str(len(wc)), "number", wc, DU)
+
+    ol = of("offer_letter")
+    off = lambda who, emp: [r for r in ol if F(r, "candidate_name") == who and F(r, "employer") == emp]
+    bw = off("Sara Khan", BW)
+    assert len(bw) == 2
+    ask("When does Sara start at Brightwave Systems?", "facts", both(bw, "start_date"), "list", bw, CF)
+    ask("What date is on Sara's offer letter from Brightwave Systems?", "facts", both(bw, "offer_date"), "list", bw, CF)
+    r = off("Sara Khan", "Cedarline Analytics")
+    ask("What monthly salary did Cedarline Analytics offer Sara?", "facts", num(F(r[0], "monthly_salary")), "number", r, S1)
+    r = off("Ali Raza Khan", "Crescent Shipping Ltd")
+    ask("When does Ali start at Crescent Shipping Ltd?", "facts", F(r[0], "start_date"), "date", r, S1)
+    r = off("Hamza Khan", "Orchard Software")
+    ask("What position did Orchard Software offer Hamza?", "facts", F(r[0], "position"), "text", r, S1)
+    al = [r for r in ol if F(r, "candidate_name") == "Ali Raza Khan"]
+    r = newest(al, "monthly_salary")
+    ask("What is the highest monthly salary Ali has been offered?", "facts", num(F(r, "monthly_salary")), "number", [r], X)
+    ay = [r for r in ol if F(r, "candidate_name") == "Ayesha Khan"]
+    ask("How many job offers has Ayesha received?", "facts", str(len(ay)), "number", ay, X)
+    ask("How many offer letters do we have?", "facts", str(len(ol)), "number", ol, DU)
+
+    ins = of("insurance_policy")
+    kind = lambda k: [r for r in ins if r["meta"]["kind"] == k]
+    rs = [r for r in kind("health") if F(r, "start_date")[:4] == "2026"]
+    ask("How much did we pay CareFirst for health insurance in 2026?", "facts", total(rs, "premium"), "number", rs, DU)
+    r = newest(kind("health"), "end_date")
+    ask("When does our CareFirst health insurance expire?", "facts", F(r, "end_date"), "date", [r], S1)
+    r = [x for x in kind("car") if F(x, "start_date")[:7] == "2026-03"]
+    ask("What premium did we pay Highway Motor Insurance for the policy that started in March 2026?", "facts", num(F(r[0], "premium")),
+        "number", r, S1)
+    nx = future(ins, "end_date")[0]
+    ask("Which insurance policy expires next?" + T_, "facts", F(nx, "end_date"), "date", [nx], EW)
+    rs = [r for r in ins if F(r, "start_date")[:4] == "2026"]
+    ask("How much did we pay in insurance premiums for policies starting in 2026?", "facts", total(rs, "premium"), "number", rs, X)
+    rs = [r for r in ins if F(r, "insured_name") == "Ali Raza Khan"]
+    ask("How many insurance policies are in Ali's name?", "facts", str(len(rs)), "number", rs, X)
+    sv = [r for r in ins if F(r, "insured_name") == "Sara Khan"]
+    assert len(sv) == 2
+    ask("When does Sara's travel insurance end?", "facts", both(sv, "end_date"), "list", sv, CF)
+    ask("What end date is on Sara's GlobeGuard travel insurance?", "facts", both(sv, "end_date"), "list", sv, CF)
+
+    tn = of("tenancy_agreement")
+    ali = [r for r in tn if F(r, "tenant") == "Ali Raza Khan"]
+    r = newest(ali, "start_date")
+    ask("What monthly rent does Ali pay under his current tenancy agreement?", "facts", num(F(r, "monthly_rent")), "number", [r], S1)
+    ask("When does Ali's current tenancy agreement end?", "facts", F(r, "end_date"), "date", [r], S1)
+    nus = [r for r in tn if F(r, "landlord") == "Nusrat Khan"]
+    r = newest(nus, "start_date")
+    ask("What is the current monthly rent on Nusrat's flat?", "facts", num(F(r, "monthly_rent")), "number", [r], S1)
+    r = [x for x in nus if F(x, "start_date")[:7] == "2026-07"]
+    ask("What security deposit was agreed in Nusrat's tenancy agreement starting July 2026?", "facts", num(F(r[0], "security_deposit")),
+        "number", r, S1)
+    r = newest(ali, "monthly_rent")
+    ask("What is the highest monthly rent Ali has paid?", "facts", num(F(r, "monthly_rent")), "number", [r], X)
+    ask("How many tenancy agreements are there for Nusrat's flat?", "facts", str(len(nus)), "number", nus, X)
+    ask("How many tenancy agreements do we have?", "facts", str(len(tn)), "number", tn, DU)
+    ja = [r for r in tn if F(r, "tenant") == "Junaid Akram"]
+    assert len(ja) == 2
+    ask("When does Junaid Akram's tenancy end?", "facts", both(ja, "end_date"), "list", ja, CF)
+    ask("What end date is on the tenancy agreement with Junaid Akram?", "facts", both(ja, "end_date"), "list", ja, CF)
+
+    fv = of("fee_voucher")
+    hz = [r for r in fv if F(r, "student_name") == "Hamza Khan"]
+    nx = future(hz, "due_date")[0]
+    ask("When is Hamza's next fee due?" + T_, "facts", F(nx, "due_date"), "date", [nx], EW)
+    r = [x for x in hz if F(x, "due_date")[:7] == "2027-01"]
+    ask("How much is the fee on Hamza's voucher due in January 2027?", "facts", num(F(r[0], "amount")), "number", r, S1)
+    rs = [r for r in fv if F(r, "student_name") == "Sara Khan" and F(r, "due_date")[:4] == "2023"]
+    ask("How much were Sara's university fees in 2023?", "facts", total(rs, "amount"), "number", rs, X)
+    rs = [r for r in fv if F(r, "institution") == BP and F(r, "due_date")[:4] == "2022"]
+    ask("How much did we pay Brightpath School in fees in 2022?", "facts", total(rs, "amount"), "number", rs, X)
+    ask("How many fee vouchers do we have for Hamza?", "facts", str(len(hz)), "number", hz, DU)
+    sp = [r for r in hz if F(r, "semester") == "Spring 2026"]
+    assert len(sp) == 2
+    ask("When was the fee for Hamza's Spring 2026 semester due?", "facts", both(sp, "due_date"), "list", sp, CF)
+    ask("What due date is on Hamza's Northfield College voucher for Spring 2026?", "facts", both(sp, "due_date"), "list", sp, CF)
+
+    # what the new documents say beyond their fields
+    r = kind("health")
+    sd("What is the sum insured on our CareFirst health insurance?", num(r[0]["meta"]["sum_insured"]), "number", r)
+    sd("Which car is covered by our Highway Motor insurance?", "Sakura Sedan", "text", kind("car"))
+    sd("How much notice must we give to end our tenancy agreement?", "one month", "text", ali)
+    r = off("Sara Khan", "Cedarline Analytics")
+    sd("How long is the probation period in Sara's Cedarline Analytics offer?", "3 months", "text", r)
+    r = off("Ali Raza Khan", "Crescent Shipping Ltd")
+    sd("How much is the medical allowance in Ali's Crescent Shipping offer?", num(r[0]["meta"]["medical"]), "number", r)
+    term = lambda x, course: next((t for t, rows, _ in x["meta"]["sems"] for c in rows if c[1] == course), None)
+    ml = [x for x in st if term(x, "Machine Learning")]
+    sd("In which semester did Sara take Machine Learning?", term(ml[0], "Machine Learning"), "text", ml)
+    ht = named_("transcript", "student_name", "Hamza Khan")
+    sd("What was Hamza's semester GPA in Fall 2025?", num(ht[0]["meta"]["sems"][0][2]), "number", ht)
+    sd("Which branch holds the Crescent Bank account?", "Garden Town Branch", "text", acct("Crescent Bank Limited"))
+    r = acct("Unity Bank Limited")
+    sd("What is the IBAN of the Unity Bank account?", r[0]["meta"]["iban"], "text", r)
+    r = [x for x in fv if F(x, "student_name") == "Sara Khan" and F(x, "semester") == "Fall 2026"]
+    sd("What is the tuition fee on Sara's Fall 2026 voucher?", num(r[0]["meta"]["tuition"]), "number", r)
+
+    for q in ["How much was our water bill?", "When does my gym membership expire?", "When does my visa expire?",
+              "How much was the hospital bill?", "What is the chassis number of our car?", "What is my blood group?",
+              "How much did we pay for the wedding hall?", "When is my next dentist appointment?", "How much pension does Nusrat get?",
+              "How much is left on the car loan?"]:
         A.append(dict(q=q, route="search", answer="", answer_type="none", sources=[], category=UN))
     groups = Counter(a["category"] for a in A)
     assert groups[S1] >= 50 and groups[X] + groups[EW] + groups[DU] + groups[CF] >= 50 and groups[SE] + groups[UN] >= 50, groups
+    assert len(A) >= 100 and min(groups[c] for c in (S1, X, EW, DU, CF, SE, UN)) >= 10, groups
+
+    # search queries for the A4 types, after the 60 above so those stay the same
+    tf = lambda t, f=lambda r: True: R(lambda r: r["type"] == t and f(r))
+    for q, rel_ in [
+            ("Ali's passport", tf("passport", lambda r: r["meta"]["person"] == "Ali Raza Khan")),
+            ("old expired passports", tf("passport", lambda r: r["fields"]["expiry_date"] < TODAY.isoformat())),
+            ("Sara's university transcripts", tf("transcript", lambda r: r["meta"]["person"] == "Sara Khan")),
+            ("MBA grade report", tf("transcript", lambda r: r["meta"]["person"] == "Ali Raza Khan")),
+            ("Crescent Bank statements", tf("bank_statement", lambda r: r["meta"]["bank"] == "Crescent Bank Limited")),
+            ("Unity Bank account statement", tf("bank_statement", lambda r: r["meta"]["bank"] == "Unity Bank Limited")),
+            ("warranty card for the microwave", tf("warranty_card", lambda r: r["meta"]["short"] == "microwave")),
+            ("product warranty cards", tf("warranty_card")),
+            ("job offer letters", tf("offer_letter")),
+            ("Sara's offer from Brightwave Systems",
+             tf("offer_letter", lambda r: r["meta"]["person"] == "Sara Khan" and r["meta"]["employer"] == BW)),
+            ("health insurance policy", tf("insurance_policy", lambda r: r["meta"]["kind"] == "health")),
+            ("car insurance schedule", tf("insurance_policy", lambda r: r["meta"]["kind"] == "car")),
+            ("our house rent agreement", tf("tenancy_agreement", lambda r: r["meta"]["tenant"] == "Ali Raza Khan")),
+            ("tenancy agreements for Nusrat's flat", tf("tenancy_agreement", lambda r: r["meta"]["landlord"] == "Nusrat Khan")),
+            ("Hamza's college fee vouchers", tf("fee_voucher", lambda r: r["meta"]["person"] == "Hamza Khan" and r["meta"]["inst"] == NC)),
+            ("Sara's university fee challans", tf("fee_voucher", lambda r: r["meta"]["person"] == "Sara Khan")),
+            ("house for rent advert", tf("other", lambda r: r["meta"].get("key") == "advert_rent")),
+            ("job advertisement", tf("other", lambda r: r["meta"].get("key") == "advert_job"))]:
+        search.append({"q": q, "relevant": rel_})
     return search, A
 
 
@@ -1433,7 +2574,7 @@ def self_check(recs, search, ask):
             Image.open(p).verify()
         f = r["fields"]
         for k, v in f.items():
-            if v and (k.endswith("_date") or k in ("date", "date_of_birth", "warranty_until")):
+            if v and SPEC.get(r["type"], {}).get(k) and SPEC[r["type"]][k].kind == "date":
                 date.fromisoformat(v)
         for k in MONEY & set(f):
             assert f[k] is None or isinstance(f[k], float), (r["file"], k)
@@ -1441,27 +2582,42 @@ def self_check(recs, search, ask):
             assert abs(f["current_charges"] + (f["previous_balance"] or 0) - f["amount_due"]) < .01, r["file"]
         if r["type"] == "receipt" and f["subtotal"] is not None:
             assert abs(f["subtotal"] + f["tax"] - f["total_amount"]) < .01, r["file"]
+        if r["type"] == "bank_statement":
+            assert abs(f["opening_balance"] + f["total_credits"] - f["total_debits"] - f["closing_balance"]) < .01, r["file"]
+        if r["type"] == "passport":
+            issue = date.fromisoformat(f["issue_date"])
+            assert f["expiry_date"] in (add_months(issue, 60).isoformat(), add_months(issue, 120).isoformat()), r["file"]
+        for a, b in (("issue_date", "expiry_date"), ("start_date", "end_date"), ("purchase_date", "warranty_until"),
+                     ("offer_date", "start_date"), ("period_start", "period_end"), ("issue_date", "due_date")):
+            if f.get(a) and f.get(b):
+                assert f[a] <= f[b], (r["file"], a, b)
     assert len({r["file"] for r in recs}) == len(recs)
-    for sp in ("dev", "test"):
-        n = [r for r in recs if r["split"] == sp]
-        print(sp, len(n))
     dev, test = [r for r in recs if r["split"] == "dev"], [r for r in recs if r["split"] == "test"]
-    assert 35 <= len(dev) <= 45 and 175 <= len(test) <= 200, (len(dev), len(test))
-    assert Counter(r["duplicate_kind"] for r in test) == {None: len(test) - 13, "near": 7, "exact": 6}, Counter(r["duplicate_kind"] for r in test)
-    assert sum(r["type"] != "other" for r in test) >= 100
+    for sp, rs in (("dev", dev), ("test", test)):
+        print(sp, len(rs), dict(sorted(Counter(r["type"] for r in rs).items())))
+        print(" ", sp, "by format", dict(sorted(Counter(r["format"] for r in rs).items())))
+    assert 65 <= len(dev) <= 85 and 360 <= len(test) <= 400, (len(dev), len(test))
+    assert Counter(r["duplicate_kind"] for r in test) == {None: len(test) - 22, "near": 12, "exact": 10}, Counter(r["duplicate_kind"] for r in test)
+    for t in FIELDS:  # every type: 20+ test originals; each A4 type has typed and scanned or photographed copies in each split
+        assert sum(r["type"] == t and not r["duplicate_of"] for r in test) >= 20, t
+        for rs in ((dev, test) if t not in ("id_card", "utility_bill", "certificate", "receipt") else ()):
+            fm = {r["format"] for r in rs if r["type"] == t}
+            assert "pdf_text" in fm and fm - {"pdf_text"}, (t, fm)
     assert sum(r["format"] != "pdf_text" for r in test) >= 50
     holder = {}
-    for r in recs:  # one ID number belongs to one person; two cards with it are the planned conflicts
-        if r["type"] == "id_card":
-            assert holder.setdefault(r["fields"]["id_number"], r["fields"]["name"]) == r["fields"]["name"], r["file"]
-    for t, e in (("id_card", "expiry_date"), ("receipt", "warranty_until")):
+    for r in recs:  # one ID or passport number belongs to one person; two cards with it are the planned conflicts
+        if r["type"] in ("id_card", "passport"):
+            no = r["fields"]["id_number" if r["type"] == "id_card" else "passport_number"]
+            assert holder.setdefault(no, r["fields"]["name"]) == r["fields"]["name"], r["file"]
+    for t, e in (("id_card", "expiry_date"), ("receipt", "warranty_until"), ("passport", "expiry_date"), ("warranty_card", "warranty_until")):
         ex = [r["fields"][e] for r in test if r["type"] == t and r["fields"][e]]
         assert any(x < TODAY.isoformat() for x in ex) and any(TODAY.isoformat() <= x <= WINDOW.isoformat() for x in ex) \
             and any(x > WINDOW.isoformat() for x in ex), f"{t} expiry buckets"
     blob = " ".join(r["text"] for r in recs).lower()
-    for w in ("passport", "water bill", "insurance", "salary", "registration", "gym", "house rent", "visa", "hospital", "account balance"):
-        assert w not in blob, w
-    assert len(search) == 60 and len(ask) >= 150
+    for w in ("water bill", "gym", "visa", "hospital", "chassis", "blood group", "wedding", "dentist", "pension", "loan"):
+        assert w not in blob, w  # the unanswerable questions must stay unanswerable
+    assert len(search) >= 75 and len(ask) >= 200
+    print("ask", len(ask), dict(sorted(Counter(a["category"] for a in ask).items())), "search", len(search))
     assert all(set(s["relevant"]) <= {r["file"] for r in test} and s["relevant"] for s in search)
     assert all(a["answer_type"] == "none" or a["sources"] for a in ask)
 

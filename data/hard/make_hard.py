@@ -1,16 +1,17 @@
 """Harder copies of the synthetic test documents (feedback point 12), with labels.
 
-    cd backend && uv run python ../data/hard/make_hard.py            # seed 7, ~125 documents
+    cd backend && uv run python ../data/hard/make_hard.py            # seed 7, ~155 documents
     cd backend && uv run python ../data/hard/make_hard.py --limit 8  # quick check
 
 Reads data/synth/out/labels.jsonl (split "test") and writes data/hard/out/hard/<variant>/... plus
 data/hard/out/labels.jsonl with rows {file, type, fields, split: "hard", source, variant, effects, text}.
-Each source document is used at most once, so hard copies are never near-duplicates of each other.
+Each source document is used at most once, so hard copies are never near-duplicates of each other. Sources are taken
+from the document types in turn, so all 12 types (and "other") get hard copies.
 
 Variants:
 - photo:       phone photo: perspective, rotation, shadow, low light, blur, JPEG artefacts (a random mix)
 - lowres:      a low-resolution grey scan inside a PDF
-- handwriting: a receipt written out in a handwriting font (Windows fonts Ink Free, Bradley Hand, Segoe Script)
+- handwriting: a receipt or warranty card written out in a handwriting font (Windows fonts Ink Free, Bradley Hand, Segoe Script)
 - cutoff:      a text PDF photographed with part of the page missing. Fields whose printed value is only on
                the missing part are set to null; the page's word positions decide this, not guesswork.
 Deterministic for a given seed. Re-run it after the generator changes: it deletes and rebuilds out/hard/.
@@ -21,6 +22,7 @@ import json
 import random
 import re
 import shutil
+from collections import Counter
 from datetime import date
 from pathlib import Path
 
@@ -32,7 +34,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "data" / "synth" / "out"
 OUT = Path(__file__).resolve().parent / "out"
 DPI = 150
-COUNTS = {"cutoff": 25, "handwriting": 20, "lowres": 35, "photo": 45}
+COUNTS = {"cutoff": 30, "handwriting": 20, "lowres": 45, "photo": 60}
+HANDWRITTEN = ("receipt", "warranty_card")  # documents people really fill in by hand
 FONTS = [Path(r"C:\Windows\Fonts") / f for f in ("Inkfree.ttf", "BRADHITC.TTF", "segoesc.ttf")]
 DESKS = [(120, 90, 60), (70, 70, 75), (150, 140, 120), (40, 60, 50), (200, 195, 185)]
 
@@ -229,6 +232,8 @@ def main(seed: int, limit: int | None) -> None:
     pool = [r for r in rows if r["split"] == "test" and (SRC / r["file"]).exists()]
     rng = random.Random(seed)
     rng.shuffle(pool)
+    turn = Counter()
+    pool.sort(key=lambda r: turn.update([r["type"]]) or turn[r["type"]])  # one of each type, then the next of each type, ...
     shutil.rmtree(OUT / "hard", ignore_errors=True)
     used, out = set(), []
     counts = {k: (min(v, limit) if limit else v) for k, v in COUNTS.items()}
@@ -259,7 +264,7 @@ def main(seed: int, limit: int | None) -> None:
                 data, effects = photo(img, r, ["rotation", "blur", "jpeg"])
                 emit(src, variant, data, ".jpg", fields, [f"cut_{side}"] + effects, text, "image")
             elif variant == "handwriting":
-                if src["type"] != "receipt" or not any(f.exists() for f in FONTS):
+                if src["type"] not in HANDWRITTEN or not any(f.exists() for f in FONTS):
                     continue
                 img, text = handwriting(src["text"], r)
                 data, effects = photo(img, r, ["rotation", "blur", "jpeg"])
@@ -275,7 +280,7 @@ def main(seed: int, limit: int | None) -> None:
                     data, effects = photo(img, r)
                     emit(src, variant, data, ".jpg", src["fields"], effects, src["text"], "image")
             n += 1
-        print(f"{variant}: {n}")
+        print(f"{variant}: {n}", dict(sorted(Counter(r["type"] for r in out if r["variant"] == variant).items())))
     (OUT / "labels.jsonl").write_text("".join(json.dumps(r) + "\n" for r in out), encoding="utf-8")
     print(f"{len(out)} hard documents -> {OUT / 'labels.jsonl'}")
 
