@@ -1374,7 +1374,7 @@ def draft_eval(T, seed):
     f1 = lambda t, f: [r for r in of(t) if f(r)]
     r = f1("certificate", lambda r: r["meta"]["person"] == "Sara Khan" and r["meta"]["kind"] == "degree")
     sd("What institution issued Sara's degree?", F(r[0], "institution"), "text", r)
-    sd("When was Sara's degree issued?", F(r[0], "issue_date"), "date", r)
+    ask("When was Sara's degree issued?", "facts", F(r[0], "issue_date"), "date", r, S1)  # a date field, like Ali's MBA above
     for cat, w in [("gas", "gas bill"), ("internet", "internet bill"), ("electricity", "electricity bill")]:
         sd(f"What is the account number on the {w}?", F(B(cat)[0], "account_number"), "text", B(cat))
     r = f1("certificate", lambda r: r["meta"]["kind"] == "school")
