@@ -70,6 +70,11 @@ export type Overview = {
   errors: number
 }
 export type IndexStatus = { running: boolean; done: number; total: number; current: string | null; errors: number }
+export type WatchInfo = {
+  folders: string[]
+  last: { folder: string; at: string; indexed: number; unchanged: number; renamed: number; removed: number; errors: number } | null
+  error: string | null
+}
 // Every eval/results/*.json with a "component". Only `component` is certain; the rest differs per file.
 export type EvalResult = {
   component: string
@@ -82,7 +87,7 @@ export type EvalResult = {
   [extra: string]: unknown
 }
 
-async function call<T>(method: 'GET' | 'POST' | 'PATCH', path: string, body?: unknown): Promise<T> {
+async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   if (MOCK) return (await import('./mock')).mock(method, path, body) as Promise<T>
   const r = await fetch(BASE + path, {
     method,
@@ -116,4 +121,7 @@ export const api = {
   eval: () => call<EvalResult[]>('GET', '/eval'),
   index: (folder: string) => call<unknown>('POST', '/index', { folder }),
   indexStatus: () => call<IndexStatus>('GET', '/index/status'),
+  watched: () => call<WatchInfo>('GET', '/watch'),
+  watch: (folder: string) => call<WatchInfo>('POST', '/watch', { folder }),
+  unwatch: (folder: string) => call<WatchInfo>('DELETE', '/watch', { folder }),
 }

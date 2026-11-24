@@ -1,5 +1,5 @@
 // Fixtures for every endpoint, used when VITE_MOCK=1. Dates are relative to today so Upcoming always looks current.
-import type { Answer, Document, EvalResult, Fact, Hit, IndexStatus, Overview, UpcomingItem } from './api'
+import type { Answer, Document, EvalResult, Fact, Hit, IndexStatus, Overview, UpcomingItem, WatchInfo } from './api'
 
 const day = 86_400_000
 const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString().slice(0, 10)
@@ -140,6 +140,9 @@ function indexStatus(): IndexStatus {
   return { running: done < total, done, total, current: done < total ? `${base}scans\\page_${done + 1}.png` : null, errors: done > 15 ? 1 : 0 }
 }
 
+let watched: string[] = ['C:\\Users\\you\\Documents\\Bills']
+let watchLast: WatchInfo['last'] = { folder: watched[0], at: new Date(Date.now() - 90_000).toISOString().slice(0, 19), indexed: 1, unchanged: 0, renamed: 0, removed: 0, errors: 0 }
+
 export async function mock(method: string, path: string, body?: unknown): Promise<unknown> {
   const url = new URL(path, 'http://x')
   const p = url.pathname
@@ -154,6 +157,15 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p === '/eval') return delay(evals)
   if (p === '/index/status') return indexStatus()
   if (p === '/index' && method === 'POST') { indexStart = Date.now(); return { started: true } }
+  if (p === '/watch') {
+    const folder = (body as { folder?: string } | undefined)?.folder ?? ''
+    if (method === 'POST' && !watched.includes(folder)) watched = [...watched, folder]
+    if (method === 'DELETE') {
+      if (!watched.includes(folder)) throw new Error('This folder is not being watched')
+      watched = watched.filter((f) => f !== folder)
+    }
+    return delay({ folders: watched, last: watchLast, error: null } satisfies WatchInfo, 80)
+  }
   if (p === '/open' || p === '/reminders') return delay({ ok: true }, p === '/reminders' ? 600 : 50)
   throw new Error(`mock: no fixture for ${method} ${path}`)
 }

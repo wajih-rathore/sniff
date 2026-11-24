@@ -52,6 +52,15 @@ Open http://localhost:5173, go to Settings, and index a folder. The index is `.s
 
 To start the parts by hand (for example on another OS), these are the commands `dev.ps1` runs:
 
+```bash
+models/llama/llama-server -m models/qwen3-1.7b-q4_k_m.gguf --port 8080 --jinja --reasoning-budget 0 -c 8192
+models/llama/llama-server -m models/all-minilm-l6-v2.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
+cd backend && uv run uvicorn sniff.api:app --port 8000
+cd frontend && npm run dev
+```
+
+**Google Calendar (optional):** create an OAuth client (Desktop app) in a Google Cloud project with the Calendar API enabled, and save its JSON as `backend/.secrets/google_client.json`. The first reminder opens a Google sign-in page.
+
 **Keep a folder live:** `POST /watch {"folder": "..."}` makes the back end watch it. New, edited, renamed and deleted files are picked up about 2 seconds after the folder goes quiet. Office lock files (`~$`) and partial downloads (`.crdownload`, `.part`, `.tmp`) are ignored. `GET /watch` lists the folders and `DELETE /watch {"folder": "..."}` stops one. The list is stored in the database and watched again after a restart.
 
 **Docker (not built or run on our machines):** `Dockerfile` builds the back end and `docker-compose.yml` adds two llama.cpp server containers, one for chat and one for embeddings. Put the model files in `models/` first. We only ran `docker compose config` to check the file, because Docker's disk is on a drive that is nearly full. Building the image and running the stack is untested. Changes inside a Windows folder mounted into a container may not reach the watcher, so use `POST /index` there.
@@ -62,7 +71,7 @@ docker compose up --build        # API on http://127.0.0.1:8000; SNIFF_DOCS=/pat
 
 **CI:** `.github/workflows/ci.yml` runs the back end tests (fake models only) and the front end build on every push. It has not run yet, because nothing is pushed.
 
-**Use Sniff from Claude Code:**
+**Use Sniff from Claude Code (optional):**
 
 ```bash
 claude mcp add sniff -- uv --directory /path/to/sniff/backend run python -m sniff.mcp_server
