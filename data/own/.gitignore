@@ -1,0 +1,4 @@
+# your own documents stay on your laptop
+*
+!.gitignore
+!README.md
