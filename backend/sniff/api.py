@@ -76,16 +76,16 @@ def index(req: IndexReq):
     folder = Path(req.folder).expanduser()
     if not folder.is_dir():
         raise HTTPException(400, f"Folder not found: {folder}")
-    if STATUS["running"]:
+    if STATUS.get("indexing"):  # another /index request; a watcher scan does not count, /index waits for it
         raise HTTPException(409, "Indexing is already running")
-    STATUS["running"] = True
+    STATUS.update(indexing=True, running=True)
 
     def work():
         conn = db.connect()
         try:
             STATUS["last"] = scan.scan(conn, folder, ai=req.ai, status=STATUS)
         finally:
-            STATUS["running"] = False
+            STATUS.update(indexing=False, running=False)
             conn.close()
 
     threading.Thread(target=work, daemon=True).start()

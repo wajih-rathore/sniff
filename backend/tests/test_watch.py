@@ -119,3 +119,35 @@ def test_watch_endpoints(conn, tmp_path, monkeypatch):
         assert len(rows(conn)) == 1  # no longer watched
     finally:
         w.stop()
+
+
+def test_index_and_watcher_scan_do_not_overlap(conn, tmp_path, monkeypatch):
+    """/index starts while the watcher's scan of the same new files is due: the second waits, each file is indexed once."""
+    from sniff.ingest import scan
+    calls = []
+    real = scan.index_file
+
+    def slow(conn, path, sha, ai=True):
+        calls.append(path.name)
+        time.sleep(0.5)  # long enough for the two scans to overlap if nothing stopped them
+        return real(conn, path, sha, ai)
+
+    monkeypatch.setattr(scan, "index_file", slow)
+    api.STATUS.update(running=False, indexing=False)
+    w = watch.Watcher(api.STATUS, debounce=0.3, poll=0.05)
+    monkeypatch.setattr(api, "WATCHER", w)
+    client = TestClient(api.app)
+    folder = tmp_path / "docs"
+    folder.mkdir()
+    try:
+        client.post("/watch", json={"folder": str(folder)})
+        assert wait_for(lambda: "watch_last" in api.STATUS)
+        for i in range(3):
+            (folder / f"bill{i}.txt").write_text(f"Electricity bill number {i}")
+        assert client.post("/index", json={"folder": str(folder)}).json() == {"started": True}
+        assert wait_for(lambda: len(rows(conn)) == 3)
+        time.sleep(2)  # the watcher's own scan runs after the /index one has finished
+        assert sorted(calls) == ["bill0.txt", "bill1.txt", "bill2.txt"]
+        assert conn.execute("SELECT count(*) FROM actions WHERE kind='indexed'").fetchone()[0] == 3
+    finally:
+        w.stop()

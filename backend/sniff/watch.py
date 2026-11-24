@@ -133,8 +133,6 @@ class Watcher:
             self._tick(time.monotonic())
 
     def _tick(self, now: float) -> None:
-        if self.status.get("running"):  # an index run is going; changes wait their turn
-            return
         with self.lock:
             due = [(f, p, p["last"], dict(p["sizes"])) for f, p in self.pending.items() if now - p["last"] >= self.debounce]
         for folder, p, last, sizes in due:

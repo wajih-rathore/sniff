@@ -2,6 +2,7 @@
 import hashlib
 import os
 import sqlite3
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -25,8 +26,16 @@ def iter_files(folder: Path):
             yield p.resolve()
 
 
+LOCK = threading.Lock()  # one scan at a time, whether it comes from /index or the watcher; the second one waits
+
+
 def scan(conn: sqlite3.Connection, folder, ai: bool = True, status: dict | None = None) -> dict:
     """Bring the index for `folder` up to date. Returns counts of what happened."""
+    with LOCK:
+        return _scan(conn, folder, ai, status)
+
+
+def _scan(conn, folder, ai, status) -> dict:
     folder = Path(folder).resolve()
     status = status if status is not None else {}
     on_disk = {str(p): p for p in iter_files(folder)}
