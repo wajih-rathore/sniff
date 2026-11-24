@@ -12,6 +12,8 @@ from common import EVAL_DB, RESULTS, ROOT, save
 
 def main(specs: list[str]):
     rows = []
+    # run_search.py writes search.json each time; keep the app's own search result (all-MiniLM on eval.db)
+    keep = {p: p.read_bytes() for p in (RESULTS / "search.json", RESULTS / "search_failures.json") if p.exists()}
     for spec in specs:
         name, url, dim = spec.split("=")
         db_copy = EVAL_DB.with_name(f"eval-{name}.db")
@@ -24,6 +26,8 @@ def main(specs: list[str]):
         for r in result["rows"][:3]:  # hybrid, BM25, embeddings only
             if "BM25" not in r["system"] or not rows:
                 rows.append({**r, "system": f"{r['system']} [{name}]"})
+    for p, b in keep.items():
+        p.write_bytes(b)
     save("embeddings", {"n": result["n"], "rows": rows}, [])
 
 

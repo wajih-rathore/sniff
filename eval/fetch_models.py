@@ -5,6 +5,7 @@ Ollama registry (plain GGUF blobs, addressed by their sha256). EmbeddingGemma co
 from ggml-org on Hugging Face: the Ollama build of it fails to load in llama.cpp
 ("wrong number of tensors; expected 316, got 314").
 
+    python eval/fetch_models.py qwen3-1.7b all-minilm         # what the app needs (1.4 GB)
     python eval/fetch_models.py gemma3-1b embeddinggemma      # small ones
     python eval/fetch_models.py qwen3-8b                       # ~5.2 GB
     python eval/fetch_models.py --status                       # progress of every model
@@ -25,6 +26,14 @@ HF = "https://huggingface.co"
 
 # key: (file name in models/, url, sha256, size in bytes)
 MODELS = {
+    # the two models the app runs on (scripts/dev.ps1)
+    "qwen3-1.7b": ("qwen3-1.7b-q4_k_m.gguf",
+                   f"{OLLAMA}/qwen3/blobs/sha256:3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6",
+                   "3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6", 1359279776),
+    "all-minilm": ("all-minilm-l6-v2.gguf",
+                   f"{OLLAMA}/all-minilm/blobs/sha256:797b70c4edf85907fe0a49eb85811256f65fa0f7bf52166b147fd16be2be4662",
+                   "797b70c4edf85907fe0a49eb85811256f65fa0f7bf52166b147fd16be2be4662", 45949216),
+    # models under comparison
     "gemma3-1b": ("gemma3-1b-it-q4_k_m.gguf",
                   f"{OLLAMA}/gemma3/blobs/sha256:2f8c3d137f2496dcb4019e17a50f2974b89c1be1a742db3c80cc86f91cafeeef",
                   "2f8c3d137f2496dcb4019e17a50f2974b89c1be1a742db3c80cc86f91cafeeef", 806058400),
