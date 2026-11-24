@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -18,3 +19,8 @@ EMBED_MODEL = os.environ.get("SNIFF_EMBED_MODEL", "all-minilm")
 EMBED_DIM = int(os.environ.get("SNIFF_EMBED_DIM", "384"))
 
 SUPPORTED = {".pdf", ".docx", ".pptx", ".txt", ".md", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
+
+# MCP: what an outside agent may read, as {document type: fields}. ["*"] means every field and the page text too.
+# Types not listed are hidden, so ID cards are hidden by default. ID numbers are always masked.
+MCP_ALLOW: dict[str, list[str]] = json.loads(os.environ.get("SNIFF_MCP_ALLOW", "null")) or {
+    "utility_bill": ["*"], "certificate": ["*"], "receipt": ["*"], "other": ["*"]}
