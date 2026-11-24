@@ -267,7 +267,7 @@ def add_reminder(req: ReminderReq, conn=Depends(get_conn)):
     holder = conn.execute("SELECT value FROM facts WHERE file_id=? AND field IN ('name','holder_name','provider','merchant')", (r["file_id"],)).fetchone()
     title = f"{(r['doc_type'] or 'document').replace('_', ' ').capitalize()} {REMINDER_TITLES[r['field']]}" + (f" ({holder['value']})" if holder else "")
     try:
-        event_id = gcal.create_event(title, date.fromisoformat(r["value"]), f"From {r['path']}, page {r['page']}. Added by Sniff.")
+        event_id = gcal.create_event(title, date.fromisoformat(r["value"]), f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only: the full path stays on the laptop
     except Exception as e:
         raise HTTPException(502, f"Could not create the calendar event: {e}")
     conn.execute("INSERT INTO reminders(fact_id, title, date, calendar_event_id, status, created_at) VALUES (?,?,?,?, 'created', datetime('now'))",

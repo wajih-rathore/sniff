@@ -96,11 +96,12 @@ def test_no_match_says_so(docs, monkeypatch):
 
 def test_reminder_only_after_approval(docs, monkeypatch):
     created = []
-    monkeypatch.setattr(gcal, "create_event", lambda title, day, desc: created.append((title, day)) or "evt1")
+    monkeypatch.setattr(gcal, "create_event", lambda title, day, desc: created.append((title, day, desc)) or "evt1")
     client = TestClient(api.app)  # db.connect() uses the fixture's temp DB path
     items = client.get("/upcoming", params={"days": 400}).json()
     assert items and not created  # listing never creates events
     fact_id = items[0]["fact"]["id"]
     r = client.post("/reminders", json={"fact_id": fact_id})
     assert r.status_code == 200 and len(created) == 1
+    assert "/" not in created[0][2] and "\\" not in created[0][2]  # only the file name leaves the laptop
     assert client.get("/upcoming", params={"days": 400}).json()[0]["reminder_status"] == "created"
