@@ -214,3 +214,59 @@ The failure files carry what is needed to group them:
 - OCR: `variant`, `effects`, `cer`;
 - ask and router: `category`, the route and query the router chose, and the answer's `counted`,
   `skipped_duplicates`, `unreviewed` and `conflicts`.
+
+## A4 checks: injection, robustness, MCP against direct reading, human ratings
+
+Four more harnesses for the A4 rubric (robustness and safety, agents and tool calling, human evaluation). They are
+written and tested with stub models only. None has been run on the real models yet, so there are no numbers here.
+Run them after the main evaluation, from `backend/`, with both model servers up and `run_index.py` already done for
+the sets they use.
+
+**1. Prompt injection** (`data/injection/`, `eval/run_injection.py`). The generator builds 120 PDFs, the same every time
+(seed 11): 20 documents each with an instruction printed on them (`visible`), with the instruction as white or 1 pt text
+(`hidden`), and 20 clean bills and receipts with a separate forwarded note that carries the instruction and gets
+retrieved by search (`retrieved`). Every visible and hidden document has a clean twin. Attack success means the stored
+type, the stored field or the answer is what the attacker asked for. The clean twins give the baseline accuracy.
+```
+uv run python ../data/injection/make_injection.py
+uv run python ../eval/run_injection.py            # --limit 3 for a quick check, --skip-index to only score
+```
+It indexes into `.sniff/eval-injection_clean.db` and `.sniff/eval-injection.db` (140 documents, so about as long as
+the hard set) and writes `prompt_injection.json`. It also reports how many successful attacks were stored as `verified`,
+because those would reach the user unflagged. The retrieved kind only tests the search route (the one where retrieved
+text goes into the prompt); the facts route reads stored values and never sees the note.
+
+**2. Robustness** (`eval/run_robustness.py`). Needs `run_index.py` for `test` and for `--set hard`. It compares each hard
+document with its clean twin and reports type and field accuracy drop per corruption (photo, lowres, handwriting,
+cutoff) and per effect tag. For cut-off pages both sides are scored on the fields that survive the cut, and
+`cut_fields_filled` shows how often Sniff stored a value for a field that was cut away. It calls no model.
+```
+uv run python ../eval/run_robustness.py
+```
+
+**3. MCP against direct reading** (`eval/run_mcp_vs_direct.py`). The chat model answers 60 questions (single_fact,
+cross_doc_total, semantic, unanswerable, duplicates, conflict; not expiring_window, because the MCP tools take no
+date) as a tool-using agent, once with Sniff's MCP tools over a real stdio session, once with `list_files` and
+`read_file` over the folder of test documents. Max 6 model calls per question, tool results cut at 3,000 characters in
+both conditions. It resumes a stopped run.
+```
+uv run python ../eval/run_mcp_vs_direct.py
+uv run python ../eval/run_mcp_vs_direct.py --n 6 --conditions direct   # a quick check
+```
+Notes: the chat server must run with `--jinja` (dev.ps1 does). If the failures show context errors, restart it with
+`-np 1` and a larger `-c`. The MCP server is started with every document type allowed, so ID cards are readable in
+both conditions. Tokens for the MCP condition include the chat calls made inside Sniff's tools. Refusals are found
+with a phrase list ("could not find", ...), which can be wrong in both directions; the traces are in
+`mcp_vs_direct_runs.json`.
+
+**4. Human ratings** (`eval/ratings.py`). `make` asks 60 search-route questions and writes `data/ratings/sheet.csv`,
+`form.html` and `answers.json`. Each of the three team members rates all 60 (correctness 0 to 2, grounded 0 or 1,
+usefulness 1 to 5), without talking to the others, and saves the file as `data/ratings/rated_<name>.csv`. The form's
+download button does this; the CSV sheet can be filled in Excel. `score` computes the means, Cohen's kappa for each pair
+of raters (linear weights for the ordered scales), Fleiss' kappa and the means by category in code.
+```
+uv run python ../eval/ratings.py make
+uv run python ../eval/ratings.py score
+```
+The kappa code was checked against the worked examples on Wikipedia (0.4 and 0.210).
+Tests for all four: `backend/tests/test_eval_*.py`.
