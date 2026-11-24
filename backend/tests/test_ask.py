@@ -10,23 +10,15 @@ from sniff.ask import Filters, Route
 TODAY = date(2026, 11, 22)
 
 
-def add_doc(conn, path, doc_type, facts):
-    fid = conn.execute("INSERT INTO files(path, doc_type, status) VALUES (?,?, 'indexed')", (path, doc_type)).lastrowid
-    for field, value, vtype in facts:
-        conn.execute("INSERT INTO facts(file_id, field, value, value_type, page, verified) VALUES (?,?,?,?,1,1)", (fid, field, value, vtype))
-    conn.commit()
-    return fid
-
-
 @pytest.fixture
-def docs(conn):
-    for month, amount in [("2026-01", "3000"), ("2026-02", "2500.5"), ("2025-12", "9999")]:
-        add_doc(conn, f"/x/bill_{month}.pdf", "utility_bill",
-                [("provider", "Northern Electric Supply Co.", "text"), ("billing_month", month, "text"), ("amount_due", amount, "money")])
-    add_doc(conn, "/x/gas.pdf", "utility_bill", [("provider", "Metro Gas", "text"), ("billing_month", "2026-01", "text"), ("amount_due", "700", "money")])
-    add_doc(conn, "/x/id_ali.jpg", "id_card", [("name", "Ali Khan", "text"), ("expiry_date", "2027-01-10", "date")])
-    add_doc(conn, "/x/id_sara.jpg", "id_card", [("name", "Sara Khan", "text"), ("expiry_date", "2026-12-05", "date")])
-    add_doc(conn, "/x/id_old.jpg", "id_card", [("name", "Omar Khan", "text"), ("expiry_date", "2026-03-01", "date")])
+def docs(conn, add_doc):
+    for month, amount in [("2026-01", "3000.0"), ("2026-02", "2500.5"), ("2025-12", "9999.0")]:
+        add_doc(f"/x/bill_{month}.pdf", "utility_bill", {"provider": "Northern Electric Supply Co.", "account_number": "ELC-1",
+                                                         "billing_month": month, "current_charges": amount, "amount_due": amount})
+    add_doc("/x/gas.pdf", "utility_bill", {"provider": "Metro Gas", "billing_month": "2026-01", "current_charges": "700.0", "amount_due": "700.0"})
+    add_doc("/x/id_ali.jpg", "id_card", {"name": "Ali Khan", "id_number": "11111-1111111-1", "expiry_date": "2027-01-10"})
+    add_doc("/x/id_sara.jpg", "id_card", {"name": "Sara Khan", "id_number": "22222-2222222-2", "expiry_date": "2026-12-05"})
+    add_doc("/x/id_old.jpg", "id_card", {"name": "Omar Khan", "id_number": "33333-3333333-3", "expiry_date": "2026-03-01"})
     return conn
 
 
@@ -36,16 +28,25 @@ def run(conn, monkeypatch, r: Route):
 
 
 def test_sum_with_provider_and_year(docs, monkeypatch):
-    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="amount_due", op="sum",
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
                                      filters=Filters(provider="electric", year=2026)))
     assert a.route == "facts" and a.answer.startswith("5,500.50 in total, from 2 documents")
-    assert len(a.sources) == 2
+    assert len(a.sources) == 2 and len(a.counted) == 2
 
 
 def test_period_is_resolved_by_code(docs, monkeypatch):
     a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="amount_due", op="count",
                                      filters=Filters(period="last_year")))
     assert a.answer == "1 documents."
+
+
+def test_month_and_date_range_filters(docs, monkeypatch):
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
+                                     filters=Filters(provider="electric", month="February 2026")))
+    assert a.answer.startswith("2,500.50 in total, from 1 documents")
+    a = run(docs, monkeypatch, Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
+                                     filters=Filters(provider="electric", date_from="December 2025", date_to="January 2026")))
+    assert a.answer.startswith("12,999 in total, from 2 documents")
 
 
 def test_next_expiring_skips_expired(docs, monkeypatch):
@@ -62,7 +63,8 @@ def test_invalid_template_falls_back_to_search(docs, monkeypatch):
     called = []
     monkeypatch.setattr(ask, "answer_from_search", lambda conn, q: called.append(q) or "searched")
     assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="amount_due", op="sum")) == "searched"
-    assert called
+    assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="expiry_date", op="outstanding")) == "searched"
+    assert len(called) == 2
 
 
 def test_no_match_says_so(docs, monkeypatch):

@@ -21,9 +21,28 @@ def conn(tmp_path, monkeypatch):
     monkeypatch.setattr(embed, "embed", lambda texts: [fake_vector(t) for t in texts])
     monkeypatch.setattr(embed, "embed_query", fake_vector)
     monkeypatch.setattr(classify, "classify", lambda pages: "utility_bill" if any("bill" in t.lower() for _, t in pages) else "other")
-    monkeypatch.setattr(extract, "extract", lambda doc_type, pages: [
+    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None: [
         {"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "source_text": None}
     ])
     c = db.connect()
     yield c
     c.close()
+
+
+VALUE_TYPES = {"date": "date", "money": "money", "id": "id"}
+
+
+@pytest.fixture
+def add_doc(conn):
+    """Insert an indexed document with facts: add_doc(path, doc_type, {field: value}, status=..., statuses={field: status})."""
+    from sniff.schemas import FIELDS
+
+    def add(path, doc_type, facts, status="verified", statuses=None):
+        fid = conn.execute("INSERT INTO files(path, doc_type, status) VALUES (?,?, 'indexed')", (path, doc_type)).lastrowid
+        for field, value in facts.items():
+            st = (statuses or {}).get(field, status)
+            conn.execute("INSERT INTO facts(file_id, field, value, value_type, page, verified, status) VALUES (?,?,?,?,1,?,?)",
+                         (fid, field, value, VALUE_TYPES.get(FIELDS[doc_type][field].kind, "text"), int(st == "verified"), st))
+        conn.commit()
+        return fid
+    return add

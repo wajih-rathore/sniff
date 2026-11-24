@@ -1,0 +1,112 @@
+"""Near-duplicates and conflicts across documents. Plain code, no model.
+
+Exact copies (the same bytes in two folders) are already one document: files.copy_of. Here we deal with different
+files that hold the same record, like one bill saved as a PDF and as a phone photo. Documents with the same key
+(schemas.KEYS) are the same record. If they also agree on every stable field they are near-duplicates: calculations
+count the most trusted one and list the rest as skipped. If a stable field differs, they are a conflict: both stay,
+and the conflict is reported with both values instead of picking one.
+"""
+import re
+import sqlite3
+from dataclasses import dataclass
+from pathlib import Path
+
+from .schemas import FIELDS, KEYS, Conflict, ConflictValue, Fact, Source
+
+
+@dataclass
+class Doc:
+    id: int
+    path: str
+    doc_type: str
+    facts: dict  # field -> row of the facts table
+
+    def get(self, field: str) -> str | None:
+        r = self.facts.get(field)
+        return r["value"] if r else None
+
+    @property
+    def trust(self) -> tuple:
+        """Sort key, best first: fewest facts needing review, then most facts a person corrected or approved."""
+        st = [r["status"] for r in self.facts.values()]
+        return st.count("needs_review"), -(st.count("approved") + st.count("corrected")), self.id
+
+
+@dataclass
+class Resolved:
+    kept: list[Doc]  # one document per record (both sides of a conflict are kept)
+    skipped: list[tuple[Doc, Doc]]  # (near-duplicate left out, the document kept instead)
+    conflicts: list[Conflict]
+
+
+def load(conn: sqlite3.Connection, doc_type: str | None = None) -> list[Doc]:
+    """Indexed documents with a fact type, copies folded, with their facts."""
+    sql = "SELECT id, path, doc_type FROM files WHERE status='indexed' AND copy_of IS NULL AND doc_type IN (%s)"
+    types = [doc_type] if doc_type else list(FIELDS)
+    docs = {r["id"]: Doc(r["id"], r["path"], r["doc_type"], {}) for r in conn.execute(sql % ",".join("?" * len(types)), types)}
+    for r in conn.execute("SELECT * FROM facts ORDER BY id"):
+        if r["file_id"] in docs:
+            docs[r["file_id"]].facts.setdefault(r["field"], r)
+    return list(docs.values())
+
+
+def norm(doc_type: str, field: str, value: str) -> str:
+    if FIELDS[doc_type][field].kind == "money":
+        return f"{float(value):.2f}"
+    return re.sub(r"[^a-z0-9]", "", value.lower())  # case, spaces and punctuation differ between a scan and a PDF
+
+
+def key(d: Doc) -> tuple | None:
+    vals = [d.get(f) for f in KEYS[d.doc_type]]
+    return None if None in vals else (d.doc_type, *(norm(d.doc_type, f, v) for f, v in zip(KEYS[d.doc_type], vals)))
+
+
+def stable_fields(doc_type: str) -> list[str]:
+    return [f for f, s in FIELDS[doc_type].items() if s.stable and f not in KEYS[doc_type]]
+
+
+def agree(a: Doc, b: Doc) -> bool:
+    return all(norm(a.doc_type, f, a.get(f)) == norm(a.doc_type, f, b.get(f))
+               for f in stable_fields(a.doc_type) if a.get(f) is not None and b.get(f) is not None)
+
+
+def resolve(docs: list[Doc]) -> Resolved:
+    groups: dict[tuple, list[Doc]] = {}
+    for d in docs:
+        groups.setdefault(key(d) or ("doc", d.id), []).append(d)
+    kept, skipped, conflicts = [], [], []
+    for group in groups.values():
+        group.sort(key=lambda d: d.trust)
+        reps: list[Doc] = []
+        for d in group:
+            rep = next((r for r in reps if agree(r, d)), None)
+            if rep:
+                skipped.append((d, rep))
+            else:
+                reps.append(d)
+        kept += reps
+        if len(reps) > 1:
+            conflicts += _conflicts(reps)
+    return Resolved(sorted(kept, key=lambda d: d.id), skipped, conflicts)
+
+
+def _conflicts(reps: list[Doc]) -> list[Conflict]:
+    t = reps[0].doc_type
+    label = ", ".join(f"{f} {reps[0].get(f)}" for f in KEYS[t])
+    out = []
+    for f in stable_fields(t):
+        has = [d for d in reps if d.get(f) is not None]
+        if len({norm(t, f, d.get(f)) for d in has}) > 1:
+            out.append(Conflict(doc_type=t, key=label, field=f, values=[
+                ConflictValue(value=d.get(f), fact_id=d.facts[f]["id"], status=d.facts[f]["status"], source=source(d.id, d.path, d.facts[f]["page"]))
+                for d in has]))
+    return out
+
+
+def source(file_id: int, path: str, page: int = 1) -> Source:
+    return Source(file_id=file_id, path=path, name=Path(path).name, page=page)
+
+
+def fact(r) -> Fact:
+    return Fact(id=r["id"], file_id=r["file_id"], field=r["field"], value=r["value"], value_type=r["value_type"], page=r["page"],
+                verified=bool(r["verified"]), status=r["status"], reason=r["reason"], source_text=r["source_text"])

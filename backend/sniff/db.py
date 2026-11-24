@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS files(
   doc_type TEXT,
   indexed_at TEXT,
   status TEXT NOT NULL DEFAULT 'new',   -- new | indexed | error
-  error TEXT
+  error TEXT,
+  copy_of INTEGER                       -- set when this path holds the same bytes as an indexed file; it has no rows of its own
 );
 CREATE TABLE IF NOT EXISTS chunks(
   id INTEGER PRIMARY KEY,
@@ -37,8 +38,10 @@ CREATE TABLE IF NOT EXISTS facts(
   value TEXT NOT NULL,
   value_type TEXT NOT NULL,             -- date | money | text | id
   page INTEGER NOT NULL DEFAULT 1,
-  verified INTEGER NOT NULL DEFAULT 0,  -- 1 if the value was found on the page
-  source_text TEXT
+  verified INTEGER NOT NULL DEFAULT 0,  -- 1 if on the page, next to its field's label, and passes the field's rules
+  source_text TEXT,
+  status TEXT NOT NULL DEFAULT 'needs_review',  -- verified | needs_review | corrected | approved
+  reason TEXT                           -- why it needs review
 );
 CREATE INDEX IF NOT EXISTS facts_file ON facts(file_id);
 CREATE TABLE IF NOT EXISTS reminders(
@@ -52,6 +55,8 @@ CREATE TABLE IF NOT EXISTS reminders(
 CREATE TABLE IF NOT EXISTS actions(id INTEGER PRIMARY KEY, ts TEXT, kind TEXT, payload TEXT);
 """
 
+MIGRATIONS = [("files", "copy_of", "INTEGER"), ("facts", "status", "TEXT NOT NULL DEFAULT 'needs_review'"), ("facts", "reason", "TEXT")]
+
 
 def connect(path=None) -> sqlite3.Connection:
     path = path or config.DB_PATH
@@ -64,6 +69,9 @@ def connect(path=None) -> sqlite3.Connection:
     sqlite_vec.load(conn)
     conn.enable_load_extension(False)
     conn.executescript(SCHEMA)
+    for table, column, decl in MIGRATIONS:  # databases made before these columns existed
+        if column not in {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
     return conn
 
 
@@ -76,3 +84,16 @@ def delete_file_data(conn: sqlite3.Connection, file_id: int) -> None:
     conn.execute("DELETE FROM chunk_vec WHERE chunk_id IN (SELECT id FROM chunks WHERE file_id=?)", (file_id,))
     conn.execute("DELETE FROM chunks WHERE file_id=?", (file_id,))
     conn.execute("DELETE FROM facts WHERE file_id=?", (file_id,))
+
+
+def release(conn: sqlite3.Connection, file_id: int) -> None:
+    """Free a file row's chunks, vectors and facts before it is deleted or re-indexed. If other paths hold copies of
+    it, the first copy takes over the rows (and any corrections), so the document survives."""
+    heir = conn.execute("SELECT id FROM files WHERE copy_of=? ORDER BY id LIMIT 1", (file_id,)).fetchone()
+    if not heir:
+        delete_file_data(conn, file_id)
+        return
+    conn.execute("UPDATE chunks SET file_id=? WHERE file_id=?", (heir["id"], file_id))
+    conn.execute("UPDATE facts SET file_id=? WHERE file_id=?", (heir["id"], file_id))
+    conn.execute("UPDATE files SET copy_of=NULL WHERE id=?", (heir["id"],))
+    conn.execute("UPDATE files SET copy_of=? WHERE copy_of=?", (heir["id"], file_id))

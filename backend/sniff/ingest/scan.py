@@ -68,7 +68,7 @@ def scan(conn: sqlite3.Connection, folder, ai: bool = True, status: dict | None 
         status["done"] += 1
 
     for r in gone.values():
-        db.delete_file_data(conn, r["id"])
+        db.release(conn, r["id"])  # a copy elsewhere keeps the document alive
         conn.execute("DELETE FROM files WHERE id=?", (r["id"],))
         db.log(conn, "removed", r["path"])
         counts["removed"] += 1
@@ -78,9 +78,25 @@ def scan(conn: sqlite3.Connection, folder, ai: bool = True, status: dict | None 
 
 
 def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) -> int:
-    """Read, embed, classify and extract one file, then replace its rows in one transaction."""
+    """Read, embed, classify and extract one file, then replace its rows in one transaction. A file with the same
+    bytes as one already indexed is recorded as a copy of it instead. Returns the document's id."""
     st = path.stat()
-    pages = readers.read(path)
+    row = conn.execute("SELECT id FROM files WHERE path=?", (str(path),)).fetchone()
+    same = conn.execute("SELECT id, doc_type FROM files WHERE sha256=? AND status='indexed' AND copy_of IS NULL AND path<>? ORDER BY id LIMIT 1",
+                        (sha, str(path))).fetchone()
+    if same:  # exact copy in another folder: one document, several paths, facts stored once
+        if row:
+            db.release(conn, row["id"])
+        conn.execute(
+            "INSERT INTO files(path, size, mtime, sha256, doc_type, indexed_at, status, copy_of) VALUES (?,?,?,?,?,?, 'indexed', ?) "
+            "ON CONFLICT(path) DO UPDATE SET size=excluded.size, mtime=excluded.mtime, sha256=excluded.sha256, doc_type=excluded.doc_type, "
+            "indexed_at=excluded.indexed_at, status='indexed', error=NULL, copy_of=excluded.copy_of",
+            (str(path), st.st_size, st.st_mtime, sha, same["doc_type"], datetime.now().isoformat(timespec="seconds"), same["id"]),
+        )
+        db.log(conn, "copy", f"{path} = file {same['id']}")
+        return same["id"]
+
+    pages, boxes = readers.read_layout(path)
     pieces = readers.chunk(pages)
     vectors = embed.embed([t for _, t in pieces]) if pieces else []
     doc_type, facts, ai_error = None, [], None
@@ -88,26 +104,26 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
         try:
             doc_type = classify.classify(pages)
             if doc_type in FACT_MODELS:
-                facts = extract.extract(doc_type, pages)
+                facts = extract.extract(doc_type, pages, boxes)
         except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why
             ai_error = f"{type(e).__name__}: {e}"[:500]
 
-    row = conn.execute("SELECT id FROM files WHERE path=?", (str(path),)).fetchone()
     if row:
         file_id = row["id"]
-        db.delete_file_data(conn, file_id)
+        db.release(conn, file_id)
     else:
         file_id = conn.execute("INSERT INTO files(path) VALUES (?)", (str(path),)).lastrowid
     for (page, text), vec in zip(pieces, vectors):
         cid = conn.execute("INSERT INTO chunks(file_id, page, text) VALUES (?,?,?)", (file_id, page, text)).lastrowid
         conn.execute("INSERT INTO chunk_vec(chunk_id, embedding) VALUES (?,?)", (cid, vec.tobytes()))
     for f in facts:
+        status = f.get("status") or ("verified" if f["verified"] else "needs_review")
         conn.execute(
-            "INSERT INTO facts(file_id, field, value, value_type, page, verified, source_text) VALUES (?,?,?,?,?,?,?)",
-            (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"]),
+            "INSERT INTO facts(file_id, field, value, value_type, page, verified, source_text, status, reason) VALUES (?,?,?,?,?,?,?,?,?)",
+            (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"], status, f.get("reason")),
         )
     conn.execute(
-        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=? WHERE id=?",
+        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
         (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"), ai_error, file_id),
     )
     db.log(conn, "indexed", str(path))
