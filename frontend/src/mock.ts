@@ -1,5 +1,5 @@
 // Fixtures for every endpoint, used when VITE_MOCK=1. Dates are relative to today so Upcoming always looks current.
-import type { Answer, Document, EvalResult, Fact, Hit, IndexStatus, UpcomingItem } from './api'
+import type { Answer, Document, EvalResult, Fact, Hit, IndexStatus, Overview, UpcomingItem } from './api'
 
 const day = 86_400_000
 const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString().slice(0, 10)
@@ -7,6 +7,7 @@ const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString(
 let fid = 0
 const F = (file_id: number, field: string, value: string, value_type: Fact['value_type'], page = 1, verified = true): Fact => ({
   id: ++fid, file_id, field, value, value_type, page, verified,
+  status: verified ? 'verified' : 'needs_review', reason: verified ? null : 'not next to its label', source_text: null,
 })
 
 // [id, name, doc_type, facts, page text]
@@ -44,7 +45,8 @@ const raw: [number, string, string, Fact[], string][] = [
 ]
 
 const docs: Document[] = raw.map(([id, name, doc_type, facts]) => ({
-  id, path: base + name, name, doc_type, indexed_at: new Date(Date.now() - id * 3_600_000).toISOString(), status: 'ok', facts,
+  id, path: base + name, name, doc_type, indexed_at: new Date(Date.now() - id * 3_600_000).toISOString(), status: 'indexed', facts,
+  paths: [base + name], near_duplicates: [], pages: 1,
 }))
 const allFacts = docs.flatMap((d) => d.facts)
 
@@ -63,20 +65,22 @@ function search(q: string): Hit[] {
 }
 
 function ask(question: string): Answer {
+  const none = { counted: [], skipped_duplicates: [], unreviewed: [], conflicts: [] }
   const src = (ids: number[]) => ids.map((id) => ({ file_id: id, path: docs[id - 1].path, name: docs[id - 1].name, page: 1 }))
   const pick = (field: string) => allFacts.filter((f) => f.field === field)
   if (/expir|renew|valid/i.test(question)) {
     const f = pick('expiry_date').filter((x) => x.file_id === 1)
-    return { question, route: 'facts', answer: `Your national ID card expires on ${f[0].value}, in 34 days.`, sources: src([1]), facts: f, query: { doc_type: 'id_card', field: 'expiry_date', op: 'next_expiring', filters: {} } }
+    return { ...none, question, route: 'facts', answer: `Your national ID card expires on ${f[0].value}, in 34 days.`, sources: src([1]), counted: src([1]), unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'id_card', field: 'expiry_date', op: 'next_expiring', filters: {} } }
   }
   if (/bill|total|spent|paid|owe|amount/i.test(question)) {
     const f = pick('amount_due')
     const total = f.reduce((s, x) => s + Number(x.value), 0).toFixed(2)
-    return { question, route: 'facts', answer: `The utility bills add up to ${total}.`, sources: src([...new Set(f.map((x) => x.file_id))]), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
+    const s = src([...new Set(f.map((x) => x.file_id))])
+    return { ...none, question, route: 'facts', answer: `The utility bills add up to ${total}.`, sources: s, counted: s, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
   }
   const h = search(question)[0]
-  if (!h) return { question, route: 'none', answer: 'I could not find this in your documents.', sources: [], facts: [], query: null }
-  return { question, route: 'search', answer: h.snippet + '.', sources: src([h.file_id]), facts: [], query: null }
+  if (!h) return { ...none, question, route: 'none', answer: 'I could not find this in your documents.', sources: [], facts: [], query: null }
+  return { ...none, question, route: 'search', answer: h.snippet + '.', sources: src([h.file_id]), facts: [], query: null }
 }
 
 function upcoming(): UpcomingItem[] {
@@ -86,7 +90,7 @@ function upcoming(): UpcomingItem[] {
     .map((fact) => {
       const d = docs[fact.file_id - 1]
       const days_left = Math.round((Date.parse(fact.value) - Date.now()) / day) + (fact.value === iso(0) ? 0 : 1)
-      return { fact, document: d.name, path: d.path, doc_type: d.doc_type, days_left, reminder_status: null }
+      return { fact, document: d.name, path: d.path, doc_type: d.doc_type, days_left, reminder_status: null, conflict: null }
     })
     .filter((u) => u.days_left <= 90)
 }
@@ -119,6 +123,15 @@ const evals: EvalResult[] = [
   ] },
 ]
 
+function overview(): Overview {
+  const by_type: Record<string, number> = {}
+  for (const d of docs) by_type[d.doc_type ?? 'other'] = (by_type[d.doc_type ?? 'other'] ?? 0) + 1
+  const ex = upcoming().filter((u) => u.fact.field !== 'due_date' && u.days_left >= 0)
+  const within = (n: number) => ex.filter((u) => u.days_left <= n).length
+  return { total_files: docs.length, documents: docs.length, by_type, exact_copies: 0, near_duplicates: 0, expiring: { '30': within(30), '60': within(60), '90': within(90) },
+    missing_required: [], needs_review: allFacts.filter((f) => f.status === 'needs_review').length, conflicts: 0, errors: 0 }
+}
+
 let indexStart = 0
 function indexStatus(): IndexStatus {
   const total = 24
@@ -133,6 +146,10 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p === '/search') return delay(search(url.searchParams.get('q') ?? ''), 120)
   if (p === '/ask') return delay(ask((body as { question: string }).question), 900)
   if (p === '/documents') { const t = url.searchParams.get('type'); return delay(t ? docs.filter((d) => d.doc_type === t) : docs) }
+  if (p.startsWith('/documents/')) return delay(docs.find((d) => d.id === Number(p.split('/')[2])))
+  if (p === '/review') return delay(allFacts.filter((f) => f.status === 'needs_review').map((fact) => ({ fact, document: docs[fact.file_id - 1].name, path: docs[fact.file_id - 1].path, doc_type: docs[fact.file_id - 1].doc_type })))
+  if (p === '/conflicts') return delay([])
+  if (p === '/overview') return delay(overview())
   if (p === '/upcoming') return delay(upcoming())
   if (p === '/eval') return delay(evals)
   if (p === '/index/status') return indexStatus()

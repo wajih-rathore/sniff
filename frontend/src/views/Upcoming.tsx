@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api'
-import { Async, Tag, label, useFetch } from '../ui'
+import { Async, Status, Tag, label, useFetch } from '../ui'
 
 export default function Upcoming() {
   const items = useFetch(api.upcoming, [])
@@ -31,7 +31,12 @@ export default function Upcoming() {
                       <span className="truncate font-medium">{it.document}</span>
                       {it.doc_type && <Tag>{label(it.doc_type)}</Tag>}
                     </div>
-                    <div className="text-[12.5px] text-muted">{label(it.fact.field)} · {it.fact.value}</div>
+                    <div className="flex items-center gap-2 text-[12.5px] text-muted">{label(it.fact.field)} · {it.fact.value} <Status f={it.fact} /></div>
+                    {it.conflict && (
+                      <div className="text-[12px] text-danger">
+                        Conflict: {it.conflict.values.map((v) => `${v.value} in ${v.source.name}`).join(' but ')}
+                      </div>
+                    )}
                     {st && st !== 'sending' && st !== 'done' && <div className="text-[12px] text-danger">{st}</div>}
                   </div>
                   <div className={`shrink-0 text-[12.5px] ${it.days_left < 0 ? 'text-danger' : ''}`}>

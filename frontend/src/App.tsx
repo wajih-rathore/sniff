@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
-import { BarChart3, CalendarClock, Library, Search, Settings } from 'lucide-react'
+import { BarChart3, CalendarClock, ClipboardCheck, LayoutDashboard, Library, Search, Settings } from 'lucide-react'
 import SearchView from './views/Search'
 import LibraryView from './views/Library'
 import UpcomingView from './views/Upcoming'
 import EvaluationView from './views/Evaluation'
 import SettingsView from './views/Settings'
+import OverviewView from './views/Overview'
+import ReviewView from './views/Review'
+import type { Nav } from './ui'
 
 const TABS = [
   { id: 'search', name: 'Search', icon: Search },
+  { id: 'overview', name: 'Overview', icon: LayoutDashboard },
+  { id: 'review', name: 'Review', icon: ClipboardCheck },
   { id: 'library', name: 'Library', icon: Library },
   { id: 'upcoming', name: 'Upcoming', icon: CalendarClock },
   { id: 'evaluation', name: 'Evaluation', icon: BarChart3 },
@@ -15,14 +20,15 @@ const TABS = [
 ] as const
 
 export default function App() {
-  const [view, setView] = useState<(typeof TABS)[number]['id']>('search')
+  const [nav, go] = useState<Nav>({ view: 'search' })
+  const view = nav.view
   const [focus, setFocus] = useState(0) // bumped on Ctrl+K so the search bar focuses itself
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setView('search')
+        go({ view: 'search' })
         setFocus((n) => n + 1)
       }
     }
@@ -37,7 +43,7 @@ export default function App() {
         {TABS.map(({ id, name, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => setView(id)}
+            onClick={() => go({ view: id })}
             className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] ${
               view === id ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-hover hover:text-fg'
             }`}
@@ -48,8 +54,10 @@ export default function App() {
         <div className="mt-auto px-2 text-[11px] text-muted">Ctrl+K to search</div>
       </nav>
       <main className="min-w-0 flex-1 overflow-y-auto">
-        <div hidden={view !== 'search'}><SearchView focus={focus} /></div>
-        {view === 'library' && <LibraryView />}
+        <div hidden={view !== 'search'}><SearchView focus={focus} go={go} /></div>
+        {view === 'overview' && <OverviewView go={go} />}
+        {view === 'review' && <ReviewView tab={nav.tab ?? 'queue'} go={go} />}
+        {view === 'library' && <LibraryView open={nav.doc} go={go} />}
         {view === 'upcoming' && <UpcomingView />}
         {view === 'evaluation' && <EvaluationView />}
         {view === 'settings' && <SettingsView />}
