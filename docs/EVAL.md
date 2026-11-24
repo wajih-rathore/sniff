@@ -18,7 +18,7 @@ Rules we keep:
 
 | Set | Where | Size | What it is | Labels |
 |---|---|---|---|---|
-| `test` | `data/synth/out/test` | 170 documents before the generator update (re-count after regenerating) | Synthetic bills, receipts, ID cards, certificates and other files: text PDFs, scans and phone photos | From the generator, `data/synth/out/labels.jsonl` |
+| `test` | `data/synth/out/test` | 184 on 24 Nov (re-count after regenerating) | Synthetic bills, receipts, ID cards, certificates and other files: text PDFs, scans and phone photos | From the generator, `data/synth/out/labels.jsonl` |
 | `hard` | `data/hard/out/hard` | 125 (25 cut-off, 20 handwriting, 35 low-res, 45 photo) | Harder copies of `test` documents, made by `data/hard/make_hard.py` (seed 7) | Copied from the source document; cut-off fields set to `null` |
 | `real` | `data/real/out/real/sroie` | 60 | Real scanned shop receipts from SROIE (ICDAR 2019), human labelled | Company, date, total from SROIE, converted by `data/real/fetch_sroie.py` |
 | `own` | `data/own/<member>` | optional | Team members' own documents, personal numbers blurred; never committed | Hand-written, see `data/own/README.md` |
@@ -99,6 +99,12 @@ python eval/fetch_models.py --status          # progress of each download
 backend/.venv/Scripts/python.exe eval/fetch_models.py gemma3-1b qwen3-8b embeddinggemma
 ```
 Use the backend's Python (or `uv run`): the MSYS Python on this laptop has no CA certificates.
+
+Checked on 24 Nov: `embeddinggemma-300m.gguf` and `gemma3-1b-it-q4_k_m.gguf` downloaded with matching sha256 and
+load in our llama-server build. EmbeddingGemma returns 768-dimension vectors (to use it in the app: start it on
+8081 and set `SNIFF_EMBED_MODEL=embeddinggemma`, `SNIFF_EMBED_DIM=768`). Gemma 3 1B answers in the JSON schema
+format the extractor uses. The Qwen3-8B download was still running; `python eval/fetch_models.py --status` shows
+where it is. Each check started the model on a spare port and stopped it right after.
 
 ## Model comparison (point 2)
 
@@ -182,7 +188,7 @@ uv run --with psutil python ../scripts/benchmark.py --start-servers --threads 4 
 ```
 
 Rough time with Qwen3-1.7B, from the smoke tests (12 documents): 10 to 40 s per document to index, most of it LLM
-time. At that rate `test` (170) takes 0.5 to 2 hours, `hard` (125) 20 to 80 minutes and `real` (60) 10 to 40 minutes.
+time. At that rate `test` (184) takes 0.5 to 2 hours, `hard` (125) 20 to 80 minutes and `real` (60) 10 to 40 minutes.
 
 ## Results
 
