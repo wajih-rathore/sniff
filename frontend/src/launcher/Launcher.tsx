@@ -5,11 +5,13 @@ import {
   FolderOpen, FolderPlus, FolderSync, Keyboard, LayoutList, ListChecks, LoaderCircle, Pencil, Power, ScrollText, Search, Settings, TriangleAlert, X,
   type LucideIcon,
 } from 'lucide-react'
-import { api, MOCK, type Answer, type Document, type Fact, type Hit, type Overview, type ReviewItem, type UpcomingItem, type WatchInfo } from '../api'
-import { Highlight, Status, Tag, label } from '../ui'
+import {
+  api, type Answer, type Document, type Fact, type Hit, type McpLogEntry, type McpSettings, type Overview, type ReminderPreview, type ReviewItem,
+  type UpcomingItem, type WatchInfo,
+} from '../api'
+import { Highlight, Status, Tag, label, show } from '../ui'
 import { AnswerCard, FactLine, Menu, Pill, ReviewCard, Toggle, fileIcon, plural, type Action, type Row } from './parts'
-import { native } from './native'
-import { pending, type McpLogEntry, type McpSettings } from './pending'
+import { inDesktop, native } from './native'
 
 type Mode = 'root' | 'overview' | 'upcoming' | 'review' | 'watch' | 'settings'
 // A list opened from a row with → (Esc or ← goes back to where it was opened, `back` is that row).
@@ -28,9 +30,7 @@ const PLACEHOLDER: Record<Mode, string> = {
   overview: 'Filter', upcoming: 'Filter dates', review: '', settings: 'Filter settings',
   watch: 'Type a folder path to watch, e.g. C:\\Users\\you\\Documents',
 }
-// The title POST /reminders builds in api.py, so the preview shows exactly what Google gets.
-const VERB: Record<string, string> = { expiry_date: 'expires', due_date: 'payment due', warranty_until: 'warranty ends', end_date: 'ends' }
-const WHO = ['name', 'holder_name', 'student_name', 'candidate_name', 'insured_name', 'tenant', 'landlord', 'provider', 'merchant', 'institution', 'bank', 'brand', 'employer', 'insurer']
+const DATES = ['expiry_date', 'due_date', 'warranty_until', 'end_date'] // ACTION_DATE_FIELDS in schemas.py: dates a reminder can be made for
 
 const msg = (e: unknown) => (e as Error)?.message ?? String(e)
 const days = (d: number) => (d < 0 ? `${plural(-d, 'day', 'days')} ago` : d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`)
@@ -68,7 +68,9 @@ export default function Launcher() {
   const [mcp, setMcp] = useState<McpSettings | null>(null)
   const [log, setLog] = useState<McpLogEntry[] | null>(null)
   const [google, setGoogle] = useState(false)
-  const [hotkey, setHotkey] = useState('Alt+Space')
+  const [previews, setPreviews] = useState<Record<number, ReminderPreview>>({}) // by fact id
+  // shortcut: the desktop app has no command that reads the saved hotkey, so this shows its default until one is set here.
+  const [hotkey, setHotkey] = useState('Alt+Shift+Space')
   const [capturing, setCapturing] = useState(false)
   const [autostart, setAutostart] = useState(false)
   const input = useRef<HTMLInputElement>(null)
@@ -76,7 +78,13 @@ export default function Launcher() {
 
   useEffect(() => {
     api.overview().then(setOv, () => {}) // only feeds the summary line; a dead back end shows up as soon as you search
-    pending.googleConnected().then(setGoogle)
+    api.calendarStatus().then((s) => setGoogle(s.google), () => setGoogle(false)) // no answer: offer only the .ics file
+    native.autostart().then(setAutostart, () => {})
+    const onGo = (e: Event) => go((e as CustomEvent<Mode>).detail) // the tray's Settings item
+    const onFocus = () => input.current?.focus() // the hotkey shows the window: be ready to type
+    window.addEventListener('sniff:go', onGo)
+    window.addEventListener('focus', onFocus)
+    return () => { window.removeEventListener('sniff:go', onGo); window.removeEventListener('focus', onFocus) }
   }, [])
 
   useEffect(() => {
@@ -127,16 +135,21 @@ export default function Launcher() {
     if (m === 'upcoming') { setUp(null); api.upcoming().then(setUp, fail) }
     if (m === 'review') { setQueue(null); api.review().then((l) => setQueue([...l.filter((x) => x.fact.id === start), ...l.filter((x) => x.fact.id !== start)]), fail) }
     if (m === 'watch') api.watched().then(setWatch, fail)
-    if (m === 'settings') pending.mcpSettings().then(setMcp, fail)
+    if (m === 'settings') api.mcpSettings().then(setMcp, fail)
     input.current?.focus()
   }
   const openSub = (s: Sub) => {
     setSub(s); setSel(0); setMenu(null); setEdit(null)
     if (s.kind === 'doc') loadDoc(s.id)
-    if (s.kind === 'log') { setLog(null); pending.mcpLog().then(setLog, fail) }
+    if (s.kind === 'log') { setLog(null); api.mcpLog().then(setLog, fail) }
   }
   const closeSub = () => { if (sub) setSel(sub.back); setSub(null); setEdit(null) }
-  const openMenu = (r: Row) => { setMenu(r.id); if (r.docId && !docs[r.docId]) loadDoc(r.docId) }
+  const openMenu = (r: Row) => {
+    setMenu(r.id)
+    const f = r.remind
+    // Google Calendar is offered only once the back end has said exactly what it would send.
+    if (f && google && !previews[f.id]) api.reminderPreview(f.id).then((p) => setPreviews((m) => ({ ...m, [f.id]: p })), () => {})
+  }
   const closeMenu = () => { setMenu(null); input.current?.focus() }
 
   // A fact changed: update every list that holds it.
@@ -158,7 +171,7 @@ export default function Launcher() {
     },
   })
 
-  const saveMcp = (enabled: boolean, allow: McpSettings['allow']) => pending.saveMcp(enabled, allow).then(setMcp, (e) => setStatus(`Could not save: ${msg(e)}`))
+  const saveMcp = (enabled: boolean, allow: McpSettings['allow']) => api.saveMcp(enabled, allow).then(setMcp, (e) => setStatus(`Could not save: ${msg(e)}`))
   const setAllow = (type: string, fields: string[]) => {
     const allow = { ...mcp!.allow }
     if (fields.length) allow[type] = fields
@@ -171,24 +184,22 @@ export default function Launcher() {
   }
 
   // Reminders for a date: a local .ics file always, Google Calendar only when connected, after showing what it receives.
-  const remindActions = (f: Fact, document: string): Action[] => {
-    if (!VERB[f.field]) return []
-    const d = docs[f.file_id]
-    const who = d?.facts.find((x) => WHO.includes(x.field))
-    const title = d ? `${label(d.doc_type ?? 'document')} ${VERB[f.field]}${who ? ` (${who.value})` : ''}` : 'Loading…'
+  const remindActions = (f: Fact): Action[] => {
+    if (!DATES.includes(f.field)) return []
+    const p = previews[f.id]
     return [
       { name: 'Add to calendar (.ics)', icon: CalendarPlus,
-        run: () => attempt(pending.ics(f.id), MOCK ? 'Mock: the .ics file would open in your calendar app' : 'Opened the reminder in your calendar app', 'make the calendar file') },
-      ...(google ? [{
+        run: () => attempt(native.openIcs(api.icsPath(f.file_id, f.field)), inDesktop ? 'Opened the reminder in your calendar app' : 'Downloaded the reminder as an .ics file', 'make the calendar file') },
+      ...(google && p ? [{
         name: 'Add to Google Calendar', icon: Bell,
         run: () => attempt(api.remind(f.id), `Added to Google Calendar for ${f.value}`, 'add it to Google Calendar'),
         confirm: (
           <>
             <p className="mb-1.5 font-semibold text-fg">Google Calendar will receive exactly this:</p>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-              <dt className="text-muted">Title</dt><dd>{title}</dd>
-              <dt className="text-muted">Date</dt><dd className="tnum">{f.value}, all day, pop-ups a week and a day before</dd>
-              <dt className="text-muted">Note</dt><dd>From {document}, page {f.page}. Added by Sniff.</dd>
+              <dt className="text-muted">Title</dt><dd>{p.title}</dd>
+              <dt className="text-muted">Date</dt><dd className="tnum">{p.date}, all day, pop-ups a week and a day before</dd>
+              <dt className="text-muted">Note</dt><dd>{p.description}</dd>
             </dl>
             <p className="mt-1.5">Nothing else from your documents is sent.</p>
             {f.status === 'needs_review' && <p className="mt-1 text-warn">This date is not reviewed yet: {label(f.reason ?? 'check it first')}.</p>}
@@ -216,13 +227,13 @@ export default function Launcher() {
         const s = { file_id: d.id, path: d.path, name: d.name, page: f.page }
         const e = editing(f)
         return {
-          id: `fact-${f.id}`, title: `${label(f.field)} ${f.value}`, right: `p. ${f.page}`, enter: () => open(s), path: d.path, note: unreviewed(f),
+          id: `fact-${f.id}`, title: `${label(f.field)} ${show(f)}`, right: `p. ${f.page}`, enter: () => open(s), path: d.path, note: unreviewed(f), remind: f,
           body: <FactLine f={f} edit={e.edit} set={e.set} save={(v) => correct(f, v)} />,
           actions: [
             ...(f.status !== 'approved' ? [{ name: 'Approve', icon: Check, keys: 'A', run: () => approve(f) }] : []),
             { name: 'Correct', icon: Pencil, keys: 'C', run: () => setEdit({ id: f.id, value: f.value }) },
             { name: 'Copy value', icon: Copy, run: () => copy(f.value) },
-            ...remindActions(f, d.name),
+            ...remindActions(f),
             { name: 'Open at this page', icon: ExternalLink, keys: 'Enter', run: () => open(s) },
           ],
         }
@@ -230,7 +241,7 @@ export default function Launcher() {
     }
     if (sub?.kind === 'fields' && mcp) {
       const cur = mcp.allow[sub.type] ?? []
-      const all = mcp.fields[sub.type] ?? []
+      const all = mcp.fields?.[sub.type] ?? []
       const star = cur.includes('*')
       return [
         { id: 'star', title: 'Every field and the page text', detail: star ? 'On. Page text is only given out when this is on' : 'Off: agents get only the fields below',
@@ -256,14 +267,14 @@ export default function Launcher() {
       const rows: Row[] = []
       if (ans) {
         const s = ans.sources[0]
-        const dates = ans.facts.filter((f) => VERB[f.field])
+        const dates = ans.facts.filter((f) => DATES.includes(f.field))
         const date = dates.length === 1 ? dates[0] : null // a reminder only makes sense for one date
         rows.push({
-          id: 'answer', title: ans.answer, answer: ans, enter: s && (() => open(s)), path: s?.path, docId: date?.file_id,
+          id: 'answer', title: ans.answer, answer: ans, enter: s && (() => open(s)), path: s?.path, remind: date ?? undefined,
           note: ans.unreviewed.length ? `${plural(ans.unreviewed.length, 'value', 'values')} not reviewed yet` : undefined,
           actions: [
             { name: 'Copy answer', icon: Copy, run: () => copy(ans.answer) },
-            ...(date ? remindActions(date, ans.sources.find((x) => x.file_id === date.file_id)?.name ?? '') : []),
+            ...(date ? remindActions(date) : []),
             ...(ans.unreviewed.length ? [{ name: 'Review the unchecked values', icon: ClipboardCheck, run: () => go('review', ans.unreviewed[0].id) }] : []),
             ...ans.sources.map((x) => ({ name: `Open ${x.name}, p. ${x.page}`, icon: ExternalLink, run: () => open(x) })),
           ],
@@ -273,7 +284,7 @@ export default function Launcher() {
       return rows.concat(hits.map((h, i): Row => ({
         id: `hit-${i}`, icon: fileIcon(h.name), title: h.name, tag: h.doc_type && label(h.doc_type),
         detail: <Highlight text={around(h.snippet, words)} q={words} />, right: `p. ${h.page}`,
-        enter: () => open(h), path: h.path, docId: h.file_id, more: () => openSub({ kind: 'doc', id: h.file_id, name: h.name, back: sel }), actions: fileActions(h),
+        enter: () => open(h), path: h.path, more: () => openSub({ kind: 'doc', id: h.file_id, name: h.name, back: sel }), actions: fileActions(h),
       })))
     }
     if (mode === 'overview') {
@@ -299,24 +310,24 @@ export default function Launcher() {
       ]
     }
     if (mode === 'upcoming') {
-      return (up ?? []).filter((u) => u.days_left <= 60).sort((a, b) => a.days_left - b.days_left).map((u): Row => {
+      return (up ?? []).map((u): Row => {
         const f = u.fact
         const s = { file_id: f.file_id, path: u.path, name: u.document, page: f.page }
         return {
           id: `up-${f.id}`, icon: fileIcon(u.document), title: u.document, tag: u.doc_type && label(u.doc_type),
           detail: (
             <span className="flex items-center gap-2">
-              <span className="tnum">{label(f.field)} {f.value}</span>
+              <span className="tnum">{label(f.field)} {show(f)}</span>
               {f.status === 'needs_review' && <Status f={f} />}
               {u.conflict && <span className="text-danger">conflict: {u.conflict.values.map((v) => v.value).join(' or ')}</span>}
               {u.reminder_status === 'created' && <span>reminder added</span>}
             </span>
           ),
           right: <span className={u.days_left < 0 ? 'text-danger' : ''}>{days(u.days_left)}</span>,
-          enter: () => open(s), path: u.path, docId: f.file_id, note: unreviewed(f),
+          enter: () => open(s), path: u.path, remind: f, note: unreviewed(f),
           more: () => openSub({ kind: 'doc', id: f.file_id, name: u.document, back: sel }),
           actions: [
-            ...remindActions(f, u.document),
+            ...remindActions(f),
             { name: 'Copy date', icon: Copy, run: () => copy(f.value) },
             ...(f.status === 'needs_review' ? [{ name: 'Review this date', icon: ClipboardCheck, run: () => go('review', f.id) }] : []),
             ...fileActions(s),
@@ -351,11 +362,11 @@ export default function Launcher() {
           { id: 'mcp', head: 'Agent access (MCP)', icon: Bot, title: 'Let AI agents read Sniff', right: <Toggle on={mcp.enabled} />, actions: [],
             detail: mcp.env_override ? 'Set by SNIFF_MCP_ALLOW, so these switches do nothing' : mcp.enabled ? 'On: agents you start on this laptop can read the types below' : 'Off: every agent request is refused and logged',
             enter: () => saveMcp(!mcp.enabled, mcp.allow) },
-          ...Object.keys(mcp.fields).map((t): Row => {
+          ...Object.keys(mcp.fields ?? mcp.allow).map((t): Row => {
             const a = mcp.allow[t]
             return {
               id: `mcp-${t}`, icon: FileText, title: label(t), right: <Toggle on={!!a} />, actions: [],
-              detail: !a ? 'Hidden from agents' : a.includes('*') ? 'Every field and the page text' : `${a.length} of ${mcp.fields[t].length} fields: ${a.map((x) => label(x).toLowerCase()).join(', ')}`,
+              detail: !a ? 'Hidden from agents' : a.includes('*') ? 'Every field and the page text' : `${a.length} of ${mcp.fields?.[t]?.length ?? '?'} fields: ${a.map((x) => label(x).toLowerCase()).join(', ')}`,
               enter: () => setAllow(t, a ? [] : ['*']), more: () => openSub({ kind: 'fields', type: t, back: sel }),
             }
           }),

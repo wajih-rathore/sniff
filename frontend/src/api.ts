@@ -71,25 +71,21 @@ export type Overview = {
   conflicts: number
   errors: number
 }
-export type IndexStatus = { running: boolean; done: number; total: number; current: string | null; errors: number }
 export type WatchInfo = {
   folders: string[]
   last: { folder: string; at: string; indexed: number; unchanged: number; renamed: number; removed: number; errors: number } | null
   error: string | null
 }
-// Every eval/results/*.json with a "component". Only `component` is certain; the rest differs per file.
-export type EvalResult = {
-  component: string
-  n?: number
-  rows?: Record<string, string | number | boolean | null>[]
-  latency_ms?: { p50: number; p95: number }
-  failures?: number
-  updated?: string
-  confusion?: { labels: string[]; matrix: number[][] }
-  [extra: string]: unknown
+export type McpSettings = {
+  enabled: boolean
+  allow: Record<string, string[]> // document type -> fields; ["*"] is every field plus the page text; a missing type is hidden
+  env_override: boolean // SNIFF_MCP_ALLOW is set, so the app's switches do nothing
+  fields?: Record<string, string[]> // every type and its fields (asked of the platform agent; until then only allowed types show)
 }
+export type McpLogEntry = { time: string; tool: string; args: Record<string, unknown>; ids: number[]; refused?: boolean }
+export type ReminderPreview = { title: string; date: string; description: string } // exactly what Google Calendar would get
 
-async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
+async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
   if (MOCK) return (await import('./mock')).mock(method, path, body) as Promise<T>
   const r = await fetch(BASE + path, {
     method,
@@ -110,20 +106,20 @@ export const api = {
   search: (q: string) => call<Hit[]>('GET', `/search?q=${enc(q)}&k=10`),
   ask: (question: string) => call<Answer>('POST', '/ask', { question }),
   open: (file_id: number, page: number) => call<unknown>('POST', '/open', { file_id, page }),
-  documents: (type?: string) => call<Document[]>('GET', `/documents${type ? `?type=${enc(type)}` : ''}`),
   document: (id: number) => call<Document>('GET', `/documents/${id}`),
-  pageUrl: (id: number, page: number) => `${BASE}/documents/${id}/pages/${page}.png`,
   correct: (fact_id: number, value: string) => call<Fact>('PATCH', `/facts/${fact_id}`, { value }),
   approve: (fact_id: number) => call<Fact>('POST', `/facts/${fact_id}/approve`),
   review: () => call<ReviewItem[]>('GET', '/review'),
-  conflicts: () => call<Conflict[]>('GET', '/conflicts'),
   overview: () => call<Overview>('GET', '/overview'),
-  upcoming: () => call<UpcomingItem[]>('GET', '/upcoming?days=90'),
+  upcoming: () => call<UpcomingItem[]>('GET', '/upcoming?days=60'),
   remind: (fact_id: number) => call<unknown>('POST', '/reminders', { fact_id }),
-  eval: () => call<EvalResult[]>('GET', '/eval'),
-  index: (folder: string) => call<unknown>('POST', '/index', { folder }),
-  indexStatus: () => call<IndexStatus>('GET', '/index/status'),
+  reminderPreview: (fact_id: number) => call<ReminderPreview>('POST', '/reminders/preview', { fact_id }),
+  icsPath: (file_id: number, field: string) => `/reminders/ics?file_id=${file_id}&field=${enc(field)}`, // relative: the desktop app fetches it
+  calendarStatus: () => call<{ google: boolean }>('GET', '/calendar/status'),
   watched: () => call<WatchInfo>('GET', '/watch'),
   watch: (folder: string) => call<WatchInfo>('POST', '/watch', { folder }),
   unwatch: (folder: string) => call<WatchInfo>('DELETE', '/watch', { folder }),
+  mcpSettings: () => call<McpSettings>('GET', '/mcp/settings'),
+  saveMcp: (enabled: boolean, allow: McpSettings['allow']) => call<McpSettings>('PUT', '/mcp/settings', { enabled, allow }),
+  mcpLog: () => call<McpLogEntry[]>('GET', '/mcp/log?limit=50'),
 }

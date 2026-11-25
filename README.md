@@ -48,7 +48,7 @@ cd ..
 powershell -ExecutionPolicy Bypass -File scripts\dev.ps1
 ```
 
-Open http://localhost:5173, go to Settings, and index a folder. The index is `.sniff/sniff.db`; set `SNIFF_DB` to use another file. `VITE_MOCK=1 npm run dev` runs the UI on fixture data, without the back end.
+Open http://localhost:5173, type `/watch`, press Enter, then type a folder path and press Enter. Sniff indexes it and keeps it up to date. Type `/` to see the other commands. The index is `.sniff/sniff.db`; set `SNIFF_DB` to use another file. `VITE_MOCK=1 npm run dev` runs the UI on fixture data, without the back end.
 
 To start the parts by hand (for example on another OS), these are the commands `dev.ps1` runs:
 
@@ -88,7 +88,7 @@ cd backend
 uv run pytest                     # functional tests
 ```
 
-The evaluation (test sets, metrics, baselines, the run order and the results) is in [docs/EVAL.md](docs/EVAL.md). Results go to `eval/results/` and show up on the Evaluation page in the app. Failure examples are saved next to them for error analysis. The OCR baseline needs Tesseract (`C:\Program Files\Tesseract-OCR`).
+The evaluation (test sets, metrics, baselines, the run order and the results) is in [docs/EVAL.md](docs/EVAL.md). Results go to `eval/results/`; the app does not show them, but `GET /eval` returns them. Failure examples are saved next to them for error analysis. The OCR baseline needs Tesseract (`C:\Program Files\Tesseract-OCR`).
 
 ## Team
 

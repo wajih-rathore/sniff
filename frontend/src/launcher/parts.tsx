@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, File, FileImage, FileText, Presentation, TriangleAlert, X, type LucideIcon } from 'lucide-react'
 import type { Answer, Fact, ReviewItem, Source } from '../api'
-import { Status, Tag, label } from '../ui'
+import { Status, Tag, label, money, show } from '../ui'
 
 export type Action = { name: string; icon: LucideIcon; keys?: string; run: () => unknown; confirm?: ReactNode }
 export type Row = {
@@ -16,7 +16,7 @@ export type Row = {
   enter?: () => unknown // Enter
   path?: string // Ctrl+Enter shows it in Explorer
   more?: () => void // → or Ctrl+I, e.g. this document's facts
-  docId?: number // the document the actions need loaded (for the reminder preview)
+  remind?: Fact // the date the reminder actions are for; opening the menu fetches what Google would receive
   actions: Action[] // Ctrl+K
   note?: string // a warning at the top of the actions menu, e.g. a date nobody has reviewed
   answer?: Answer // drawn as the answer card
@@ -46,6 +46,7 @@ export function AnswerCard({ a, id, selected, details, open, hover }: {
 }) {
   const n = notes(a)
   const name = (file_id: number) => [...a.sources, ...a.counted].find((s) => s.file_id === file_id)?.name ?? `document ${file_id}`
+  const isMoney = (field: string) => a.facts.some((f) => f.field === field && f.value_type === 'money') // conflict values carry no type
   return (
     <div id={id} role="option" aria-selected={selected} onMouseMove={hover} onMouseDown={(e) => e.preventDefault()}
       onClick={() => a.sources[0] && open(a.sources[0])}
@@ -81,7 +82,7 @@ export function AnswerCard({ a, id, selected, details, open, hover }: {
             <Part key={i} title={`Conflict: ${label(c.field).toLowerCase()} differs for ${c.key}`}>
               {c.values.map((v) => (
                 <div key={v.fact_id} className="flex items-baseline gap-2">
-                  <span className="tnum font-semibold text-danger">{v.value}</span>
+                  <span className="tnum font-semibold text-danger">{isMoney(c.field) ? money(v.value) : v.value}</span>
                   <span className="truncate text-muted">{v.source.name}, p. {v.source.page}</span>
                 </div>
               ))}
@@ -93,7 +94,7 @@ export function AnswerCard({ a, id, selected, details, open, hover }: {
                 {a.facts.map((f) => (
                   <div key={f.id} className="contents">
                     <span className="text-muted">{label(f.field)}</span>
-                    <span className="tnum">{f.value}</span>
+                    <span className="tnum">{show(f)}</span>
                     <span className="truncate text-muted">{name(f.file_id)}, p. {f.page}</span>
                     <Status f={f} />
                   </div>
@@ -136,7 +137,7 @@ export function FactLine({ f, edit, set, save }: { f: Fact; edit: string | null;
     <div className="min-w-0 flex-1">
       <div className="flex items-center gap-3">
         <span className="w-36 shrink-0 truncate text-muted">{label(f.field)}</span>
-        <span className="tnum min-w-0 flex-1 truncate">{edit === null ? f.value : <EditBox f={f} value={edit} set={set} save={save} />}</span>
+        <span className="tnum min-w-0 flex-1 truncate">{edit === null ? show(f) : <EditBox f={f} value={edit} set={set} save={save} />}</span>
         <Status f={f} />
       </div>
       {f.reason && f.status === 'needs_review' && <div className="truncate pl-[156px] text-[12px] text-warn">{label(f.reason)}</div>}
@@ -160,7 +161,7 @@ export function ReviewCard({ item, left, edit, setEdit, error, accept, correct, 
       </div>
       <div className="mt-5 text-[13px] text-fg2">{label(f.field)}</div>
       {edit === null
-        ? <div className="tnum text-[28px] font-semibold leading-tight">{f.value}</div>
+        ? <div className="tnum text-[28px] font-semibold leading-tight">{show(f)}</div>
         : <EditBox f={f} value={edit} set={setEdit} save={correct} big />}
       {error && <p className="mt-1 text-[12px] text-danger">{error}</p>}
       {f.reason && <p className="mt-2 flex items-center gap-1.5 text-[13px] text-warn"><TriangleAlert size={14} aria-hidden /> {label(f.reason)}</p>}

@@ -1,5 +1,6 @@
 // Fixtures for every endpoint, used when VITE_MOCK=1. Dates are relative to today so Upcoming always looks current.
-import type { Answer, Document, EvalResult, Fact, Hit, IndexStatus, Overview, UpcomingItem, WatchInfo } from './api'
+import type { Answer, Document, Fact, Hit, McpLogEntry, McpSettings, Overview, UpcomingItem, WatchInfo } from './api'
+import { label, money } from './ui'
 
 const day = 86_400_000
 const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString().slice(0, 10)
@@ -83,14 +84,14 @@ function ask(question: string): Answer {
       { value: sngpl.value, fact_id: sngpl.id, status: sngpl.status, source: s.find((x) => x.file_id === 5)! },
       { value: '2201.50', fact_id: 999, status: 'verified' as const, source: { file_id: 10, path: base + 'Downloads\\sngpl_sep_reprint.pdf', name: 'sngpl_sep_reprint.pdf', page: 1 } },
     ] }]
-    return { ...none, question, route: 'facts', answer: `The utility bills add up to ${total}.`, sources: s, counted: s, skipped_duplicates: [photo], conflicts, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
+    return { ...none, question, route: 'facts', answer: `${money(total)} in total, from ${s.length} documents.`, sources: s, counted: s, skipped_duplicates: [photo], conflicts, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
   }
   const h = search(question)[0]
   if (!h) return { ...none, question, route: 'none', answer: 'I could not find this in your documents.', sources: [], facts: [], query: null }
   return { ...none, question, route: 'search', answer: h.snippet + '.', sources: src([h.file_id]), facts: [], query: null }
 }
 
-function upcoming(): UpcomingItem[] {
+function upcoming(days = 90): UpcomingItem[] {
   const names = ['expiry_date', 'due_date', 'warranty_until']
   return allFacts
     .filter((f) => names.includes(f.field))
@@ -99,36 +100,9 @@ function upcoming(): UpcomingItem[] {
       const days_left = Math.round((Date.parse(fact.value) - Date.now()) / day) + (fact.value === iso(0) ? 0 : 1)
       return { fact, document: d.name, path: d.path, doc_type: d.doc_type, days_left, reminder_status: null, conflict: null }
     })
-    .filter((u) => u.days_left <= 90)
+    .filter((u) => u.days_left <= days)
+    .sort((a, b) => a.days_left - b.days_left) // as the back end returns them
 }
-
-const confusion = {
-  labels: ['id_card', 'utility_bill', 'certificate', 'receipt', 'other'],
-  matrix: [[22, 0, 0, 0, 1], [0, 27, 0, 1, 0], [0, 0, 18, 0, 2], [0, 2, 0, 20, 0], [1, 1, 1, 0, 24]],
-}
-const evals: EvalResult[] = [
-  { component: 'search', n: 60, failures: 12, updated: '2026-11-22T10:00:00', latency_ms: { p50: 120, p95: 300 }, rows: [
-    { system: 'Sniff (hybrid)', 'Recall@5': 0.87, MRR: 0.71 },
-    { system: 'BM25 only (baseline)', 'Recall@5': 0.74, MRR: 0.58 },
-    { system: 'File-name match (baseline)', 'Recall@5': 0.31, MRR: 0.22 },
-  ] },
-  { component: 'document_type', n: 120, failures: 10, updated: '2026-11-22T10:05:00', latency_ms: { p50: 410, p95: 880 }, confusion, rows: [
-    { system: 'Sniff (LLM)', Accuracy: 0.92, 'Macro-F1': 0.91 },
-    { system: 'Keyword rules (baseline)', Accuracy: 0.78, 'Macro-F1': 0.74 },
-  ] },
-  { component: 'fact_extraction', n: 110, failures: 14, updated: '2026-11-22T10:10:00', latency_ms: { p50: 1900, p95: 4200 }, rows: [
-    { system: 'Sniff (LLM + verify)', 'Field accuracy': 0.88, 'Schema-valid rate': 0.99 },
-    { system: 'Regex rules (baseline)', 'Field accuracy': 0.61, 'Schema-valid rate': 1 },
-  ] },
-  { component: 'ocr', n: 50, failures: 11, updated: '2026-11-22T10:15:00', latency_ms: { p50: 850, p95: 2100 }, rows: [
-    { system: 'RapidOCR', 'Character error rate': 0.06 },
-    { system: 'Tesseract defaults (baseline)', 'Character error rate': 0.11 },
-  ] },
-  { component: 'ask', n: 55, failures: 10, updated: '2026-11-22T10:20:00', latency_ms: { p50: 2400, p95: 5600 }, rows: [
-    { system: 'Sniff (router + facts)', Correctness: 0.82, 'Citation correctness': 0.9, Abstention: 0.8 },
-    { system: 'Plain RAG (baseline)', Correctness: 0.58, 'Citation correctness': 0.71, Abstention: 0.4 },
-  ] },
-]
 
 function overview(): Overview {
   const by_type: Record<string, number> = {}
@@ -136,15 +110,44 @@ function overview(): Overview {
   const ex = upcoming().filter((u) => u.fact.field !== 'due_date' && u.days_left >= 0)
   const within = (n: number) => ex.filter((u) => u.days_left <= n).length
   return { total_files: docs.length, documents: docs.length, by_type, exact_copies: 0, near_duplicates: 0, expiring: { '30': within(30), '60': within(60), '90': within(90) },
-    missing_required: [], needs_review: allFacts.filter((f) => f.status === 'needs_review').length, conflicts: 0, errors: 0 }
+    missing_required: [], needs_review: allFacts.filter((f) => f.status === 'needs_review').length, conflicts: 1, errors: 0 } // the SNGPL reprint in the bills answer
 }
 
-let indexStart = 0
-function indexStatus(): IndexStatus {
-  const total = 24
-  const done = indexStart ? Math.min(total, Math.floor((Date.now() - indexStart) / 300)) : 0
-  if (!indexStart) return { running: false, done: 0, total: 0, current: null, errors: 0 }
-  return { running: done < total, done, total, current: done < total ? `${base}scans\\page_${done + 1}.png` : null, errors: done > 15 ? 1 : 0 }
+// MCP settings, as GET/PUT /mcp/settings keeps them
+const FIELDS: Record<string, string[]> = {
+  id_card: ['name', 'id_number', 'date_of_birth', 'issue_date', 'expiry_date'],
+  utility_bill: ['provider', 'account_number', 'billing_month', 'bill_date', 'due_date', 'current_charges', 'previous_balance', 'tax', 'amount_due', 'payment_status', 'payment_date'],
+  certificate: ['holder_name', 'title', 'institution', 'issue_date'],
+  receipt: ['merchant', 'date', 'subtotal', 'tax', 'total_amount', 'warranty_until'],
+  passport: ['name', 'passport_number', 'nationality', 'date_of_birth', 'issue_date', 'expiry_date'],
+  transcript: ['student_name', 'registration_number', 'institution', 'program', 'cgpa', 'issue_date'],
+  bank_statement: ['bank', 'account_number', 'period_start', 'period_end', 'opening_balance', 'total_credits', 'total_debits', 'closing_balance'],
+  warranty_card: ['product', 'brand', 'serial_number', 'purchase_date', 'warranty_until'],
+  offer_letter: ['employer', 'candidate_name', 'position', 'monthly_salary', 'offer_date', 'start_date'],
+  insurance_policy: ['insurer', 'policy_number', 'insured_name', 'premium', 'start_date', 'end_date'],
+  tenancy_agreement: ['landlord', 'tenant', 'property_address', 'monthly_rent', 'security_deposit', 'start_date', 'end_date'],
+  fee_voucher: ['student_name', 'registration_number', 'institution', 'semester', 'amount', 'issue_date', 'due_date'],
+  other: [],
+}
+let mcp: McpSettings = {
+  enabled: false, env_override: false, fields: FIELDS,
+  allow: Object.fromEntries(Object.keys(FIELDS).filter((t) => !['passport', 'bank_statement', 'offer_letter', 'transcript', 'id_card'].includes(t)).map((t) => [t, ['*']])),
+}
+const ago = (min: number) => new Date(Date.now() - min * 60_000).toISOString().slice(0, 19)
+const mcpLog: McpLogEntry[] = [
+  { time: ago(3), tool: 'search_documents', args: { query: 'electricity bill october' }, ids: [3, 4] },
+  { time: ago(4), tool: 'ask', args: { question: 'When does my passport expire?' }, ids: [] },
+  { time: ago(9), tool: 'list_upcoming', args: { days: 30 }, ids: [3, 4] },
+  { time: ago(1440), tool: 'search_documents', args: { query: 'degree certificate' }, ids: [], refused: true },
+]
+// The title POST /reminders builds (api.py _reminder_title).
+const VERB: Record<string, string> = { expiry_date: 'expires', due_date: 'payment due', warranty_until: 'warranty ends', end_date: 'ends' }
+function preview(fact_id: number) {
+  const f = allFacts.find((x) => x.id === fact_id)
+  if (!f || !VERB[f.field]) throw new Error('This fact is not a date Sniff can remind you about')
+  const d = docs[f.file_id - 1]
+  const who = d.facts.find((x) => ['name', 'holder_name', 'provider', 'merchant', 'institution'].includes(x.field))
+  return { title: `${label(d.doc_type ?? 'document')} ${VERB[f.field]}${who ? ` (${who.value})` : ''}`, date: f.value, description: `From ${d.name}, page ${f.page}. Added by Sniff.` }
 }
 
 let watched: string[] = ['C:\\Users\\you\\Documents\\Bills']
@@ -155,10 +158,8 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   const p = url.pathname
   if (p === '/search') return delay(search(url.searchParams.get('q') ?? ''), 120)
   if (p === '/ask') return delay(ask((body as { question: string }).question), 900)
-  if (p === '/documents') { const t = url.searchParams.get('type'); return delay(t ? docs.filter((d) => d.doc_type === t) : docs) }
   if (p.startsWith('/documents/')) return delay(docs.find((d) => d.id === Number(p.split('/')[2])))
   if (p === '/review') return delay(allFacts.filter((f) => f.status === 'needs_review').map((fact) => ({ fact, document: docs[fact.file_id - 1].name, path: docs[fact.file_id - 1].path, doc_type: docs[fact.file_id - 1].doc_type })))
-  if (p === '/conflicts') return delay([])
   if (p.startsWith('/facts/')) {
     const f = allFacts.find((x) => x.id === Number(p.split('/')[2]))
     if (!f) throw new Error('Fact not found')
@@ -167,10 +168,7 @@ export async function mock(method: string, path: string, body?: unknown): Promis
     return delay({ ...f }, 120)
   }
   if (p === '/overview') return delay(overview())
-  if (p === '/upcoming') return delay(upcoming())
-  if (p === '/eval') return delay(evals)
-  if (p === '/index/status') return indexStatus()
-  if (p === '/index' && method === 'POST') { indexStart = Date.now(); return { started: true } }
+  if (p === '/upcoming') return delay(upcoming(Number(url.searchParams.get('days') ?? 90)))
   if (p === '/watch') {
     const folder = (body as { folder?: string } | undefined)?.folder ?? ''
     if (method === 'POST' && !watched.includes(folder)) watched = [...watched, folder]
@@ -180,6 +178,13 @@ export async function mock(method: string, path: string, body?: unknown): Promis
     }
     return delay({ folders: watched, last: watchLast, error: null } satisfies WatchInfo, 80)
   }
+  if (p === '/mcp/settings') {
+    if (method === 'PUT') mcp = { ...mcp, ...(body as Pick<McpSettings, 'enabled' | 'allow'>) }
+    return delay(mcp, 80)
+  }
+  if (p === '/mcp/log') return delay(mcpLog)
+  if (p === '/calendar/status') return delay({ google: true })
+  if (p === '/reminders/preview') return delay(preview((body as { fact_id: number }).fact_id), 80)
   if (p === '/open' || p === '/reminders') return delay({ ok: true }, p === '/reminders' ? 600 : 50)
   throw new Error(`mock: no fixture for ${method} ${path}`)
 }
