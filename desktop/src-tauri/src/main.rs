@@ -10,7 +10,7 @@ use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 use tauri::menu::{Menu, MenuItem};
@@ -32,6 +32,11 @@ const NOTIFY_DAYS: i64 = 7; // dates this close get a notification, at most once
 struct Children(Mutex<Vec<Child>>);
 
 struct Hotkey(Mutex<String>); // the shortcut registered now
+
+// When Windows refuses to hand the focus to the window (it does that to a program that did not get the last key or
+// click, for example when a second launch asks the first one to show), the window reports a focus loss right after
+// it appears. Focus losses this soon after showing are not clicks elsewhere, so they do not hide it.
+static SHOWN_AT: Mutex<Option<Instant>> = Mutex::new(None);
 
 /// Data, models and logs: %LOCALAPPDATA%\Sniff, or SNIFF_HOME if set.
 fn home() -> PathBuf {
@@ -164,6 +169,7 @@ fn place(w: &WebviewWindow) {
 }
 
 fn show(w: &WebviewWindow) {
+    *SHOWN_AT.lock().unwrap() = Some(Instant::now());
     place(w);
     let _ = w.show();
     let _ = w.unminimize();
@@ -187,7 +193,9 @@ fn register(app: &AppHandle, hotkey: &str) -> Result<(), String> {
 
 fn toggle(app: &AppHandle) {
     let Some(w) = app.get_webview_window("main") else { return };
-    if w.is_visible().unwrap_or(false) && w.is_focused().unwrap_or(false) {
+    let (visible, focused) = (w.is_visible().unwrap_or(false), w.is_focused().unwrap_or(false));
+    log(&format!("hotkey: visible={visible} focused={focused}"));
+    if visible && focused {
         let _ = w.hide();
     } else {
         show(&w);
@@ -258,6 +266,12 @@ fn open_ics(url: String) -> Result<(), String> {
     Command::new("explorer").arg(&file).spawn().map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// The shortcut in use, so the settings show the saved one after a restart.
+#[tauri::command]
+fn get_hotkey(app: AppHandle) -> String {
+    app.state::<Hotkey>().0.lock().unwrap().clone()
+}
+
 #[tauri::command]
 fn hide_window(window: WebviewWindow) {
     let _ = window.hide();
@@ -296,7 +310,7 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .manage(Children::default())
         .manage(Hotkey(Mutex::new(SHORTCUT.to_string())))
-        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, open_ics])
+        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, get_hotkey, open_ics])
         .setup(|app| {
             let _ = fs::create_dir_all(home().join("logs"));
             let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
@@ -361,7 +375,10 @@ fn main() {
                 let _ = w.hide();
             }
             WindowEvent::Focused(false) => {
-                let _ = w.hide(); // a launcher goes away when you click elsewhere
+                let just_shown = SHOWN_AT.lock().unwrap().is_some_and(|t| t.elapsed() < Duration::from_millis(800));
+                if !just_shown {
+                    let _ = w.hide(); // a launcher goes away when you click elsewhere
+                }
             }
             _ => {}
         })
