@@ -3,7 +3,9 @@
 Limits (feedback point 10):
 - stdio only. There is no network port, so only the agent the user starts it from can call it.
 - Read-only. No tool writes to the database, the files or the calendar.
-- config.MCP_ALLOW lists the document types an agent may read and their fields. Other types are hidden: their
+- Off until the user turns it on (settings table, see mcp_settings.py). While off, every tool refuses and the call is logged.
+  The settings are read on every call, so a change in the app takes effect without a restart.
+- the allow-list (saved settings, else config.MCP_ALLOW) lists the document types an agent may read and their fields. Other types are hidden: their
   files, facts and page text are never returned. Page text (search snippets, search answers) is given only for
   types allowed with every field ("*"), since text cannot be cut down to a few fields. ID cards are hidden by default.
 - ID numbers are masked (last 4 digits kept).
@@ -18,7 +20,7 @@ from datetime import datetime
 from mcp.server.mcpserver import MCPServer
 
 from . import ask as ask_mod
-from . import config, db
+from . import config, db, mcp_settings
 from .search import search
 
 mcp = MCPServer("sniff")
@@ -41,25 +43,41 @@ def mask_ids(text: str) -> str:
     return re.sub(r"(?<![A-Za-z0-9-])[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9](?![A-Za-z0-9-])", hide, text)
 
 
+REFUSED = "MCP access is turned off in Sniff's settings."
+_allow: dict[str, list[str]] = {}  # set by gate() at the start of each call; the server handles one call at a time
+
+
+def gate(tool: str, args: dict) -> None:
+    """Read the settings afresh. If MCP is off, log the call and refuse it."""
+    global _allow
+    with closing(db.connect()) as conn:
+        s = mcp_settings.load(conn)
+    _allow = s["allow"]
+    if not s["enabled"]:
+        log(tool, args, [], refused=True)
+        raise ValueError(REFUSED)
+
+
 def allowed(doc_type: str | None, field: str | None = None) -> bool:
     """May an agent see documents of this type (and this field of them)? Unclassified documents are hidden."""
-    fields = config.MCP_ALLOW.get(doc_type or "", [])
+    fields = _allow.get(doc_type or "", [])
     return bool(fields) and (field is None or "*" in fields or field in fields)
 
 
 def text_allowed(doc_type: str | None) -> bool:
-    return "*" in config.MCP_ALLOW.get(doc_type or "", [])
+    return "*" in _allow.get(doc_type or "", [])
 
 
-def log(tool: str, args: dict, ids: list[int]) -> None:
+def log(tool: str, args: dict, ids: list[int], refused: bool = False) -> None:
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(config.DATA_DIR / "mcp_access.log", "a", encoding="utf-8") as f:
-        f.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"), "tool": tool, "args": args, "ids": ids}) + "\n")
+        f.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"), "tool": tool, "args": args, "ids": ids, **({"refused": True} if refused else {})}) + "\n")
 
 
 @mcp.tool()
 def search_documents(query: str, k: int = 5) -> list[dict]:
     """Search the user's indexed documents by meaning and keywords. Returns file, page and a short snippet."""
+    gate("search_documents", {"query": query, "k": k})
     with closing(db.connect()) as conn:
         hits = [h for h in search(conn, query, k=k * 4) if text_allowed(h.doc_type)][:k]  # fetch extra: hidden types drop out
     log("search_documents", {"query": query, "k": k}, [h.file_id for h in hits])
@@ -69,6 +87,7 @@ def search_documents(query: str, k: int = 5) -> list[dict]:
 @mcp.tool()
 def ask(question: str) -> dict:
     """Answer a question from the user's documents. Totals, counts and dates are computed from extracted facts, with sources."""
+    gate("ask", {"question": question})
     with closing(db.connect()) as conn:
         a = ask_mod.ask(conn, question)
         types = {r["id"]: r["doc_type"] for r in conn.execute("SELECT id, doc_type FROM files")}
@@ -90,6 +109,7 @@ def list_documents(doc_type: str | None = None) -> list[dict]:
     """List indexed documents with their type and extracted facts. doc_type: utility_bill, certificate, receipt, warranty_card,
     fee_voucher, insurance_policy, tenancy_agreement, other.
     Types the user has not allowed are not listed."""
+    gate("list_documents", {"doc_type": doc_type})
     with closing(db.connect()) as conn:
         rows = [r for r in conn.execute("SELECT * FROM files WHERE copy_of IS NULL AND (? IS NULL OR doc_type=?) ORDER BY path",
                                         (doc_type, doc_type)) if allowed(r["doc_type"])]

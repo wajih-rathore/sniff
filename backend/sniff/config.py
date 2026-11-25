@@ -21,11 +21,10 @@ EMBED_DIM = int(os.environ.get("SNIFF_EMBED_DIM", "384"))
 SUPPORTED = {".pdf", ".docx", ".pptx", ".txt", ".md", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
 
 # MCP: what an outside agent may read, as {document type: fields}. ["*"] means every field and the page text too.
-# Types not listed are hidden: ID cards, passports, bank statements, offer letters and transcripts. ID numbers are always
-# masked. The four types with a field list show no names, ID or policy numbers, serials or addresses, and no page text.
-MCP_ALLOW: dict[str, list[str]] = json.loads(os.environ.get("SNIFF_MCP_ALLOW", "null")) or {
-    "utility_bill": ["*"], "certificate": ["*"], "receipt": ["*"], "other": ["*"],
-    "warranty_card": ["product", "brand", "purchase_date", "warranty_until"],
-    "fee_voucher": ["institution", "semester", "amount", "issue_date", "due_date"],
-    "insurance_policy": ["insurer", "premium", "start_date", "end_date"],
-    "tenancy_agreement": ["monthly_rent", "security_deposit", "start_date", "end_date"]}
+# Types not listed are hidden, so ID cards, passports, bank statements and the like are hidden by default. ID numbers
+# are always masked. This is only the default: the settings saved in the database (mcp_settings.py) win, unless the
+# env var SNIFF_MCP_ALLOW is set, which is a developer override of both the list and the on/off switch.
+_MCP_ENV = json.loads(os.environ.get("SNIFF_MCP_ALLOW", "null"))
+MCP_ENV_OVERRIDE = bool(_MCP_ENV)
+MCP_ALLOW: dict[str, list[str]] = _MCP_ENV or {
+    "utility_bill": ["*"], "certificate": ["*"], "receipt": ["*"], "other": ["*"]}

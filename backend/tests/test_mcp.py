@@ -7,6 +7,12 @@ from sniff import config, mcp_server
 from sniff.schemas import Answer, Fact, Hit, Source
 
 
+@pytest.fixture(autouse=True)
+def mcp_on(conn):
+    conn.execute("INSERT INTO settings(key, value) VALUES ('mcp', '{\"enabled\": true}')")  # on, with the default allow-list
+    conn.commit()
+
+
 @pytest.fixture
 def docs(conn, add_doc):
     card = add_doc("C:/docs/cnic.jpg", "id_card", {"name": "Ayesha Khan", "id_number": "35202-1234567-8"})

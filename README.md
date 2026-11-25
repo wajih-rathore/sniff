@@ -61,6 +61,8 @@ cd frontend && npm run dev
 
 **Google Calendar (optional):** create an OAuth client (Desktop app) in a Google Cloud project with the Calendar API enabled, and save its JSON as `backend/.secrets/google_client.json`. The first reminder opens a Google sign-in page.
 
+**Reminders without Google:** `GET /reminders/ics?file_id=<id>&field=expiry_date` returns an all-day `.ics` event with alerts 7 days and 1 day before. Open it in any calendar app. Only the file name goes in the description.
+
 **Keep a folder live:** `POST /watch {"folder": "..."}` makes the back end watch it. New, edited, renamed and deleted files are picked up about 2 seconds after the folder goes quiet. Office lock files (`~$`) and partial downloads (`.crdownload`, `.part`, `.tmp`) are ignored. `GET /watch` lists the folders and `DELETE /watch {"folder": "..."}` stops one. The list is stored in the database and watched again after a restart.
 
 **Docker (not built or run on our machines):** `Dockerfile` builds the back end and `docker-compose.yml` adds two llama.cpp server containers, one for chat and one for embeddings. Put the model files in `models/` first. We only ran `docker compose config` to check the file, because Docker's disk is on a drive that is nearly full. Building the image and running the stack is untested. Changes inside a Windows folder mounted into a container may not reach the watcher, so use `POST /index` there.
@@ -76,6 +78,8 @@ docker compose up --build        # API on http://127.0.0.1:8000; SNIFF_DOCS=/pat
 ```bash
 claude mcp add sniff -- uv --directory /path/to/sniff/backend run python -m sniff.mcp_server
 ```
+
+MCP is **off until you turn it on**: `PUT /mcp/settings` with `{"enabled": true, "allow": {"utility_bill": ["*"]}}`. While it is off, every tool refuses and the call is still logged. `GET /mcp/settings` shows the current settings and `GET /mcp/log?limit=50` the recent calls. Changes apply on the next call, without a restart. Without a saved list, the default is `config.MCP_ALLOW`, which hides ID cards, passports, bank statements and other private types. Setting `SNIFF_MCP_ALLOW` (JSON) overrides the database and turns MCP on, for development.
 
 ## Tests and evaluation
 

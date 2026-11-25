@@ -129,7 +129,9 @@ def test_real_mcp_session_over_stdio(conn, add_doc, tmp_path):
     from mcp.client.stdio import StdioServerParameters, stdio_client
 
     from sniff import config
+    from sniff import mcp_settings
     add_doc("C:/docs/bill.pdf", "utility_bill", {"provider": "LESCO", "amount_due": "1200.0"})
+    mcp_settings.save(conn, True, {"utility_bill": ["*"]})  # MCP is off until the user turns it on
     env = {**os.environ, "SNIFF_DB": str(config.DB_PATH), "SNIFF_DATA": str(tmp_path / "mcp"), "SNIFF_USAGE_LOG": str(tmp_path / "u.jsonl")}
     params = StdioServerParameters(command=sys.executable, args=[str(ROOT / "eval" / "mcp_launcher.py")], cwd=str(ROOT / "backend"), env=env)
 

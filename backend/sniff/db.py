@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS reminders(
   created_at TEXT
 );
 CREATE TABLE IF NOT EXISTS watched(folder TEXT PRIMARY KEY, added_at TEXT);  -- folders kept in step live; read again on restart
+CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);  -- JSON values, e.g. key "mcp"
 CREATE TABLE IF NOT EXISTS actions(id INTEGER PRIMARY KEY, ts TEXT, kind TEXT, payload TEXT);
 """
 

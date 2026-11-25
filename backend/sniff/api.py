@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
-from . import config, db, gcal, records, verify, watch
+from . import config, db, gcal, ics, mcp_settings, records, verify, watch
 from .ask import ask
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
@@ -52,6 +52,11 @@ class IndexReq(BaseModel):
 
 class WatchReq(BaseModel):
     folder: str
+
+
+class McpSettings(BaseModel):
+    enabled: bool
+    allow: dict[str, list[str]]
 
 
 class AskReq(BaseModel):
@@ -294,15 +299,39 @@ def upcoming(days: int = 90, conn=Depends(get_conn)):
     return sorted(items, key=lambda i: i.days_left)
 
 
+def _reminder_title(conn, r) -> str:
+    who = HOLDER_FIELDS + ORG_FIELDS
+    holder = conn.execute(f"SELECT value FROM facts WHERE file_id=? AND field IN ({','.join('?' * len(who))})", (r["file_id"], *who)).fetchone()
+    return f"{(r['doc_type'] or 'document').replace('_', ' ').capitalize()} {REMINDER_TITLES[r['field']]}" + (f" ({holder['value']})" if holder else "")
+
+
+@app.get("/reminders/ics")
+def reminder_ics(file_id: int, field: str, conn=Depends(get_conn)):
+    """The same reminder as a .ics file for any calendar app, no Google account needed. The user's download is the approval."""
+    if field not in ACTION_DATE_FIELDS:
+        raise HTTPException(400, "This is not a date Sniff can remind you about")
+    fid = _canonical(conn, file_id)["id"]
+    r = conn.execute("SELECT fa.*, f.path, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id WHERE fa.file_id=? AND fa.field=? ORDER BY fa.id", (fid, field)).fetchone()
+    if not r:
+        raise HTTPException(404, "This document has no such date")
+    try:
+        day = date.fromisoformat(r["value"])
+    except ValueError:
+        raise HTTPException(422, f"'{r['value']}' is not a date")
+    title = _reminder_title(conn, r)
+    body = ics.make_ics(f"sniff-{r['id']}@sniff.local", title, day, f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only
+    db.log(conn, "reminder_ics", json.dumps({"fact_id": r["id"], "file_id": fid, "field": field}))
+    conn.commit()
+    return Response(body, media_type="text/calendar", headers={"Content-Disposition": f'attachment; filename="sniff-reminder-{r["id"]}.ics"'})
+
+
 @app.post("/reminders")
 def add_reminder(req: ReminderReq, conn=Depends(get_conn)):
     """The user's click on "Add to Google Calendar" is the approval; nothing else creates events."""
     r = conn.execute("SELECT fa.*, f.path, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id WHERE fa.id=?", (req.fact_id,)).fetchone()
     if not r or r["field"] not in ACTION_DATE_FIELDS:
         raise HTTPException(400, "This fact is not a date Sniff can remind you about")
-    who = HOLDER_FIELDS + ORG_FIELDS
-    holder = conn.execute(f"SELECT value FROM facts WHERE file_id=? AND field IN ({','.join('?' * len(who))})", (r["file_id"], *who)).fetchone()
-    title = f"{(r['doc_type'] or 'document').replace('_', ' ').capitalize()} {REMINDER_TITLES[r['field']]}" + (f" ({holder['value']})" if holder else "")
+    title = _reminder_title(conn, r)
     try:
         event_id = gcal.create_event(title, date.fromisoformat(r["value"]), f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only: the full path stays on the laptop
     except Exception as e:
@@ -322,6 +351,27 @@ def open_file(req: OpenReq, conn=Depends(get_conn)):
     uri = Path(r["path"]).as_uri() + (f"#page={req.page}" if r["path"].lower().endswith(".pdf") else "")
     webbrowser.open(uri)
     return {"opened": r["path"], "page": req.page}
+
+
+@app.get("/mcp/settings")
+def mcp_get(conn=Depends(get_conn)):
+    return mcp_settings.load(conn)
+
+
+@app.put("/mcp/settings")
+def mcp_put(req: McpSettings, conn=Depends(get_conn)):
+    try:
+        return mcp_settings.save(conn, req.enabled, req.allow)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.get("/mcp/log")
+def mcp_log(limit: int = 50):
+    """The most recent MCP calls, newest first, from .sniff/mcp_access.log."""
+    path = config.DATA_DIR / "mcp_access.log"
+    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    return [json.loads(line) for line in reversed(lines[-max(1, min(limit, 500)):])]
 
 
 @app.get("/eval")
