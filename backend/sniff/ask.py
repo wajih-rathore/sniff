@@ -80,6 +80,41 @@ def route(question: str) -> Route:
     )
     if r.field in EXPIRY_FIELDS and r.doc_type and r.field not in FIELDS[r.doc_type]:
         r.doc_type = None  # an expiry asked of a type that has none: the question is about every type
+    return repair(question, r) if r.route == "facts" else r
+
+
+# Utility words -> the part of the provider's name to match. phone, mobile and power only count next to "bill" (a phone
+# or a power bank can be on a receipt).
+UTILITIES = {"gas": "gas", "electricity": "electric", "electric": "electric", "internet": "internet", "broadband": "internet",
+             "water": "water", "power": "electric", "phone": "phone", "mobile": "mobile"}
+PRONOUNS = {"i", "me", "my", "mine", "we", "us", "our", "ours", "myself"}
+RELATIVE = {"this", "last", "next", "past", "coming", "recent", "previous", "upcoming", "within", "soon", "days", "weeks", "months"}
+
+
+def repair(question: str, r: Route) -> Route:
+    """Slips the small router made on dev questions like "How much is my gas bill?": it dropped the utility, called the
+    bill a receipt, took "my" for a person's name, and added a year, month or period the question never named. Code puts back
+    what the question says and drops filters it does not say."""
+    q = question.lower()
+    words = set(re.findall(r"[a-z]+", q))
+    f = r.filters
+    if f.holder and f.holder.strip().lower() in PRONOUNS:
+        f.holder = None
+    if f.year and str(f.year) not in q:
+        f.year = None
+    if f.period and not RELATIVE & words:
+        f.period = None
+    for k in ("month", "date_from", "date_to"):  # keep it if a month word or a year from it is in the question
+        v = getattr(f, k)
+        if v and not any(t in q for t in re.findall(r"[a-z]{3,}|\d{4}", v.lower())):
+            setattr(f, k, None)
+    utility = next((UTILITIES[w] for w in UTILITIES if w in words), None)
+    plain = utility in ("gas", "electric", "internet") and (r.doc_type in ("receipt", "utility_bill") or (r.doc_type is None and r.field not in EXPIRY_FIELDS))
+    if utility and ({"bill", "bills"} & words or plain):
+        r.doc_type = "utility_bill"
+        f.provider = f.provider or utility
+        if r.field not in FIELDS["utility_bill"]:
+            r.field = "amount_due"
     return r
 
 

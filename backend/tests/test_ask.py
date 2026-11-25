@@ -71,6 +71,38 @@ def test_router_expiry_on_a_type_without_one_means_every_type(monkeypatch):
     assert r.doc_type is None and ask.valid(r)
 
 
+@pytest.mark.parametrize("question, slip", [  # router outputs seen on the dev split, 25 Nov
+    ("How much is my gas bill?", Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum")),
+    ("How much was my gas bill?", Route(route="facts", doc_type="receipt", field="amount_due", op="sum", filters=Filters(provider="gas", year=2023))),
+    ("What is my gas bill?", Route(route="facts", doc_type="receipt", field="utility_bill", op="sum", filters=Filters(holder="my"))),
+    ("How much do I owe for gas?", Route(route="facts", doc_type="receipt", field="amount_due", op="outstanding",
+                                         filters=Filters(provider="gas", year=2023, month="March"))),
+    ("How much did I pay for gas?", Route(route="facts", doc_type="receipt", field="amount_due", op="sum", filters=Filters(provider="gas", date_from="today"))),
+    ("How much was my gas bill?", Route(route="facts", doc_type="utility_bill", field="amount_due", op="sum", filters=Filters(provider="gas", period="this_month"))),
+])
+def test_router_slips_on_utility_bills_are_repaired(docs, monkeypatch, question, slip):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: slip.model_copy(deep=True))
+    a = ask.ask(docs, question, today=TODAY)
+    assert a.route == "facts" and [s.name for s in a.sources] == ["gas.pdf"] and "700" in a.answer
+
+
+def test_utility_words_pick_the_provider(docs, monkeypatch):
+    from sniff.ai import llm
+    bare = Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum")
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: bare.model_copy(deep=True))
+    assert ask.ask(docs, "How much is my electricity bill?", today=TODAY).answer.startswith("15,499.50 in total, from 3 documents")
+    assert ask.ask(docs, "How much was our water bill?", today=TODAY).answer == "No matching documents found."  # no water bill: say so
+    r = ask.route("How much did the phone cost?")  # a phone on a receipt is not a phone bill
+    assert r.doc_type == "utility_bill" and r.filters.provider is None
+    kept = Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum", filters=Filters(year=2026, month="January 2026"))
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: kept.model_copy(deep=True))
+    r = ask.route("What did we pay for gas in January 2026?")
+    assert (r.filters.year, r.filters.month, r.filters.provider) == (2026, "January 2026", "gas")
+    kept.filters = Filters(period="last_month")
+    assert ask.route("What did we pay for gas last month?").filters.period == "last_month"
+
+
 def test_next_expiring_skips_expired(docs, monkeypatch):
     a = run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="expiry_date", op="next_expiring"))
     assert a.answer == "id_sara.jpg: expiry date 2026-12-05, in 13 days."
