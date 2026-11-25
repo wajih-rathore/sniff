@@ -76,7 +76,14 @@ function ask(question: string): Answer {
     const f = pick('amount_due')
     const total = f.reduce((s, x) => s + Number(x.value), 0).toFixed(2)
     const s = src([...new Set(f.map((x) => x.file_id))])
-    return { ...none, question, route: 'facts', answer: `The utility bills add up to ${total}.`, sources: s, counted: s, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
+    // a phone photo of the LESCO bill is skipped as a copy; a reprint of the SNGPL bill disagrees on the amount
+    const photo = { file_id: 9, path: base + 'Downloads\\lesco_bill_oct_photo.jpg', name: 'lesco_bill_oct_photo.jpg', page: 1 }
+    const sngpl = f.find((x) => x.file_id === 5)!
+    const conflicts = [{ doc_type: 'utility_bill', key: 'SNGPL, 2026-09', field: 'amount_due', values: [
+      { value: sngpl.value, fact_id: sngpl.id, status: sngpl.status, source: s.find((x) => x.file_id === 5)! },
+      { value: '2201.50', fact_id: 999, status: 'verified' as const, source: { file_id: 10, path: base + 'Downloads\\sngpl_sep_reprint.pdf', name: 'sngpl_sep_reprint.pdf', page: 1 } },
+    ] }]
+    return { ...none, question, route: 'facts', answer: `The utility bills add up to ${total}.`, sources: s, counted: s, skipped_duplicates: [photo], conflicts, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
   }
   const h = search(question)[0]
   if (!h) return { ...none, question, route: 'none', answer: 'I could not find this in your documents.', sources: [], facts: [], query: null }
@@ -152,6 +159,13 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p.startsWith('/documents/')) return delay(docs.find((d) => d.id === Number(p.split('/')[2])))
   if (p === '/review') return delay(allFacts.filter((f) => f.status === 'needs_review').map((fact) => ({ fact, document: docs[fact.file_id - 1].name, path: docs[fact.file_id - 1].path, doc_type: docs[fact.file_id - 1].doc_type })))
   if (p === '/conflicts') return delay([])
+  if (p.startsWith('/facts/')) {
+    const f = allFacts.find((x) => x.id === Number(p.split('/')[2]))
+    if (!f) throw new Error('Fact not found')
+    if (method === 'PATCH') Object.assign(f, { value: (body as { value: string }).value, status: 'corrected', reason: null })
+    else Object.assign(f, { status: 'approved', reason: null })
+    return delay({ ...f }, 120)
+  }
   if (p === '/overview') return delay(overview())
   if (p === '/upcoming') return delay(upcoming())
   if (p === '/eval') return delay(evals)
