@@ -13,6 +13,8 @@ memory-mapped, so they count in the working set but not in commit.
 Stages (p50/p95 per call): read (without OCR, per file), ocr (per page or image), embed (per file),
 classify, extract (incl. verification), index_total (per file), search (per query), route (LLM router), ask (end to end).
 --start-servers starts llama-server with -t/-tb THREADS to act like a typical 4-core laptop CPU, and stops it after.
+Rates: files that failed to index, questions that raised an error, and router fallbacks (the router chose the facts
+route but its query failed validation, so search answered instead), each over its own count.
 """
 import argparse
 import json
@@ -126,6 +128,7 @@ def start_servers(a) -> list[subprocess.Popen]:
 # ---------------------------------------------------------------- stage timers
 TIMES: dict[str, list[float]] = defaultdict(list)
 OCR_MS = [0.0]
+FALLBACKS = [0]  # questions the router sent to facts with a query that failed validation, so search answered instead
 
 
 def wrap(mods, name: str, stage: str, on_ocr: bool = False, minus_ocr: bool = False) -> bool:
@@ -162,6 +165,14 @@ def instrument() -> None:
     wrap([extract], "extract", "extract")
     wrap([search, ask], "search", "search")
     wrap([ask], "route", "route")
+    valid = ask.valid
+
+    def counted(r):
+        ok = valid(r)
+        FALLBACKS[0] += r.route == "facts" and not ok
+        return ok
+
+    ask.valid = counted
 
 
 # ---------------------------------------------------------------- main
@@ -217,11 +228,16 @@ def main(a) -> None:
             conn.commit()
             TIMES["index_total"].append((time.perf_counter() - t) * 1000)
             print(f"[{i}/{len(docs)}] {p.name} {TIMES['index_total'][-1]:.0f} ms", flush=True)
+        ask_errors = 0
         for i, q in enumerate(questions, 1):
             t = time.perf_counter()
-            ans = ask.ask(conn, q, TODAY)
+            try:
+                route = ask.ask(conn, q, TODAY).route
+            except Exception as e:  # count it and go on, like the API would answer 500 for this one question
+                ask_errors += 1
+                route = f"error: {type(e).__name__}"
             TIMES["ask"].append((time.perf_counter() - t) * 1000)
-            print(f"[q{i}/{len(questions)}] {TIMES['ask'][-1]:.0f} ms  {q[:60]} -> {ans.route}", flush=True)
+            print(f"[q{i}/{len(questions)}] {TIMES['ask'][-1]:.0f} ms  {q[:60]} -> {route}", flush=True)
         time.sleep(a.interval * 2)
         sampler.stop.set()
         sampler.join()
@@ -236,6 +252,9 @@ def main(a) -> None:
         result = {
             "component": "system", "n": len(docs), "questions": len(questions), "index_errors": errors,
             "rows": stage_rows + mem_rows,
+            "rates": {"index_failure_rate": round(errors / len(docs), 3) if docs else None,
+                      "ask_failure_rate": round(ask_errors / len(questions), 3) if questions else None,
+                      "router_fallback_rate": round(FALLBACKS[0] / len(questions), 3) if questions else None},
             "budget_MB": BUDGET_MB, "peak_working_set_within_budget": total["working_set_MB"] <= BUDGET_MB,
             "setup": {"mode": "started servers" if servers else "attached to running servers", "threads": a.threads if servers else "as running",
                       "servers": {n: " ".join(p.cmdline()[1:]) for n, p in found.items()},

@@ -146,14 +146,14 @@ def evaluate(sets: list[str]):
     save("fact_extraction", {"n": sum(r["n"] for r in fact_rows[::2]), "rows": fact_rows, "per_field": per_field}, fact_fail)
 
 
-def compare(specs: list[str], sets: list[str], limit: int | None):
-    """Index the same documents with each model, then score them all. Merges into model_comparison.json."""
-    out = RESULTS / "model_comparison.json"
+def compare(specs: list[str], sets: list[str], limit: int | None, out_name: str = "model_comparison"):
+    """Index the same documents with each model, then score them all. Merges into <out_name>.json."""
+    out = RESULTS / f"{out_name}.json"
     old = json.loads(out.read_text()) if out.exists() else {"rows": [], "per_field": {}}
     names = [s.split("=", 1)[0] for s in specs]
     rows = [r for r in old["rows"] if r["system"] not in names]
     per_field = {k: v for k, v in old.get("per_field", {}).items() if k.split(" [")[0] not in names}
-    fail_path = RESULTS / "model_comparison_failures.json"
+    fail_path = RESULTS / f"{out_name}_failures.json"
     failures = [f for f in (json.loads(fail_path.read_text()) if fail_path.exists() else []) if f.get("model") not in names]
     for spec in specs:
         name, url = spec.split("=", 1)
@@ -172,7 +172,7 @@ def compare(specs: list[str], sets: list[str], limit: int | None):
             per_field[f"{name} [{split}]"] = pf
             failures += tf + ff
     rows.sort(key=lambda r: (SETS.index(r["set"]) if r["set"] in SETS else 9, r["system"]))
-    save("model_comparison", {"n": sum(r["n"] for r in rows), "limit_per_set": limit, "rows": rows, "per_field": per_field}, failures)
+    save(out_name, {"n": sum(r["n"] for r in rows), "limit_per_set": limit, "rows": rows, "per_field": per_field}, failures)
 
 
 if __name__ == "__main__":
@@ -180,6 +180,7 @@ if __name__ == "__main__":
     ap.add_argument("--sets", nargs="+", default=SETS, choices=SETS)
     ap.add_argument("--compare", nargs="+", metavar="NAME=URL", help="models to compare, e.g. gemma3-1b=http://127.0.0.1:8090/v1")
     ap.add_argument("--limit", type=int, help="with --compare: documents per set, stratified by type")
+    ap.add_argument("--out-name", default="model_comparison", help="with --compare: results file name, e.g. model_comparison_8b")
     a = ap.parse_args()
     stay_awake()
-    compare(a.compare, a.sets, a.limit) if a.compare else evaluate(a.sets)
+    compare(a.compare, a.sets, a.limit, a.out_name) if a.compare else evaluate(a.sets)
