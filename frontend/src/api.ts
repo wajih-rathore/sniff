@@ -80,10 +80,11 @@ export type McpSettings = {
   enabled: boolean
   allow: Record<string, string[]> // document type -> fields; ["*"] is every field plus the page text; a missing type is hidden
   env_override: boolean // SNIFF_MCP_ALLOW is set, so the app's switches do nothing
-  fields?: Record<string, string[]> // every type and its fields (asked of the platform agent; until then only allowed types show)
+  fields: Record<string, string[]> // every type and its fields
 }
 export type McpLogEntry = { time: string; tool: string; args: Record<string, unknown>; ids: number[]; refused?: boolean }
-export type ReminderPreview = { title: string; date: string; description: string } // exactly what Google Calendar would get
+// Exactly what Google Calendar (or the .ics file) would get, and whether a person has looked at the date.
+export type ReminderPreview = { fact_id: number; title: string; date: string; description: string; status: FactStatus; reviewed: boolean }
 
 async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
   if (MOCK) return (await import('./mock')).mock(method, path, body) as Promise<T>
@@ -113,9 +114,9 @@ export const api = {
   overview: () => call<Overview>('GET', '/overview'),
   upcoming: () => call<UpcomingItem[]>('GET', '/upcoming?days=60'),
   remind: (fact_id: number) => call<unknown>('POST', '/reminders', { fact_id }),
-  reminderPreview: (fact_id: number) => call<ReminderPreview>('POST', '/reminders/preview', { fact_id }),
+  reminderPreview: (file_id: number, field: string) => call<ReminderPreview>('POST', '/reminders/preview', { file_id, field }),
   icsPath: (file_id: number, field: string) => `/reminders/ics?file_id=${file_id}&field=${enc(field)}`, // relative: the desktop app fetches it
-  calendarStatus: () => call<{ google: boolean }>('GET', '/calendar/status'),
+  calendarStatus: () => call<{ connected: boolean }>('GET', '/calendar/status'), // Google Calendar
   watched: () => call<WatchInfo>('GET', '/watch'),
   watch: (folder: string) => call<WatchInfo>('POST', '/watch', { folder }),
   unwatch: (folder: string) => call<WatchInfo>('DELETE', '/watch', { folder }),

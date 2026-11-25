@@ -142,12 +142,13 @@ const mcpLog: McpLogEntry[] = [
 ]
 // The title POST /reminders builds (api.py _reminder_title).
 const VERB: Record<string, string> = { expiry_date: 'expires', due_date: 'payment due', warranty_until: 'warranty ends', end_date: 'ends' }
-function preview(fact_id: number) {
-  const f = allFacts.find((x) => x.id === fact_id)
+function preview(file_id: number, field: string) {
+  const f = allFacts.find((x) => x.file_id === file_id && x.field === field)
   if (!f || !VERB[f.field]) throw new Error('This fact is not a date Sniff can remind you about')
   const d = docs[f.file_id - 1]
   const who = d.facts.find((x) => ['name', 'holder_name', 'provider', 'merchant', 'institution'].includes(x.field))
-  return { title: `${label(d.doc_type ?? 'document')} ${VERB[f.field]}${who ? ` (${who.value})` : ''}`, date: f.value, description: `From ${d.name}, page ${f.page}. Added by Sniff.` }
+  return { fact_id: f.id, title: `${label(d.doc_type ?? 'document')} ${VERB[f.field]}${who ? ` (${who.value})` : ''}`, date: f.value,
+    description: `From ${d.name}, page ${f.page}. Added by Sniff.`, status: f.status, reviewed: f.status !== 'needs_review' }
 }
 
 let watched: string[] = ['C:\\Users\\you\\Documents\\Bills']
@@ -183,8 +184,8 @@ export async function mock(method: string, path: string, body?: unknown): Promis
     return delay(mcp, 80)
   }
   if (p === '/mcp/log') return delay(mcpLog)
-  if (p === '/calendar/status') return delay({ google: true })
-  if (p === '/reminders/preview') return delay(preview((body as { fact_id: number }).fact_id), 80)
+  if (p === '/calendar/status') return delay({ connected: true })
+  if (p === '/reminders/preview') { const b = body as { file_id: number; field: string }; return delay(preview(b.file_id, b.field), 80) }
   if (p === '/open' || p === '/reminders') return delay({ ok: true }, p === '/reminders' ? 600 : 50)
   throw new Error(`mock: no fixture for ${method} ${path}`)
 }

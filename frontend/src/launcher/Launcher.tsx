@@ -78,7 +78,7 @@ export default function Launcher() {
 
   useEffect(() => {
     api.overview().then(setOv, () => {}) // only feeds the summary line; a dead back end shows up as soon as you search
-    api.calendarStatus().then((s) => setGoogle(s.google), () => setGoogle(false)) // no answer: offer only the .ics file
+    api.calendarStatus().then((s) => setGoogle(s.connected), () => setGoogle(false)) // no answer: offer only the .ics file
     native.autostart().then(setAutostart, () => {})
     const onGo = (e: Event) => go((e as CustomEvent<Mode>).detail) // the tray's Settings item
     const onFocus = () => input.current?.focus() // the hotkey shows the window: be ready to type
@@ -148,7 +148,7 @@ export default function Launcher() {
     setMenu(r.id)
     const f = r.remind
     // Google Calendar is offered only once the back end has said exactly what it would send.
-    if (f && google && !previews[f.id]) api.reminderPreview(f.id).then((p) => setPreviews((m) => ({ ...m, [f.id]: p })), () => {})
+    if (f && google && !previews[f.id]) api.reminderPreview(f.file_id, f.field).then((p) => setPreviews((m) => ({ ...m, [f.id]: p })), () => {})
   }
   const closeMenu = () => { setMenu(null); input.current?.focus() }
 
@@ -202,7 +202,7 @@ export default function Launcher() {
               <dt className="text-muted">Note</dt><dd>{p.description}</dd>
             </dl>
             <p className="mt-1.5">Nothing else from your documents is sent.</p>
-            {f.status === 'needs_review' && <p className="mt-1 text-warn">This date is not reviewed yet: {label(f.reason ?? 'check it first')}.</p>}
+            {!p.reviewed && <p className="mt-1 text-warn">This date is not reviewed yet: {label(f.reason ?? 'check it first')}.</p>}
           </>
         ),
       }] : []),
@@ -241,7 +241,7 @@ export default function Launcher() {
     }
     if (sub?.kind === 'fields' && mcp) {
       const cur = mcp.allow[sub.type] ?? []
-      const all = mcp.fields?.[sub.type] ?? []
+      const all = mcp.fields[sub.type] ?? []
       const star = cur.includes('*')
       return [
         { id: 'star', title: 'Every field and the page text', detail: star ? 'On. Page text is only given out when this is on' : 'Off: agents get only the fields below',
@@ -362,11 +362,11 @@ export default function Launcher() {
           { id: 'mcp', head: 'Agent access (MCP)', icon: Bot, title: 'Let AI agents read Sniff', right: <Toggle on={mcp.enabled} />, actions: [],
             detail: mcp.env_override ? 'Set by SNIFF_MCP_ALLOW, so these switches do nothing' : mcp.enabled ? 'On: agents you start on this laptop can read the types below' : 'Off: every agent request is refused and logged',
             enter: () => saveMcp(!mcp.enabled, mcp.allow) },
-          ...Object.keys(mcp.fields ?? mcp.allow).map((t): Row => {
+          ...Object.keys(mcp.fields).map((t): Row => {
             const a = mcp.allow[t]
             return {
               id: `mcp-${t}`, icon: FileText, title: label(t), right: <Toggle on={!!a} />, actions: [],
-              detail: !a ? 'Hidden from agents' : a.includes('*') ? 'Every field and the page text' : `${a.length} of ${mcp.fields?.[t]?.length ?? '?'} fields: ${a.map((x) => label(x).toLowerCase()).join(', ')}`,
+              detail: !a ? 'Hidden from agents' : a.includes('*') ? 'Every field and the page text' : `${a.length} of ${mcp.fields[t]?.length ?? 0} fields: ${a.map((x) => label(x).toLowerCase()).join(', ')}`,
               enter: () => setAllow(t, a ? [] : ['*']), more: () => openSub({ kind: 'fields', type: t, back: sel }),
             }
           }),
