@@ -99,3 +99,18 @@ def test_unclassified_licence_is_masked_in_every_output(conn, monkeypatch):
     assert mcp_server.search_documents("licence")[0]["snippet"] == "Licence No KHI-••-••5642"
     monkeypatch.setattr(mcp_server.ask_mod, "ask", lambda conn, q: Answer(question=q, answer="It is KHI-21-725642.", route="search"))
     assert mcp_server.ask("licence number?")["answer"] == "It is KHI-••-••5642."
+
+
+def test_new_types_show_only_non_identifying_fields(conn, add_doc):
+    add_doc("C:/docs/fee.pdf", "fee_voucher", {"student_name": "Sara Ali", "registration_number": "22K-4512", "amount": "85000.0", "due_date": "2026-12-10"})
+    add_doc("C:/docs/lease.pdf", "tenancy_agreement", {"landlord": "Imran Shah", "tenant": "Sara Ali", "property_address": "House 4, Street 9",
+                                                       "monthly_rent": "60000.0", "end_date": "2027-06-30"})
+    add_doc("C:/docs/policy.pdf", "insurance_policy", {"insurer": "EFU", "policy_number": "P-778812", "insured_name": "Sara Ali", "end_date": "2027-01-31"})
+    add_doc("C:/docs/warranty.pdf", "warranty_card", {"product": "Fridge", "brand": "Dawlance", "serial_number": "DW99812", "warranty_until": "2028-03-01"})
+    for t, fields in (("passport", {"passport_number": "AB1234567"}), ("bank_statement", {"bank": "HBL"}), ("offer_letter", {"employer": "Systems Ltd"}),
+                      ("transcript", {"registration_number": "22K-4512"}), ("id_card", {"name": "Sara Ali"})):
+        add_doc(f"C:/docs/{t}.pdf", t, fields)
+    facts = {d["type"]: d["facts"] for d in mcp_server.list_documents()}
+    assert facts == {"fee_voucher": {"amount": "85000.0", "due_date": "2026-12-10"}, "tenancy_agreement": {"monthly_rent": "60000.0", "end_date": "2027-06-30"},
+                     "insurance_policy": {"insurer": "EFU", "end_date": "2027-01-31"}, "warranty_card": {"product": "Fridge", "brand": "Dawlance", "warranty_until": "2028-03-01"}}
+    assert not any(mcp_server.text_allowed(t) for t in facts)  # a field list never gives page text

@@ -87,7 +87,8 @@ def ask(question: str) -> dict:
 
 @mcp.tool()
 def list_documents(doc_type: str | None = None) -> list[dict]:
-    """List indexed documents with their type and extracted facts. doc_type: utility_bill, certificate, receipt, other.
+    """List indexed documents with their type and extracted facts. doc_type: utility_bill, certificate, receipt, warranty_card,
+    fee_voucher, insurance_policy, tenancy_agreement, other.
     Types the user has not allowed are not listed."""
     with closing(db.connect()) as conn:
         rows = [r for r in conn.execute("SELECT * FROM files WHERE copy_of IS NULL AND (? IS NULL OR doc_type=?) ORDER BY path",
