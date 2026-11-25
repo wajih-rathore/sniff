@@ -18,15 +18,17 @@ Rules we keep:
 
 | Set | Where | Size | What it is | Labels |
 |---|---|---|---|---|
-| `test` | `data/synth/out/test` | 184 on 24 Nov (re-count after regenerating) | Synthetic bills, receipts, ID cards, certificates and other files: text PDFs, scans and phone photos | From the generator, `data/synth/out/labels.jsonl` |
-| `hard` | `data/hard/out/hard` | 125 (25 cut-off, 20 handwriting, 35 low-res, 45 photo) | Harder copies of `test` documents, made by `data/hard/make_hard.py` (seed 7) | Copied from the source document; cut-off fields set to `null` |
+| `test` | `data/synth/out/test` | 378: receipt 80, utility_bill 41, certificate 28, bank_statement 24, and 22 or 23 of each other type (id_card, passport, transcript, warranty_card, offer_letter, insurance_policy, tenancy_agreement, fee_voucher, other). 168 text PDFs, 80 scans, 130 photos | Synthetic documents of all 12 types plus `other` files | From the generator, `data/synth/out/labels.jsonl` |
+| `dev` | `data/synth/out/dev` | 72 | Same kinds, other seeds and people. The only set used for prompt changes | Same |
+| `hard` | `data/hard/out/hard` | 155 (60 photo, 45 low-res, 30 cut-off, 20 handwriting), all 13 types; 109 fields set to `null` by cuts | Harder copies of `test` documents, made by `data/hard/make_hard.py` (seed 7) | Copied from the source document; cut-off fields set to `null` |
 | `real` | `data/real/out/real/sroie` | 60 | Real scanned shop receipts from SROIE (ICDAR 2019), human labelled | Company, date, total from SROIE, converted by `data/real/fetch_sroie.py` |
 | `own` | `data/own/<member>` | optional | Team members' own documents, personal numbers blurred; never committed | Hand-written, see `data/own/README.md` |
-| ask | `data/eval/ask.jsonl` | 181 on 24 Nov: single_fact 58, cross_doc_total 48, semantic 45, expiring_window 10, unanswerable 10, duplicates 6, conflict 4 | Questions with gold answers and sources, each with a `category` | From the generator's code |
-| search | `data/eval/search.jsonl` | 60 | Queries with the relevant files | From the generator |
+| ask | `data/eval/ask.jsonl` | 261: single_fact 92, cross_doc_total 62, semantic 54, expiring_window 18, duplicates 13, conflict 12, unanswerable 10 | Questions with gold answers and sources, each with a `category` | From the generator's code |
+| search | `data/eval/search.jsonl` | 78 | Queries with the relevant files | From the generator |
+| injection | `data/injection/out` | 120 files: 20 visible, 20 hidden and 20 retrieved attacks, each with a clean twin; 20 questions | Prompt-injection set, see the A4 section | From `data/injection/make_injection.py` (seed 11) |
 
-The `duplicates` and `conflict` categories are small (6 and 4 questions), so their per-category numbers only show
-whether the feature works on those cases; they are not a reliable rate.
+The `duplicates`, `conflict` and `unanswerable` categories are small (13, 12 and 10 questions), so their per-category
+numbers show whether the feature works on those cases; they are not a precise rate.
 
 Each set gets its own database (`.sniff/eval.db` for `test`, `.sniff/eval-hard.db`, `.sniff/eval-real.db`), so
 hard copies are never counted as near-duplicates of test documents in the ask totals.
@@ -34,7 +36,7 @@ hard copies are never counted as near-duplicates of test documents in the ask to
 **Hard set details.** Each source document is used once. The variants:
 - `photo`: perspective, rotation up to 8 degrees, blur, JPEG quality 18 to 40, and sometimes a shadow or low warm light. The effects used are stored per document (`effects`), so failures can be grouped by effect.
 - `lowres`: a grey scan at about 60 to 80 dpi inside a PDF.
-- `handwriting`: a receipt written out in a handwriting font (Ink Free, Bradley Hand or Segoe Script; Windows fonts).
+- `handwriting`: a receipt or warranty card written out in a handwriting font (Ink Free, Bradley Hand or Segoe Script; Windows fonts).
 - `cutoff`: a text PDF photographed with the top or bottom part missing. A field becomes `null` when its printed value is only on the missing part. The script finds the value with PyMuPDF word positions; a document whose fields it cannot find on the page is skipped instead of guessed.
 
 **Real set details.** A fixed sample (seed 7) of 60 of the 626 SROIE task-3 training receipts, downloaded from the
