@@ -1,21 +1,17 @@
 import { useEffect, useState } from 'react'
-import { BarChart3, CalendarClock, ClipboardCheck, LayoutDashboard, Library, Search, Settings } from 'lucide-react'
+import { CalendarClock, ClipboardCheck, Library, Search, Settings } from 'lucide-react'
 import SearchView from './views/Search'
 import LibraryView from './views/Library'
 import UpcomingView from './views/Upcoming'
-import EvaluationView from './views/Evaluation'
 import SettingsView from './views/Settings'
-import OverviewView from './views/Overview'
 import ReviewView from './views/Review'
 import type { Nav } from './ui'
 
 const TABS = [
   { id: 'search', name: 'Search', icon: Search },
-  { id: 'overview', name: 'Overview', icon: LayoutDashboard },
   { id: 'review', name: 'Review', icon: ClipboardCheck },
   { id: 'library', name: 'Library', icon: Library },
   { id: 'upcoming', name: 'Upcoming', icon: CalendarClock },
-  { id: 'evaluation', name: 'Evaluation', icon: BarChart3 },
   { id: 'settings', name: 'Settings', icon: Settings },
 ] as const
 
@@ -55,11 +51,9 @@ export default function App() {
       </nav>
       <main className="min-w-0 flex-1 overflow-y-auto">
         <div hidden={view !== 'search'}><SearchView focus={focus} go={go} /></div>
-        {view === 'overview' && <OverviewView go={go} />}
         {view === 'review' && <ReviewView tab={nav.tab ?? 'queue'} go={go} />}
         {view === 'library' && <LibraryView open={nav.doc} go={go} />}
         {view === 'upcoming' && <UpcomingView />}
-        {view === 'evaluation' && <EvaluationView />}
         {view === 'settings' && <SettingsView />}
       </main>
     </div>
