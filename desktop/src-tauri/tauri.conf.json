@@ -11,7 +11,7 @@
   },
   "app": {
     "windows": [
-      { "label": "main", "title": "Sniff", "width": 980, "height": 640, "center": true, "decorations": false }
+      { "label": "main", "title": "Sniff", "width": 760, "height": 480, "decorations": false, "resizable": false, "skipTaskbar": true, "visible": false }
     ],
     "security": { "csp": null }
   },
