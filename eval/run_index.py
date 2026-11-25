@@ -20,9 +20,9 @@ def times_path(split: str):
 
 def main(split: str, limit: int | None, fresh: bool):
     path, times = db_path(split), times_path(split)
-    if fresh:
-        path.unlink(missing_ok=True)
-        times.unlink(missing_ok=True)
+    if fresh:  # the -wal and -shm files too: a stale WAL next to a new database file can bring old rows back
+        for p in (path, path.with_name(path.name + "-wal"), path.with_name(path.name + "-shm"), times):
+            p.unlink(missing_ok=True)
     gold = stratified(labels(split), limit)
     if not gold:
         raise SystemExit(f"no labels for '{split}': build the set first (see docs/EVAL.md)")

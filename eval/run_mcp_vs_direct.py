@@ -40,7 +40,7 @@ from common import RESULTS, ROOT, SETS, Timer, db_path, jsonl, latency, rel, sav
 
 CATEGORIES = ["single_fact", "cross_doc_total", "semantic", "unanswerable", "duplicates", "conflict"]
 CONDITIONS = {"mcp": "Agent with Sniff MCP tools", "direct": "Agent with plain file tools"}
-SYSTEM = ("You answer questions about the user's own documents (bills, receipts, certificates, ID cards, notes). "
+SYSTEM = ("You answer questions about the user's own documents (bills, receipts, cards, certificates, statements, letters and notes). "
           "Use the tools to look things up and do not guess. Answer in one or two sentences with the figure, date or name asked for. "
           "If the documents do not contain the answer, say that you could not find it.")
 REFUSAL = re.compile(r"couldn.?t find|could not find|cannot find|can.?t find|not found|no (matching )?(documents?|information|records?)|"
@@ -255,13 +255,14 @@ async def run_mcp(qs, done, args, chat) -> list[dict]:
     from mcp.client.stdio import StdioServerParameters, stdio_client
 
     from sniff import config
+    from sniff.schemas import DOC_TYPES
 
     data = ROOT / ".sniff" / "mcp-eval"
     data.mkdir(parents=True, exist_ok=True)
     usage = data / "llm_usage.jsonl"
     env = {**os.environ, "SNIFF_DB": str(db_path("test")), "SNIFF_DATA": str(data), "SNIFF_USAGE_LOG": str(usage)}
     env |= {"SNIFF_LLM_URL": config.LLM_URL, "SNIFF_LLM_MODEL": config.LLM_MODEL}  # the server's own chat calls use the same model
-    env.setdefault("SNIFF_MCP_ALLOW", json.dumps({t: ["*"] for t in ("id_card", "utility_bill", "certificate", "receipt", "other")}))
+    env.setdefault("SNIFF_MCP_ALLOW", json.dumps({t: ["*"] for t in DOC_TYPES}))  # every type, as in the direct condition
     params = StdioServerParameters(command=sys.executable, args=[str(Path(__file__).with_name("mcp_launcher.py"))], cwd=str(ROOT / "backend"), env=env)
     out, seen = [], usage_total(usage, 0)[2]
     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
