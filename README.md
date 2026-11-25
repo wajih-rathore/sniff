@@ -79,7 +79,7 @@ docker compose up --build        # API on http://127.0.0.1:8000; SNIFF_DOCS=/pat
 claude mcp add sniff -- uv --directory /path/to/sniff/backend run python -m sniff.mcp_server
 ```
 
-MCP is **off until you turn it on**: `PUT /mcp/settings` with `{"enabled": true, "allow": {"utility_bill": ["*"]}}`. While it is off, every tool refuses and the call is still logged. `GET /mcp/settings` shows the current settings and `GET /mcp/log?limit=50` the recent calls. Changes apply on the next call, without a restart. Without a saved list, the default is `config.MCP_ALLOW`, which hides ID cards, passports, bank statements and other private types. Setting `SNIFF_MCP_ALLOW` (JSON) overrides the database and turns MCP on, for development.
+MCP is **off until you turn it on**: `PUT /mcp/settings` with `{"enabled": true, "allow": {"utility_bill": ["*"]}}`. While it is off, every tool refuses and the call is still logged. `GET /mcp/settings` shows the current settings and `GET /mcp/log?limit=50` the recent calls. Changes apply on the next call, without a restart. Without a saved list, the default is `config.MCP_ALLOW`, which gives field lists only (no page text) and hides ID cards, passports, bank statements, offer letters, transcripts and unclassified (`other`) files until you grant them. Setting `SNIFF_MCP_ALLOW` (JSON) overrides the database and turns MCP on, for development.
 
 ## Tests and evaluation
 

@@ -27,6 +27,16 @@ def _service():
     return build("calendar", "v3", credentials=creds, cache_discovery=False)
 
 
+def connected() -> bool:
+    """True if a saved Google token exists and loads (an expired one with a refresh token still counts). Never returns the token."""
+    try:
+        from google.oauth2.credentials import Credentials
+        creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+        return bool(creds.valid or creds.refresh_token)
+    except Exception:
+        return False
+
+
 def create_event(title: str, day: date, description: str) -> str:
     """All-day event on `day`, with pop-up reminders a week and a day before. Returns the event id."""
     body = {

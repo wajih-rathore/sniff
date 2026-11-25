@@ -8,8 +8,10 @@ from sniff.schemas import Answer, Fact, Hit, Source
 
 
 @pytest.fixture(autouse=True)
-def mcp_on(conn):
-    conn.execute("INSERT INTO settings(key, value) VALUES ('mcp', '{\"enabled\": true}')")  # on, with the default allow-list
+def mcp_on(conn, monkeypatch):
+    # on, with full access to these four types on top of the default list: most tests below are about how the limits work
+    monkeypatch.setattr(config, "MCP_ALLOW", {**config.MCP_ALLOW, **{t: ["*"] for t in ("utility_bill", "certificate", "receipt", "other")}})
+    conn.execute("INSERT INTO settings(key, value) VALUES ('mcp', '{\"enabled\": true}')")
     conn.commit()
 
 

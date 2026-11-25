@@ -70,3 +70,32 @@ def test_log_endpoint_returns_newest_first(client, conn):
         mcp_server.log(tool, {}, [1])
     assert [r["tool"] for r in client.get("/mcp/log").json()] == ["c", "b", "a"]
     assert [r["tool"] for r in client.get("/mcp/log?limit=2").json()] == ["c", "b"]
+
+
+def test_settings_include_each_types_field_list(client):
+    fields = client.get("/mcp/settings").json()["fields"]
+    assert fields["utility_bill"][:2] == ["provider", "account_number"] and fields["id_card"][0] == "name" and fields["other"] == []
+    assert client.put("/mcp/settings", json={"enabled": False, "allow": {}}).json()["fields"] == fields
+
+
+def test_log_rows_say_whether_the_call_was_refused(client, conn, add_doc):
+    add_doc("C:/docs/bill.pdf", "utility_bill", {"provider": "LESCO"})
+    with pytest.raises(ValueError):
+        mcp_server.list_documents()  # off: refused
+    client.put("/mcp/settings", json={"enabled": True, "allow": {"utility_bill": ["provider"]}})
+    mcp_server.list_documents()  # on: answered
+    rows = client.get("/mcp/log").json()
+    assert [(r["tool"], r["refused"]) for r in rows] == [("list_documents", False), ("list_documents", True)]
+    assert rows[1]["ids"] == []
+
+
+def test_default_allow_list_opens_every_type_with_field_rules_but_five_and_names_no_person_or_number():
+    from sniff.schemas import DOC_TYPES, FIELDS
+    hidden = {"id_card", "passport", "bank_statement", "offer_letter", "transcript", "other"}  # other: where an unrecognised licence lands
+    assert set(config.MCP_ALLOW) == set(DOC_TYPES) - hidden
+    mcp_settings.validate(config.MCP_ALLOW)  # every field name is real
+    for doc_type, fields in config.MCP_ALLOW.items():
+        for f in fields:
+            assert f == "*" or FIELDS[doc_type][f].kind not in ("id", "passport", "serial"), (doc_type, f)
+            assert f in ("*",) or "name" not in f and f not in ("landlord", "tenant", "property_address"), (doc_type, f)
+    assert not any("*" in fields for fields in config.MCP_ALLOW.values())  # no page text unless the user grants it

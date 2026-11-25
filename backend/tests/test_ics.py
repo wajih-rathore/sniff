@@ -41,3 +41,33 @@ def test_ics_escapes_and_folds_long_lines():
     assert "SUMMARY:Fee\\, due\\; soon\r\n" in text
     assert all(len(line.encode()) <= 75 for line in text.split("\r\n"))
     assert text.replace("\r\n ", "").count("x" * 200) == 1  # unfolding restores the text
+
+
+def test_preview_is_what_google_and_the_ics_file_receive(client, conn, card, monkeypatch):
+    sent = []
+    monkeypatch.setattr(gcal, "create_event", lambda title, day, description: sent.append((title, day.isoformat(), description)) or "ev1")
+    p = client.post("/reminders/preview", json={"file_id": card, "field": "expiry_date"}).json()
+    assert p == {"fact_id": p["fact_id"], "title": "Id card expires (Ayesha Khan)", "date": "2027-03-09",
+                 "description": "From cnic.jpg, page 1. Added by Sniff.", "status": "verified", "reviewed": True}
+    client.post("/reminders", json={"fact_id": p["fact_id"]})
+    assert sent == [(p["title"], p["date"], p["description"])]
+    ics_text = client.get(f"/reminders/ics?file_id={card}&field=expiry_date").text.replace("\\", "")
+    assert f"SUMMARY:{p['title']}" in ics_text and "DTSTART;VALUE=DATE:20270309" in ics_text
+
+
+def test_preview_flags_a_date_nobody_has_reviewed(client, add_doc):
+    fid = add_doc("C:/d/id.jpg", "id_card", {"name": "Sara", "id_number": "1", "expiry_date": "2027-01-01"}, statuses={"expiry_date": "needs_review"})
+    p = client.post("/reminders/preview", json={"file_id": fid, "field": "expiry_date"}).json()
+    assert p["reviewed"] is False and p["status"] == "needs_review"
+    assert client.post("/reminders/preview", json={"file_id": fid, "field": "name"}).status_code == 400
+
+
+def test_calendar_status_never_shows_the_token(client, tmp_path, monkeypatch):
+    token = tmp_path / "google_token.json"
+    monkeypatch.setattr(gcal, "TOKEN_FILE", token)
+    assert client.get("/calendar/status").json() == {"connected": False}  # no file
+    token.write_text("not json")
+    assert client.get("/calendar/status").json() == {"connected": False}  # does not load
+    token.write_text('{"token": "secret-access-token", "refresh_token": "secret-refresh", "client_id": "c", "client_secret": "s"}')
+    r = client.get("/calendar/status")
+    assert r.json() == {"connected": True} and "secret" not in r.text

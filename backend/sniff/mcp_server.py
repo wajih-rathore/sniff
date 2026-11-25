@@ -71,7 +71,7 @@ def text_allowed(doc_type: str | None) -> bool:
 def log(tool: str, args: dict, ids: list[int], refused: bool = False) -> None:
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(config.DATA_DIR / "mcp_access.log", "a", encoding="utf-8") as f:
-        f.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"), "tool": tool, "args": args, "ids": ids, **({"refused": True} if refused else {})}) + "\n")
+        f.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"), "tool": tool, "args": args, "ids": ids, "refused": refused}) + "\n")
 
 
 @mcp.tool()

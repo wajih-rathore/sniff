@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from . import config, db, gcal, ics, mcp_settings, records, verify, watch
 from .ask import ask
 from .ingest import readers, scan
-from .schemas import (ACTION_DATE_FIELDS, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
+from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
                       ReviewItem, UpcomingItem)
 from .search import search
 
@@ -305,9 +305,13 @@ def _reminder_title(conn, r) -> str:
     return f"{(r['doc_type'] or 'document').replace('_', ' ').capitalize()} {REMINDER_TITLES[r['field']]}" + (f" ({holder['value']})" if holder else "")
 
 
-@app.get("/reminders/ics")
-def reminder_ics(file_id: int, field: str, conn=Depends(get_conn)):
-    """The same reminder as a .ics file for any calendar app, no Google account needed. The user's download is the approval."""
+def _reminder_event(conn, r) -> tuple[str, date, str]:
+    """What Google Calendar, the .ics file and the preview all receive: title, day and description. The description has
+    the file name only: the full path stays on the laptop."""
+    return _reminder_title(conn, r), date.fromisoformat(r["value"]), f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff."
+
+
+def _reminder_fact(conn, file_id: int, field: str):
     if field not in ACTION_DATE_FIELDS:
         raise HTTPException(400, "This is not a date Sniff can remind you about")
     fid = _canonical(conn, file_id)["id"]
@@ -315,14 +319,35 @@ def reminder_ics(file_id: int, field: str, conn=Depends(get_conn)):
     if not r:
         raise HTTPException(404, "This document has no such date")
     try:
-        day = date.fromisoformat(r["value"])
+        date.fromisoformat(r["value"])
     except ValueError:
         raise HTTPException(422, f"'{r['value']}' is not a date")
-    title = _reminder_title(conn, r)
-    body = ics.make_ics(f"sniff-{r['id']}@sniff.local", title, day, f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only
-    db.log(conn, "reminder_ics", json.dumps({"fact_id": r["id"], "file_id": fid, "field": field}))
+    return r
+
+
+@app.get("/reminders/ics")
+def reminder_ics(file_id: int, field: str, conn=Depends(get_conn)):
+    """The same reminder as a .ics file for any calendar app, no Google account needed. The user's download is the approval."""
+    r = _reminder_fact(conn, file_id, field)
+    title, day, description = _reminder_event(conn, r)
+    body = ics.make_ics(f"sniff-{r['id']}@sniff.local", title, day, description)
+    db.log(conn, "reminder_ics", json.dumps({"fact_id": r["id"], "file_id": r["file_id"], "field": field}))
     conn.commit()
     return Response(body, media_type="text/calendar", headers={"Content-Disposition": f'attachment; filename="sniff-reminder-{r["id"]}.ics"'})
+
+
+class PreviewReq(BaseModel):
+    file_id: int
+    field: str
+
+
+@app.post("/reminders/preview")
+def reminder_preview(req: PreviewReq, conn=Depends(get_conn)):
+    """Exactly what would be sent to Google or written to the .ics file, and whether a person has looked at the date."""
+    r = _reminder_fact(conn, req.file_id, req.field)
+    title, day, description = _reminder_event(conn, r)
+    return {"fact_id": r["id"], "title": title, "date": day.isoformat(), "description": description, "status": r["status"],
+            "reviewed": r["status"] != "needs_review"}
 
 
 @app.post("/reminders")
@@ -331,9 +356,9 @@ def add_reminder(req: ReminderReq, conn=Depends(get_conn)):
     r = conn.execute("SELECT fa.*, f.path, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id WHERE fa.id=?", (req.fact_id,)).fetchone()
     if not r or r["field"] not in ACTION_DATE_FIELDS:
         raise HTTPException(400, "This fact is not a date Sniff can remind you about")
-    title = _reminder_title(conn, r)
+    title, day, description = _reminder_event(conn, r)
     try:
-        event_id = gcal.create_event(title, date.fromisoformat(r["value"]), f"From {Path(r['path']).name}, page {r['page']}. Added by Sniff.")  # file name only: the full path stays on the laptop
+        event_id = gcal.create_event(title, day, description)
     except Exception as e:
         raise HTTPException(502, f"Could not create the calendar event: {e}")
     conn.execute("INSERT INTO reminders(fact_id, title, date, calendar_event_id, status, created_at) VALUES (?,?,?,?, 'created', datetime('now'))",
@@ -353,15 +378,25 @@ def open_file(req: OpenReq, conn=Depends(get_conn)):
     return {"opened": r["path"], "page": req.page}
 
 
+def _mcp_payload(settings: dict) -> dict:
+    """The settings plus every type's field names, so the UI does not keep its own copy."""
+    return {**settings, "fields": {t: list(FIELDS.get(t, {})) for t in DOC_TYPES}}
+
+
+@app.get("/calendar/status")
+def calendar_status():
+    return {"connected": gcal.connected()}
+
+
 @app.get("/mcp/settings")
 def mcp_get(conn=Depends(get_conn)):
-    return mcp_settings.load(conn)
+    return _mcp_payload(mcp_settings.load(conn))
 
 
 @app.put("/mcp/settings")
 def mcp_put(req: McpSettings, conn=Depends(get_conn)):
     try:
-        return mcp_settings.save(conn, req.enabled, req.allow)
+        return _mcp_payload(mcp_settings.save(conn, req.enabled, req.allow))
     except ValueError as e:
         raise HTTPException(422, str(e))
 
