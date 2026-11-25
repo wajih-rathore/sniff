@@ -57,7 +57,8 @@ gets its final name only after its sha256 matches; a file that does not match is
   notification, at most once a day per document.
 - On start, Sniff starts its back end on `127.0.0.1:8765`. It checks ports 8080 (chat) and 8081 (embeddings): if a
   model server already answers there it is reused, otherwise Sniff starts its own `llama-server` with the same
-  flags as `scripts/dev.ps1`. Quit stops every process Sniff started.
+  flags as `scripts/dev.ps1`. Quit stops every process Sniff started. They are in a Windows job object, so they
+  also end if Sniff crashes. Model servers it only reuses are left alone.
 - Enter on a result opens the file. A PDF hit on page 2 or later opens in Microsoft Edge at that page, because the
   default PDF reader may ignore page numbers. Ctrl+Enter shows the file in Explorer. A calendar reminder is saved
   as an `.ics` file in `%TEMP%` and opened in the default calendar app.
@@ -140,8 +141,3 @@ Not done yet. Things the sandbox run does not cover. On a fresh Windows 11 VM wi
 13. Quit from the tray. Check in Task Manager that no `sniff-backend.exe` or `llama-server.exe` is left.
 14. Uninstall with "Delete the application data" ticked. Check `%LOCALAPPDATA%\Sniff`, `%LOCALAPPDATA%\pk.edu.nu.sniff`,
     the Start menu entry and `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall` are all gone.
-
-## Known limits
-
-- Sniff puts the back end and the model servers it starts in a Windows job object, so they end with it, also if it
-  crashes. Model servers it only reuses are left alone.
