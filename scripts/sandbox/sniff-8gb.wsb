@@ -1,0 +1,23 @@
+<!-- Clean Windows with 8 GB of RAM and no GPU, to install and run Sniff from scratch.
+     First run scripts\sandbox\prepare.ps1, which fills the "in" folder. Then double-click this file.
+     The host paths below are for our laptop; change both if the repo's parent folder is elsewhere. -->
+<Configuration>
+  <MemoryInMB>8192</MemoryInMB>
+  <vGPU>Disable</vGPU>
+  <Networking>Enable</Networking>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>E:\E\FAST\Semester 7\GenAI\.cache\sandbox\in</HostFolder>
+      <SandboxFolder>C:\sniff-in</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+    <MappedFolder>
+      <HostFolder>E:\E\FAST\Semester 7\GenAI\.cache\sandbox\results</HostFolder>
+      <SandboxFolder>C:\sniff-results</SandboxFolder>
+      <ReadOnly>false</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\sniff-in\smoke.ps1</Command>
+  </LogonCommand>
+</Configuration>

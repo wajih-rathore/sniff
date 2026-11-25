@@ -14,7 +14,7 @@ The installer is not signed yet, so Windows SmartScreen may warn the first time.
 
 ## Where the files go
 
-Everything is under `%LOCALAPPDATA%\Sniff`. The program itself takes 496 MB (1,032 files); most of it is the back
+Everything is under `%LOCALAPPDATA%\Sniff`. The program itself takes 497 MB (1,032 files); most of it is the back
 end's libraries (OpenCV, PyMuPDF and ONNX Runtime for reading and OCR).
 
 | Folder | What is in it |
@@ -45,12 +45,22 @@ gets its final name only after its sha256 matches; a file that does not match is
 ## Running
 
 - **Alt+Shift+Space** shows or hides the launcher from any app. Alt+Space was the first choice, but Windows uses
-  it for the window menu and PowerToys Run uses it too.
+  it for the window menu and PowerToys Run uses it too. Settings > Hotkey changes it; the new one is saved in
+  `data\hotkey.txt`.
+- The launcher is one frameless 760x480 window in the upper third of the screen, with no taskbar button. It hides
+  when you click elsewhere, and on Esc.
 - The tray icon has Open, Settings and Quit. Closing the window only hides it; Quit stops Sniff. Opening Sniff
   again from the Start menu shows the running window instead of starting a second copy.
+- Settings > Start with Windows adds a `Sniff` value to `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+  Sniff then starts in the tray, without the window. The uninstaller removes the value.
+- Once an hour Sniff checks the expiry and due dates it found. For a date in the next 7 days it shows a Windows
+  notification, at most once a day per document.
 - On start, Sniff starts its back end on `127.0.0.1:8765`. It checks ports 8080 (chat) and 8081 (embeddings): if a
   model server already answers there it is reused, otherwise Sniff starts its own `llama-server` with the same
   flags as `scripts/dev.ps1`. Quit stops every process Sniff started.
+- Enter on a result opens the file. A PDF hit on page 2 or later opens in Microsoft Edge at that page, because the
+  default PDF reader may ignore page numbers. Ctrl+Enter shows the file in Explorer. A calendar reminder is saved
+  as an `.ics` file in `%TEMP%` and opened in the default calendar app.
 - Everything listens on 127.0.0.1 only.
 
 ## Uninstalling
@@ -79,9 +89,41 @@ below-normal priority with 2 cargo jobs, and all caches go to `.cache\` in the r
 On our laptop Rust uses the GNU toolchain (`x86_64-pc-windows-gnu`) with MSYS2's MinGW on the PATH, because
 Visual Studio Build Tools do not fit on drive C:.
 
+## Clean-machine test in Windows Sandbox (8 GB, no GPU)
+
+This answers whether a person with an ordinary 8 GB laptop and nothing installed can install Sniff, get the
+models and use it. Windows Sandbox starts a fresh copy of Windows each time: no Python, no models, no dev tools.
+`scripts/sandbox/sniff-8gb.wsb` gives it 8 GB of RAM, no GPU and network access, maps a read-only folder with
+the installer, the test script and 5 dev documents, and a writable results folder.
+
+Status: ready, not run yet. Windows Sandbox must be turned on once (Windows 11 Pro, admin, then a reboot):
+`Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM`.
+
+1. Build the installer (`scripts\build-desktop.ps1`).
+2. Run `scripts\sandbox\prepare.ps1`. It fills `E:\E\FAST\Semester 7\GenAI\.cache\sandbox\in` (installer,
+   `smoke.ps1`, 5 documents from the dev split: a gas bill, a receipt photo, a certificate, a scanned ID card and a
+   recipe). On another machine, change the two host paths in `sniff-8gb.wsb` and pass `-Box`.
+3. Close other heavy programs first: the sandbox may take up to 8 GB of the host's memory.
+4. Double-click `scripts\sandbox\sniff-8gb.wsb`. At logon the sandbox runs `smoke.ps1`, which:
+   1. installs Sniff silently for the sandbox user;
+   2. starts it and waits for the back end;
+   3. starts the first-run download (the same call as the Download button), 1.41 GB, and waits until both model
+      servers answer;
+   4. indexes the 5 documents;
+   5. runs one search and one ask, timed;
+   6. quits from the tray menu and checks that no Sniff process is left.
+5. Read `.cache\sandbox\results\results.json` and the screenshots next to it. Each step has its time (`at_s` is
+   seconds since the script started); `5_search_ask.time_to_first_answer_s` is the time from the start of the
+   install to the first answer, download included. `peak_working_set_mb` is the peak memory of each process, and
+   `failures` lists any step that went wrong.
+
+Steps 4 and 5 call the API the launcher uses, rather than typing in the window; the script also types the question
+into the launcher for a screenshot, but does not depend on it. The sandbox is thrown away when it is closed, so
+every run downloads the models again.
+
 ## Clean-VM install test (planned)
 
-Not done yet. To run on a fresh Windows 11 VM with 8 GB of RAM and no GPU:
+Not done yet. Things the sandbox run does not cover. On a fresh Windows 11 VM with 8 GB of RAM and no GPU:
 
 1. Copy the installer to the VM. Run it as a normal user. Note any SmartScreen or UAC prompt (there should be no UAC prompt).
 2. Check that `%LOCALAPPDATA%\Sniff` has `sniff.exe`, `backend\` and `llama\`, and nothing was written to `Program Files`.
@@ -103,4 +145,3 @@ Not done yet. To run on a fresh Windows 11 VM with 8 GB of RAM and no GPU:
 
 - If Sniff crashes instead of quitting, its child processes keep running. End `sniff-backend.exe` and
   `llama-server.exe` in Task Manager before you reinstall or uninstall.
-- The Evaluation page is empty in the installed app. Evaluation results live in the repo (`eval/results/`).
