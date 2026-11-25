@@ -12,7 +12,14 @@ export const money = (v: string) => {
   const s = n.toLocaleString('en-US', Number.isInteger(n) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   return m[1] ? `${m[1]} ${s}` : s
 }
-export const show = (f: Pick<Fact, 'value' | 'value_type'>) => (f.value_type === 'money' ? money(f.value) : f.value)
+// shortcut: facts store the number only, so the currency comes from the line the value was read from ("Current Charges
+// Rs. 5,558"); move to a currency field if the back end adds one.
+const CURRENCY = /\b(PKR|Rs\.?|USD|EUR|GBP)(?=[\s\d])|[$€£]/
+export const show = (f: Pick<Fact, 'value' | 'value_type'> & { source_text?: string | null }) => {
+  if (f.value_type !== 'money') return f.value
+  const c = /^[\d.-]+$/.test(f.value.trim()) && f.source_text?.match(CURRENCY)?.[0]
+  return money(c ? `${c} ${f.value}` : f.value)
+}
 
 export const Tag = ({ children }: { children: ReactNode }) => (
   <span className="whitespace-nowrap rounded border border-line px-1.5 py-px text-[11px] text-muted">{children}</span>

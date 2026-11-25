@@ -36,9 +36,9 @@ const msg = (e: unknown) => (e as Error)?.message ?? String(e)
 const days = (d: number) => (d < 0 ? `${plural(-d, 'day', 'days')} ago` : d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`)
 // The back end cuts the snippet around the hit, but the hit can still sit past the end of one line. Start near it.
 const around = (text: string, q: string) => {
-  const t = text.toLowerCase()
-  const i = Math.min(Infinity, ...q.toLowerCase().split(/\s+/).filter((w) => w.length > 1).map((w) => t.indexOf(w)).filter((n) => n >= 0))
-  return i > 40 && i !== Infinity ? '…' + text.slice(i - 30) : text
+  const words = q.split(/\s+/).filter((w) => w.length > 1).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const i = words.length ? text.search(new RegExp(`\\b(${words.join('|')})`, 'i')) : -1 // word starts, as Highlight marks them
+  return i > 40 ? '…' + text.slice(text.lastIndexOf(' ', i - 20) + 1) : text
 }
 const summary = (o: Overview) =>
   [plural(o.total_files, 'file', 'files'), o.needs_review && `${o.needs_review} to review`,

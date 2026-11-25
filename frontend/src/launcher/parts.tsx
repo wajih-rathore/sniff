@@ -52,7 +52,16 @@ export function AnswerCard({ a, id, selected, details, open, hover }: {
       onClick={() => a.sources[0] && open(a.sources[0])}
       className={`relative mx-1.5 mb-1.5 rounded-lg border border-line px-4 py-3 ${selected ? 'bg-sel' : 'bg-panel'}`}>
       {selected && <Pill />}
-      <p className="line-clamp-2 text-[20px] font-semibold leading-snug">{a.answer}</p>
+      {/* the first sentence is the answer; the rest (how it was counted) is smaller */}
+      {(() => {
+        const [first, ...rest] = a.answer.split(/(?<=[.!?])\s+(?=[A-Z])/)
+        return (
+          <>
+            <p className={`text-[20px] font-semibold leading-snug ${details ? '' : 'line-clamp-2'}`}>{first}</p>
+            {rest.length > 0 && <p className={`mt-0.5 text-[13px] text-fg2 ${details ? '' : 'line-clamp-2'}`}>{rest.join(' ')}</p>}
+          </>
+        )
+      })()}
       {a.sources.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {a.sources.map((s, i) => {
@@ -140,7 +149,7 @@ export function FactLine({ f, edit, set, save }: { f: Fact; edit: string | null;
         <span className="tnum min-w-0 flex-1 truncate">{edit === null ? show(f) : <EditBox f={f} value={edit} set={set} save={save} />}</span>
         <Status f={f} />
       </div>
-      {f.reason && f.status === 'needs_review' && <div className="truncate pl-[156px] text-[12px] text-warn">{label(f.reason)}</div>}
+      {f.reason && f.status === 'needs_review' && <div className="line-clamp-2 pl-[156px] text-[12px] text-warn">{label(f.reason)}</div>}
     </div>
   )
 }
