@@ -146,6 +146,14 @@ def test_conflict_shows_both_values(conn, add_doc, monkeypatch):
     assert len(a.conflicts) == 1 and len(a.conflicts[0].values) == 2
 
 
+def test_conflict_found_when_the_other_copy_fails_the_name_filter(conn, add_doc, monkeypatch):
+    add_doc("/x/cnic.pdf", "id_card", {"name": "Hamza Khan", "id_number": "42101-7654321-3", "expiry_date": "2030-05-01"})
+    add_doc("/x/cnic_scan.jpg", "id_card", {"name": "HAMZAKHAN", "id_number": "42101-7654321-3", "expiry_date": "2031-05-01"})  # OCR lost the space
+    a = run(conn, monkeypatch, doc_type="id_card", field="expiry_date", op="list", filters=Filters(holder="hamza khan"))
+    assert a.answer.startswith("2030-05-01 (cnic.pdf)") and "2031-05-01 in cnic_scan.jpg" in a.answer
+    assert len(a.conflicts) == 1 and {v.value for v in a.conflicts[0].values} == {"2030-05-01", "2031-05-01"}
+
+
 def test_conflict_in_api_and_upcoming(conn, add_doc, monkeypatch):
     ids(add_doc)
     client = TestClient(api.app)

@@ -171,7 +171,9 @@ def keep(d: records.Doc, r: Route, today: date) -> bool:
 
 
 def answer_from_facts(conn, question: str, r: Route, today: date) -> Answer:
-    res = records.resolve([d for d in records.load(conn, r.doc_type) if keep(d, r, today)])
+    docs = records.load(conn, r.doc_type)
+    res = records.resolve([d for d in docs if keep(d, r, today)])
+    res.conflicts = records.resolve(docs).conflicts  # before filtering, as /upcoming does: a misread name ("HAMZAKHAN") must not hide one
     query, note = r.model_dump(), ""
     if r.op == "outstanding":
         used, text = _outstanding(res.kept)
