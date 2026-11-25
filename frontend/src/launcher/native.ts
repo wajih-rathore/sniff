@@ -14,6 +14,7 @@ export const native = {
   hide: () => (invoke ? invoke('hide_window') : Promise.resolve()),
   autostart: () => (invoke ? (invoke('autostart_enabled') as Promise<boolean>) : Promise.resolve(false)),
   setAutostart: (enabled: boolean) => (invoke ? invoke('set_autostart', { enabled }) : desktopOnly()),
+  hotkey: () => (invoke ? (invoke('get_hotkey') as Promise<string>) : Promise.reject(new Error('desktop only'))),
   setHotkey: (hotkey: string) => (invoke ? invoke('set_hotkey', { hotkey }) : desktopOnly()),
   // The desktop app saves the .ics and opens it in the default calendar app; a browser downloads it.
   openIcs: (path: string) =>

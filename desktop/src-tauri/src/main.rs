@@ -6,10 +6,11 @@ use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
+use std::os::windows::io::AsRawHandle;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
@@ -18,6 +19,10 @@ use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager, PhysicalPosition, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
+use windows_sys::Win32::System::JobObjects::{
+    AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+};
 
 // Alt+Space opens the window menu in Windows and is PowerToys Run's default, so Sniff uses Alt+Shift+Space.
 // set_hotkey changes it and saves the new one in data/hotkey.txt.
@@ -69,6 +74,22 @@ fn get(path: &str) -> Option<String> {
     (head.split(' ').nth(1) == Some("200")).then(|| body.to_string())
 }
 
+/// A Windows job object that kills its processes when its last handle closes. Sniff holds the only handle, so when
+/// Sniff exits in any way, a crash included, the back end and the model servers it started end with it.
+fn job() -> usize {
+    static JOB: OnceLock<usize> = OnceLock::new();
+    *JOB.get_or_init(|| unsafe {
+        let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
+        let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        let size = std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32;
+        if job.is_null() || SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info as *const _ as _, size) == 0 {
+            log("could not set up the job object: child processes will outlive a crash");
+        }
+        job as usize
+    })
+}
+
 /// Start `exe` with its output in logs/<name>.log, and keep the handle so Quit can stop it.
 fn spawn(app: &AppHandle, name: &str, exe: &Path, args: &[&str]) {
     let mut cmd = Command::new(exe);
@@ -81,7 +102,8 @@ fn spawn(app: &AppHandle, name: &str, exe: &Path, args: &[&str]) {
     }
     match cmd.spawn() {
         Ok(child) => {
-            log(&format!("started {name} (pid {})", child.id()));
+            let in_job = unsafe { AssignProcessToJobObject(job() as _, child.as_raw_handle() as _) } != 0;
+            log(&format!("started {name} (pid {}, in job: {in_job})", child.id()));
             app.state::<Children>().0.lock().unwrap().push(child);
         }
         Err(e) => log(&format!("could not start {name}: {e}")),

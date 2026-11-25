@@ -143,5 +143,5 @@ Not done yet. Things the sandbox run does not cover. On a fresh Windows 11 VM wi
 
 ## Known limits
 
-- If Sniff crashes instead of quitting, its child processes keep running. End `sniff-backend.exe` and
-  `llama-server.exe` in Task Manager before you reinstall or uninstall.
+- Sniff puts the back end and the model servers it starts in a Windows job object, so they end with it, also if it
+  crashes. Model servers it only reuses are left alone.

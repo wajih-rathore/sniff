@@ -69,8 +69,7 @@ export default function Launcher() {
   const [log, setLog] = useState<McpLogEntry[] | null>(null)
   const [google, setGoogle] = useState(false)
   const [previews, setPreviews] = useState<Record<number, ReminderPreview>>({}) // by fact id
-  // shortcut: the desktop app has no command that reads the saved hotkey, so this shows its default until one is set here.
-  const [hotkey, setHotkey] = useState('Alt+Shift+Space')
+  const [hotkey, setHotkey] = useState('Alt+Shift+Space') // the desktop app's saved one replaces this on load
   const [capturing, setCapturing] = useState(false)
   const [autostart, setAutostart] = useState(false)
   const input = useRef<HTMLInputElement>(null)
@@ -80,6 +79,7 @@ export default function Launcher() {
     api.overview().then(setOv, () => {}) // only feeds the summary line; a dead back end shows up as soon as you search
     api.calendarStatus().then((s) => setGoogle(s.connected), () => setGoogle(false)) // no answer: offer only the .ics file
     native.autostart().then(setAutostart, () => {})
+    native.hotkey().then(setHotkey, () => {})
     const onGo = (e: Event) => go((e as CustomEvent<Mode>).detail) // the tray's Settings item
     const onFocus = () => input.current?.focus() // the hotkey shows the window: be ready to type
     window.addEventListener('sniff:go', onGo)
