@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 import pymupdf
-from common import Timer, labels, latency, norm, path_of, save, stratified
+from common import Timer, labels, latency, norm, path_of, save, stay_awake, stratified
 
 from sniff.ingest import ocr
 
@@ -71,4 +71,5 @@ if __name__ == "__main__":
     ap.add_argument("--set", default="test", choices=["test", "hard"])
     ap.add_argument("--limit", type=int)
     a = ap.parse_args()
+    stay_awake()
     main(a.set, a.limit)

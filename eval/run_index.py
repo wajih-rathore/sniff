@@ -9,7 +9,7 @@ Needs both llama-server processes running. The full test split takes about an ho
 Resumable: files already indexed are skipped, so it can be stopped and started again. --fresh starts over."""
 import argparse
 
-from common import RESULTS, db_path, index, labels, path_of, stratified
+from common import RESULTS, db_path, index, labels, path_of, stay_awake, stratified
 
 from sniff import db
 
@@ -35,4 +35,5 @@ if __name__ == "__main__":
     ap.add_argument("--limit", type=int)
     ap.add_argument("--fresh", action="store_true")
     a = ap.parse_args()
+    stay_awake()
     main(a.set, a.limit, a.fresh)

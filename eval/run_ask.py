@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import date
 
 import baselines
-from common import Timer, db_path, jsonl, latency, norm, rel, save, stratified
+from common import Timer, db_path, jsonl, latency, norm, rel, save, stay_awake, stratified
 
 from sniff import ask, db
 
@@ -121,4 +121,5 @@ def main(limit: int | None):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, help="only this many questions, round-robin over categories")
+    stay_awake()
     main(ap.parse_args().limit)

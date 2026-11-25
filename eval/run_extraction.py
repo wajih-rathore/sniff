@@ -19,7 +19,7 @@ import json
 from collections import Counter, defaultdict
 
 import baselines
-from common import RESULTS, db_path, index, labels, latency, path_of, rel, same_value, save, stratified, use_llm
+from common import RESULTS, db_path, index, labels, latency, path_of, rel, same_value, save, stay_awake, stratified, use_llm
 
 from sniff import config, db
 from sniff.schemas import DOC_TYPES, FACT_MODELS
@@ -181,4 +181,5 @@ if __name__ == "__main__":
     ap.add_argument("--compare", nargs="+", metavar="NAME=URL", help="models to compare, e.g. gemma3-1b=http://127.0.0.1:8090/v1")
     ap.add_argument("--limit", type=int, help="with --compare: documents per set, stratified by type")
     a = ap.parse_args()
+    stay_awake()
     compare(a.compare, a.sets, a.limit) if a.compare else evaluate(a.sets)

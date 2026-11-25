@@ -23,7 +23,7 @@ import re
 import common
 import run_ask
 import run_extraction
-from common import ROOT, Timer, db_path, index, labels, latency, path_of, rel, same_value, save
+from common import ROOT, Timer, db_path, index, labels, latency, path_of, rel, same_value, save, stay_awake
 from run_index import times_path
 
 from sniff import ask, db
@@ -152,4 +152,5 @@ if __name__ == "__main__":
     ap.add_argument("--limit", type=int, help="documents (and questions) per kind, for a quick check")
     ap.add_argument("--skip-index", action="store_true")
     a = ap.parse_args()
+    stay_awake()
     main(a.limit, a.skip_index)

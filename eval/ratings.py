@@ -26,7 +26,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from common import ROOT, db_path, jsonl, save, stratified
+from common import ROOT, db_path, jsonl, save, stay_awake, stratified
 
 RATINGS = ROOT / "data" / "ratings"
 METRICS = {"correctness": (0, 2, True), "groundedness": (0, 1, False), "usefulness": (1, 5, True)}  # low, high, ordered
@@ -264,4 +264,5 @@ if __name__ == "__main__":
     sc = sub.add_parser("score")
     sc.add_argument("--dir", type=Path, default=RATINGS)
     a = ap.parse_args()
+    stay_awake()
     make(a.n) if a.cmd == "make" else score(a.dir)

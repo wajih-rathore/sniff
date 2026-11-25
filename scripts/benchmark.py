@@ -35,6 +35,8 @@ RESULTS = ROOT / "eval" / "results"
 BENCH_DB = ROOT / ".sniff" / "bench.db"
 os.environ.setdefault("SNIFF_DB", str(BENCH_DB))
 sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "eval"))
+from common import stay_awake  # noqa: E402  (after SNIFF_DB is set, so the benchmark keeps bench.db)
 
 TODAY = date(2026, 11, 22)
 BUDGET_MB = 4.5 * 1024  # what an 8 GB laptop leaves for apps after Windows and its services
@@ -265,4 +267,5 @@ if __name__ == "__main__":
     ap.add_argument("--chat-port", type=int, default=8080)
     ap.add_argument("--embed-port", type=int, default=8081)
     ap.add_argument("--chat-args", default="", help="with --start-servers: extra chat llama-server flags, e.g. \"--cache-ram 512 -np 1\"")
+    stay_awake()
     main(ap.parse_args())

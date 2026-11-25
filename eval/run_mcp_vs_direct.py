@@ -36,7 +36,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import run_ask
-from common import RESULTS, ROOT, SETS, Timer, db_path, jsonl, latency, rel, save, stratified, use_llm
+from common import RESULTS, ROOT, SETS, Timer, db_path, jsonl, latency, rel, save, stay_awake, stratified, use_llm
 
 CATEGORIES = ["single_fact", "cross_doc_total", "semantic", "unanswerable", "duplicates", "conflict"]
 CONDITIONS = {"mcp": "Agent with Sniff MCP tools", "direct": "Agent with plain file tools"}
@@ -315,4 +315,5 @@ if __name__ == "__main__":
     ap.add_argument("--llm-url", help="another OpenAI-compatible chat server (for example the 8B reference model)")
     ap.add_argument("--model")
     ap.add_argument("--fresh", action="store_true")
+    stay_awake()
     main(ap.parse_args())

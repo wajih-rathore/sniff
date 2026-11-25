@@ -172,6 +172,11 @@ If the second stays inside 4.5 GB at a similar latency, those flags belong in `s
 
 Run from `backend/` with the chat server (8080) and embedding server (8081) up, as `scripts/dev.ps1` starts them.
 
+Every runner that can take more than a few minutes (`run_index`, `run_extraction`, `run_ocr`, `run_ask`,
+`run_embeddings`, `run_injection`, `run_mcp_vs_direct`, `ratings.py make` and `scripts/benchmark.py`) calls
+`common.stay_awake()`, which asks Windows not to sleep until the script exits. This does not help when the lid is closed:
+a closed lid still puts the laptop to sleep, so keep it open (or set "When I close the lid" to "Do nothing" on mains power).
+
 ```
 # 1. regenerate the synthetic documents and test sets
 uv run python ../data/synth/generate.py --out ../data/synth/out --seed 7

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 
-from common import EVAL_DB, RESULTS, ROOT, save
+from common import EVAL_DB, RESULTS, ROOT, save, stay_awake
 
 
 def main(specs: list[str]):
@@ -46,4 +46,5 @@ print("re-embedded", len(rows), "chunks with", config.EMBED_MODEL)
 """
 
 if __name__ == "__main__":
+    stay_awake()
     main(sys.argv[1:])

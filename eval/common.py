@@ -21,6 +21,18 @@ os.environ.setdefault("SNIFF_DB", str(EVAL_DB))
 sys.path.insert(0, str(ROOT / "backend"))
 
 
+def stay_awake() -> None:
+    """Stop Windows from sleeping while a long run works (the laptop slept 18 hours into one run on 25 Nov).
+    ES_CONTINUOUS | ES_SYSTEM_REQUIRED now, ES_CONTINUOUS alone at exit. Closing the lid still sleeps the laptop."""
+    if sys.platform == "win32":
+        import atexit
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        kernel32.SetThreadExecutionState(0x80000001)
+        atexit.register(kernel32.SetThreadExecutionState, 0x80000000)
+
+
 def labels(split: str = "test") -> list[dict]:
     f = SETS[split] / "labels.jsonl"
     rows = [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()] if f.exists() else []
