@@ -1,8 +1,11 @@
-"""Entry point of the desktop build (frozen with PyInstaller): the API on 127.0.0.1, plus the first-run model download.
+"""Entry point of the desktop build (frozen with PyInstaller): the API on 127.0.0.1, plus the model downloads.
 
-The desktop app (desktop/src-tauri) starts this with SNIFF_HOME set, and starts the embedding llama-server once the
-model files are on disk. The chat model server is started by this back end only when a model call needs it (ai/server.py). The download screen (frontend/src/views/Setup.tsx) reads GET /setup and starts POST /setup/download.
-Imports are absolute so PyInstaller can run this file as the main script.
+The desktop app (desktop/src-tauri) starts this with SNIFF_HOME set, and starts the embedding llama-server once its
+model file is on disk. The first run downloads only that file: search, types and facts need nothing else (the OCR
+models ship inside the back end). The download screen (frontend/src/views/Setup.tsx) reads GET /setup and starts
+POST /setup/download. The chat model for Settings > AI > This laptop is optional: GET /ai/local reports it and
+POST /ai/local/download fetches it. The chat model server is started by this back end only when a model call needs
+it (ai/server.py). Imports are absolute so PyInstaller can run this file as the main script.
 """
 import hashlib
 import http.client
@@ -18,23 +21,25 @@ from urllib.parse import urlparse
 import uvicorn
 
 from sniff import config
-from sniff.ai import server
 from sniff.api import app
 
 PORT = 8765  # same as desktop/src-tauri/src/main.rs and frontend/src/api.ts
 OLLAMA = "https://registry.ollama.ai/v2/library"
-# file name in MODELS_DIR: (url, sha256, size). The two models the app runs on, from the same source as eval/fetch_models.py.
+# file name in MODELS_DIR: (url, sha256, size). The two models the app can run, from the same source as eval/fetch_models.py.
 MODELS = {
     "all-minilm-l6-v2.gguf": (f"{OLLAMA}/all-minilm/blobs/sha256:797b70c4edf85907fe0a49eb85811256f65fa0f7bf52166b147fd16be2be4662",
                               "797b70c4edf85907fe0a49eb85811256f65fa0f7bf52166b147fd16be2be4662", 45949216),
     "qwen3-1.7b-q4_k_m.gguf": (f"{OLLAMA}/qwen3/blobs/sha256:3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6",
                                "3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6", 1359279776),
 }
+SETUP = ["all-minilm-l6-v2.gguf"]  # the first run: the embedding model search needs
+CHAT = "qwen3-1.7b-q4_k_m.gguf"  # optional: This laptop's chat model (server.MODEL_FILE)
 CHUNK = 1 << 20
-STATE = {"running": False, "error": None}
+STATE = {"running": False, "error": None}  # the first-run download
+CHAT_STATE = {"running": False, "error": None}  # the chat model's download
 
 
-def fetch(name: str) -> None:
+def fetch(name: str, state: dict = STATE) -> None:
     """Download one model, resuming its .part file with an HTTP Range request. The file gets its final name only
     after its sha256 matches."""
     url, digest, size = MODELS[name]
@@ -49,9 +54,9 @@ def fetch(name: str) -> None:
             with urllib.request.urlopen(req, timeout=60) as r, open(part, "ab" if r.status == 206 else "wb") as f:
                 while b := r.read(CHUNK):
                     f.write(b)
-                    STATE["error"] = None
+                    state["error"] = None
         except (OSError, http.client.HTTPException) as e:  # dropped or stalled connection: show it, wait, resume
-            STATE["error"] = f"{type(e).__name__}: {e}. Retrying in 10 s."
+            state["error"] = f"{type(e).__name__}: {e}. Retrying in 10 s."
             time.sleep(10)
     h = hashlib.sha256()
     with open(part, "rb") as f:
@@ -63,14 +68,25 @@ def fetch(name: str) -> None:
     part.rename(dest)
 
 
-def download() -> None:
+def download(names: list[str], state: dict) -> None:
     try:
-        for name in MODELS:
-            fetch(name)
+        for name in names:
+            fetch(name, state)
     except Exception as e:
-        STATE["error"] = str(e)
+        state["error"] = str(e)
     finally:
-        STATE["running"] = False
+        state["running"] = False
+
+
+def start(names: list[str], state: dict) -> None:
+    if not state["running"]:
+        state.update(running=True, error=None)
+        threading.Thread(target=download, args=(names, state), daemon=True).start()
+
+
+def progress(name: str) -> dict:
+    dest, part, size = config.MODELS_DIR / name, config.MODELS_DIR / (name + ".part"), MODELS[name][2]
+    return {"name": name, "size": size, "have": size if dest.exists() else part.stat().st_size if part.exists() else 0}
 
 
 def answers(url: str) -> bool:
@@ -85,21 +101,29 @@ def answers(url: str) -> bool:
 
 @app.get("/setup")
 def setup():
-    models = []
-    for name, (_, _, size) in MODELS.items():
-        dest, part = config.MODELS_DIR / name, config.MODELS_DIR / (name + ".part")
-        models.append({"name": name, "size": size, "have": size if dest.exists() else part.stat().st_size if part.exists() else 0})
-    chat = answers(config.LLM_URL) or server.can_start()  # the chat server starts on the first model call
-    return {"servers": chat and answers(config.EMBED_URL), "ready": all((config.MODELS_DIR / n).exists() for n in MODELS),
-            "folder": str(config.MODELS_DIR), "models": models, **STATE}
+    """servers: the embedding server answers, so Sniff can index and search. The chat server is not waited for: it is
+    optional, and starts on the first model call."""
+    return {"servers": answers(config.EMBED_URL), "ready": all((config.MODELS_DIR / n).exists() for n in SETUP),
+            "folder": str(config.MODELS_DIR), "models": [progress(n) for n in SETUP], **STATE}
 
 
 @app.post("/setup/download")
 def start_download():
-    if not STATE["running"]:
-        STATE.update(running=True, error=None)
-        threading.Thread(target=download, daemon=True).start()
+    start(SETUP, STATE)
     return setup()
+
+
+@app.get("/ai/local")
+def local_model():
+    """This laptop's chat model: its download progress, and ready once the file is on disk (Settings > AI then offers
+    This laptop)."""
+    return {**progress(CHAT), "ready": (config.MODELS_DIR / CHAT).exists(), **CHAT_STATE}
+
+
+@app.post("/ai/local/download")
+def start_local_download():
+    start([CHAT], CHAT_STATE)
+    return local_model()
 
 
 def check() -> None:
