@@ -124,7 +124,8 @@ html.desktop.solid { --bg: var(--bg-solid); } /* Windows transparency effects ar
 .chip .ic { color: var(--text-2); width: 14px; height: 14px; }
 .load { position: absolute; left: 22px; right: 22px; bottom: 0; height: 2px; border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity 83ms linear; z-index: 2; }
 .load.on { opacity: 1; }
-.load::after { content: ""; position: absolute; top: 0; bottom: 0; width: 32%; left: -32%; background: linear-gradient(90deg, transparent, var(--accent) 35%, var(--accent) 65%, transparent); animation: load 1.15s cubic-bezier(.4, 0, .2, 1) infinite; }
+.load::after { content: ""; position: absolute; top: 0; bottom: 0; width: 32%; left: -32%; background: linear-gradient(90deg, transparent, var(--accent) 35%, var(--accent) 65%, transparent); }
+.load.on::after { animation: load 1.15s cubic-bezier(.4, 0, .2, 1) infinite; } /* only while it shows */
 @keyframes load { to { left: 100%; } }
 
 .main { position: relative; flex: 0 1 auto; min-height: 0; display: flex; }
@@ -308,6 +309,6 @@ kbd + kbd { margin-left: 3px; }
   .win.show, .scr.anim-in, .cite.in, .panel, .pane.fade, .xbody, .ctx.toasting .toast { animation: fade 83ms linear; }
   .sent.streaming::after { animation: none; }
   .skel { animation: none; opacity: .75; }
-  .load::after { animation: none; left: 0; width: 100%; opacity: .6; }
+  .load.on::after { animation: none; left: 0; width: 100%; opacity: .6; }
   .tog::after, .ctx .toast, .ctx .base, .xrow .chev { transition-duration: 0ms; }
 }
