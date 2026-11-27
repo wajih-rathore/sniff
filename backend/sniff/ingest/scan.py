@@ -184,7 +184,8 @@ def index_text(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
 def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
     """Phase 2: classify and extract one queued file from the pages saved in phase 1, and store its type and facts.
     The type comes from the classifier on the stored vectors when it is sure (typer), else from the chat model; the
-    fields come from rules first (extract). A confident "other" never reaches the model at all.
+    fields come from rules first (extract). A confident "other" never reaches the model at all. When no model can sort
+    the document, the classifier's guess above a floor is used, with the rules only, and its facts go to review.
     Returns False if the file is not queued (done, re-indexed or deleted meanwhile). If the chat server cannot be reached,
     the error is raised and the file stays queued; any other model failure is recorded on the file, as before."""
     q = conn.execute("SELECT * FROM queue WHERE file_id=?", (file_id,)).fetchone()
@@ -195,8 +196,12 @@ def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
     doc_type, facts, ai_error = None, [], None
     try:
         doc_type = typer.classify(conn, file_id, pages) or classify.classify(pages)
+        guessed = doc_type is None
+        doc_type = doc_type or typer.guess(conn, file_id)
         if doc_type in FACT_MODELS:
-            facts = extract.extract(doc_type, pages, boxes)
+            facts = extract.extract(doc_type, pages, boxes, fill_gaps=not guessed)
+        if guessed:  # no model could sort it: the classifier's guess, so every fact waits for the user
+            facts = [f | {"status": "needs_review", "reason": "; ".join(filter(None, ("type guessed", f.get("reason"))))} for f in facts]
     except openai.APIConnectionError:
         raise
     except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why

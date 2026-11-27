@@ -72,7 +72,7 @@ def test_two_phase_stores_the_same_rows_as_single_phase(conn, tmp_path, monkeypa
     boxes = {1: [(10.0, 20.0, 110.0, 32.0, "Amount due 1200")], 2: []}
     monkeypatch.setattr(readers, "read_layout", lambda path: ([(1, path.read_text()), (2, "page two")], boxes))
 
-    def fake_extract(doc_type, pages, got):
+    def fake_extract(doc_type, pages, got, fill_gaps=True):
         assert got == boxes and all(isinstance(k, int) and all(isinstance(b, tuple) for b in v) for k, v in got.items())
         return [{"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "status": "verified",
                  "reason": None, "source_text": f"{got[1][0][4]} | {pages[1][1]}"}]

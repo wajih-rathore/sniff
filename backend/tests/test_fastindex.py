@@ -6,8 +6,10 @@ import time
 import numpy as np
 import pytest
 
-from sniff.ai import extract, llm, rules, server, typer
+from sniff.ai import classify, extract, llm, rules, server, typer
 from sniff.ingest import scan
+
+REAL_CLASSIFY = classify.classify  # conftest's conn fixture replaces it with a fake model
 
 BILL = """Metro Gas Ltd
 Monthly Gas Statement
@@ -114,7 +116,7 @@ def test_unsure_type_falls_back_to_the_model_and_confident_other_skips_it(conn, 
     from sniff.ai import classify
     calls = []
     monkeypatch.setattr(classify, "classify", lambda pages: calls.append("model") or "utility_bill")
-    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None: calls.append("extract") or [])
+    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None, fill_gaps=True: calls.append("extract") or [])
     (tmp_path / "a.txt").write_text("Electricity bill. Amount due 1200.")
     (tmp_path / "b.txt").write_text("Chocolate brownies: melt the butter.")
     scan.scan(conn, tmp_path)
@@ -123,6 +125,49 @@ def test_unsure_type_falls_back_to_the_model_and_confident_other_skips_it(conn, 
     types = dict(conn.execute("SELECT substr(path, -5), doc_type FROM files").fetchall())
     assert types == {"a.txt": "utility_bill", "b.txt": "other"}
     assert calls == ["model", "extract"]  # the brownies never reached the model
+
+
+def test_guess_takes_the_top_type_only_above_the_floor(monkeypatch):
+    def probs(top, p):
+        v = np.full(len(typer.CLASSES), (1 - p) / (len(typer.CLASSES) - 1))
+        v[typer.CLASSES.index(top)] = p
+        return lambda conn, fid: v
+
+    for top, p, want in [("receipt", typer.GUESS_FLOOR + 0.05, "receipt"), ("receipt", typer.GUESS_FLOOR - 0.05, None),
+                         ("other", 0.9, None)]:
+        monkeypatch.setattr(typer, "_probs", probs(top, p))
+        assert typer.guess(None, 1) == want
+    monkeypatch.setattr(typer, "_probs", lambda conn, fid: None)  # no vector stored
+    assert typer.guess(None, 1) is None
+
+
+def test_rules_only_extraction_never_calls_the_model(monkeypatch):
+    asked = []
+    monkeypatch.setattr(extract, "ask_model", lambda *a, **kw: asked.append(a[1]) or {})
+    monkeypatch.setenv("SNIFF_AI", "local")  # a provider that would get the missing fields
+    extract.extract("id_card", [(1, "Student card")])
+    assert asked  # the control: required fields are missing, so the model is asked
+    asked.clear()
+    extract.extract("id_card", [(1, "Student card")], fill_gaps=False)
+    assert asked == []
+
+
+def test_with_ai_off_an_unsure_type_is_guessed_and_its_facts_go_to_review(conn, tmp_path, drain, monkeypatch):
+    fill = []
+    monkeypatch.setattr(classify, "classify", REAL_CLASSIFY)  # AI is off: no model sorts the documents
+    monkeypatch.setattr(typer, "guess", lambda c, fid: "utility_bill" if c.execute("SELECT path FROM files WHERE id=?", (fid,)).fetchone()[0].endswith("a.txt") else None)
+    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None, fill_gaps=True: fill.append(fill_gaps) or [
+        {"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "status": "verified", "reason": None, "source_text": None},
+        {"field": "due_date", "value": "2025-01-10", "value_type": "date", "page": 1, "verified": False, "status": "needs_review",
+         "reason": "value not found on the page", "source_text": None}])
+    (tmp_path / "a.txt").write_text("Electricity bill. Amount due 1200.")
+    (tmp_path / "b.txt").write_text("Chocolate brownies: melt the butter.")
+    scan.scan(conn, tmp_path)
+    drain()
+    assert dict(conn.execute("SELECT substr(path, -5), doc_type FROM files").fetchall()) == {"a.txt": "utility_bill", "b.txt": None}
+    assert fill == [False]  # the rules only: nothing is sent to a provider for a type that may be wrong
+    assert [tuple(r) for r in conn.execute("SELECT field, status, reason FROM facts ORDER BY id")] == [
+        ("amount_due", "needs_review", "type guessed"), ("due_date", "needs_review", "type guessed; value not found on the page")]
 
 
 def test_classifier_reads_the_stored_vectors(conn, tmp_path):
