@@ -14,6 +14,7 @@ import json
 import os
 import sqlite3
 from contextlib import closing
+from urllib.parse import urlsplit
 
 from . import config, db
 from .ai import server
@@ -23,6 +24,7 @@ PROVIDERS = ("off", "anthropic", "openai", "local")
 DEFAULT_MODEL = {"anthropic": "claude-haiku-5-5", "local": config.LLM_MODEL}
 HIDDEN = [t for t in DOC_TYPES if t not in config.MCP_DEFAULT]  # id_card, passport, bank_statement, ... and other
 KEYRING = "Sniff"  # service name in the OS password store; the user name is ai-<provider>
+THIS_LAPTOP = ("localhost", "127.0.0.1", "::1")  # plain http:// is allowed only to these
 
 
 def load(conn: sqlite3.Connection) -> dict:
@@ -65,25 +67,34 @@ def key(provider: str) -> str | None:
 
 def save(conn: sqlite3.Connection, provider: str, base_url: str = "", model: str = "", allow: list[str] | None = None,
          new_key: str | None = None) -> dict:
-    """Validate and store. new_key: None keeps the saved key, "" removes it. Raises ValueError with a plain reason."""
+    """Validate and store. new_key: None keeps the saved key, "" removes it. The OpenAI-compatible key is removed when
+    the base URL moves to another server (scheme, host or port), unless a new key comes with it. Raises ValueError with
+    a plain reason."""
     allow = list(dict.fromkeys(allow or []))
     if provider not in PROVIDERS:
         raise ValueError(f"Unknown provider: {provider}")
     if bad := [t for t in allow if t not in HIDDEN]:
         raise ValueError(f"Not a hidden document type: {', '.join(bad)}")
     base_url, model = base_url.strip(), model.strip()
-    if base_url and not base_url.startswith(("http://", "https://")):
-        raise ValueError("The base URL must start with http:// or https://.")
+    url = urlsplit(base_url)
+    if base_url and (url.scheme not in ("http", "https") or not url.hostname):
+        raise ValueError("The base URL must start with https://.")
+    if url.scheme == "http" and url.hostname not in THIS_LAPTOP:
+        raise ValueError("Use https://. Plain http:// is only for a server on this laptop (localhost).")
     if provider == "local" and not local_available():
         raise ValueError("This laptop's model is not downloaded.")
-    if new_key is not None and provider in ("anthropic", "openai"):
+    keys = {provider: new_key.strip()} if new_key is not None and provider in ("anthropic", "openai") else {}
+    old = urlsplit(load(conn)["base_url"])
+    if old.netloc and (old.scheme, old.netloc) != (url.scheme, url.netloc) and "openai" not in keys:
+        keys["openai"] = ""  # the saved key was for the old server: never send it to another one
+    for p, k in keys.items():
         try:
             import keyring
 
-            if new_key.strip():
-                keyring.set_password(KEYRING, f"ai-{provider}", new_key.strip())
-            elif key(provider):
-                keyring.delete_password(KEYRING, f"ai-{provider}")
+            if k:
+                keyring.set_password(KEYRING, f"ai-{p}", k)
+            elif key(p):
+                keyring.delete_password(KEYRING, f"ai-{p}")
         except Exception:
             raise ValueError("The system's password store is not available, so the key was not saved.") from None
     conn.execute("INSERT INTO settings(key, value) VALUES ('ai', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",

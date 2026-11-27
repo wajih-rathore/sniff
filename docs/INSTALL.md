@@ -184,7 +184,9 @@ What a provider other than this laptop gets:
 
 The key is kept in the system's password store (Windows Credential Manager, the macOS Keychain or the Secret Service,
 as `Sniff` / `ai-<provider>`), never in the database, logs or error messages. Without a password store the key is not
-saved. Requests time out after 30 seconds. If a call fails, Sniff keeps the facts the rules found and says why a
+saved. A key belongs to its server: when the base URL moves to another server, the OpenAI-compatible key is
+removed, so it is never sent to the new one. The base URL must use `https://`, except for a server on this laptop
+(`localhost`, `127.0.0.1` or `::1`). Requests time out after 30 seconds. If a call fails, Sniff keeps the facts the rules found and says why a
 written answer is missing. `POST /ai/test` makes a one-token call and reports success or a plain reason.
 
 The API is `GET` and `PUT /ai/settings` (`provider`: `off`, `anthropic`, `openai` or `local`, plus `base_url`, `model`,

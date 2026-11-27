@@ -73,13 +73,37 @@ def test_test_reports_success(conn, sent):
 
 @pytest.mark.parametrize("body,error", [
     ({"provider": "gpt"}, "Unknown provider"),
-    ({"provider": "openai", "base_url": "ftp://x", "model": "m"}, "must start with http"),
+    ({"provider": "openai", "base_url": "ftp://x", "model": "m"}, "must start with https://"),
+    ({"provider": "openai", "base_url": "http://llm.example.test/v1", "model": "m"}, "only for a server on this laptop"),
+    ({"provider": "openai", "base_url": "http://192.168.1.5:8080/v1", "model": "m"}, "only for a server on this laptop"),
     ({"provider": "anthropic", "allow": ["receipt"]}, "Not a hidden document type"),
     ({"provider": "local"}, "not downloaded"),
 ])
 def test_settings_are_validated(conn, store, body, error):
     r = TestClient(api.app).put("/ai/settings", json=body)
     assert r.status_code == 422 and error in r.json()["detail"]
+
+
+@pytest.mark.parametrize("url", ["http://localhost:11434/v1", "http://127.0.0.1:8080/v1", "http://[::1]:1234/v1"])
+def test_plain_http_is_fine_for_a_server_on_this_laptop(conn, store, url):
+    r = TestClient(api.app).put("/ai/settings", json={"provider": "openai", "base_url": url, "model": "m"})
+    assert r.status_code == 200 and r.json()["base_url"] == url
+
+
+def test_the_key_never_follows_a_new_address(conn, sent):
+    client = TestClient(api.app)
+    put = lambda url, **kw: client.put("/ai/settings", json={"provider": "openai", "base_url": url, "model": "small-model", **kw})
+    put("", key=KEY)
+    put("https://llm.example.test/v1")  # the key was typed before its address: it is for this one
+    put("https://llm.example.test/v2")  # the same server
+    assert client.get("/ai/settings").json()["key_saved"] is True
+    put("https://other.example.test/v1")  # another server (from OpenAI to Groq, or a page that rewrote the address)
+    assert client.get("/ai/settings").json()["key_saved"] is False
+    client.post("/ai/test")
+    assert sent and all(h.get("authorization") != f"Bearer {KEY}" for _, h, _ in sent)
+    put("https://other.example.test/v1", key=KEY)
+    put("")  # clearing the address drops it too, so it cannot be kept for the next address
+    assert client.get("/ai/settings").json()["key_saved"] is False
 
 
 def test_without_a_password_store_the_key_is_not_saved_anywhere(conn):
