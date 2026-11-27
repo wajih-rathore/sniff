@@ -2,6 +2,7 @@
 closed, and each provider's request. Every provider call goes to a mocked HTTP transport: no real API is called and
 no real key is used."""
 import json
+from datetime import date
 
 import anthropic
 import httpx
@@ -258,3 +259,18 @@ def test_a_written_answer_goes_to_the_provider_its_passages_were_chosen_for(conn
     monkeypatch.setattr(llm.Local, "chat", lambda self, messages, **kw: "It expires in 2031 [1].")
     ask.answer_from_search(conn, "when does it expire?")
     assert sent == []  # the passport passage, chosen for the local model, never reached the cloud
+
+
+# ---------- replies that are not plain JSON ----------
+def test_json_in_a_markdown_fence_is_read_the_first_time(conn, sent):
+    use(conn, "openai")
+    sent.reply = lambda req: _openai_reply('```json\n{"doc_type": "receipt"}\n```')
+    assert llm.chat_json([{"role": "user", "content": "Sort it."}], classify.TypeOut).doc_type == "receipt"
+    assert len(sent) == 1
+
+
+def test_a_router_that_never_answers_in_json_sends_the_question_to_search(conn, sent):
+    use(conn, "openai")
+    sent.reply = lambda req: _openai_reply("Sorry, I can only answer in prose.")
+    r, how = ask.understand(conn, "tell me about the electricity bill", date(2026, 11, 28))
+    assert r.route == "search" and how == "rules" and len(sent) == 3

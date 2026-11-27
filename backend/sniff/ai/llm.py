@@ -221,7 +221,7 @@ def chat_json(messages: list[dict], model: type[T], retries: int = 2, p=None, **
     for attempt in range(retries + 1):
         text = chat(messages, p=p, response_format=fmt, **kw)
         try:
-            return model.model_validate_json(text)
+            return model.model_validate_json(re.sub(r"^```(?:json)?\s*|\s*```$", "", text))  # some models fence JSON in markdown
         except ValidationError as e:
             if attempt == retries:
                 raise
