@@ -158,7 +158,8 @@ def chat(messages: list[dict], p=None, **kw) -> str:
     try:
         return clean(p.chat(outgoing(messages, True), **kw))
     except Exception as e:
-        raise Unavailable(plain(e)) from None  # from None: a traceback does not show the original error, which can quote the key
+        why = plain(e)
+    raise Unavailable(why)  # raised outside the except: the provider's error, which can quote the key, is not chained to it
 
 
 def chat_stream(messages: list[dict], p=None, **kw):
@@ -169,8 +170,10 @@ def chat_stream(messages: list[dict], p=None, **kw):
         return
     try:
         yield from p.stream(outgoing(messages, True), **kw)
+        return
     except Exception as e:
-        raise Unavailable(plain(e)) from None
+        why = plain(e)
+    raise Unavailable(why)
 
 
 def check() -> dict:

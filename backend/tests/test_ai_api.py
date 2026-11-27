@@ -7,7 +7,7 @@ import keyring
 import pytest
 from fastapi.testclient import TestClient
 
-from sniff import api, ask, config
+from sniff import ai_settings, api, ask, config
 from sniff.ai import llm, typer
 from sniff.ingest import readers
 from test_ai_providers import CNIC, KEY, BILL, REAL_EXTRACT, _openai_reply, add_chunks, hits, sent, store, use  # noqa: F401 (fixtures)
@@ -73,9 +73,10 @@ def test_key_is_write_only_and_never_leaks(conn, sent, caplog):
     sent.reply = lambda req: (401, {"error": {"message": f"Incorrect API key provided: {KEY}"}})
     r = client.post("/ai/test")
     assert r.json() == {"ok": False, "error": "The provider refused the key."}
-    with pytest.raises(llm.Unavailable) as e:
-        llm.chat([{"role": "user", "content": "hi"}])
-    assert KEY not in str(e.value) and e.value.__cause__ is None
+    for call in (llm.chat, lambda m: list(llm.chat_stream(m))):
+        with pytest.raises(llm.Unavailable) as e:
+            call([{"role": "user", "content": "hi"}])
+        assert KEY not in str(e.value) and e.value.__cause__ is None and e.value.__context__ is None  # no quoting error kept
     assert sent and sent[-1][1]["authorization"] == f"Bearer {KEY}"  # sent to the provider, as it must be
     assert KEY not in caplog.text
 
@@ -137,4 +138,7 @@ def test_without_a_password_store_the_key_is_not_saved_anywhere(conn):
     # conftest.py selects keyring's "fail" backend: a system without a store
     r = TestClient(api.app).put("/ai/settings", json={"provider": "anthropic", "key": KEY})
     assert r.status_code == 422 and "password store" in r.json()["detail"] and KEY not in r.text
+    with pytest.raises(ValueError) as e:
+        ai_settings.save(conn, "anthropic", new_key=KEY)
+    assert e.value.__context__ is None  # the store's own error is not kept with it
     assert conn.execute("SELECT 1 FROM settings WHERE key='ai'").fetchone() is None
