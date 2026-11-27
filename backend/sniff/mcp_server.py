@@ -14,7 +14,6 @@ Limits (feedback point 10):
 Run: uv run python -m sniff.mcp_server
 """
 import json
-import re
 from contextlib import closing
 from datetime import datetime
 
@@ -23,6 +22,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 
 from . import ask as ask_mod
 from . import config, db, mcp_settings
+from .mcp_settings import mask_ids
 from .search import search
 
 mcp = MCPServer("sniff")
@@ -32,24 +32,6 @@ WITHHELD = "Withheld:"  # the start of every withheld answer; withheld() says wh
 def withheld(types: set) -> str:
     names = ", ".join(sorted((t or "unclassified").replace("_", " ") for t in types)) or "some"
     return f"{WITHHELD} the answer needs {names} documents, or fields or page text of them, that Sniff's settings hide from agents."
-
-
-DATE = re.compile(r"\d{4}-\d{2}-\d{2}(?:T\d+)?|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}-?[A-Za-z]{3,9}-?\d{2,4}|[A-Za-z]{3,9}-\d{1,2}-\d{2,4}")
-AMOUNT = re.compile(r"(?i)(?:rs|pkr|usd|aed|inr)\d+")  # "Rs12500" as OCR writes it
-
-
-def mask_ids(text: str) -> str:
-    """Hide ID-like tokens (keep the last 4 characters), whatever the document type. A token is a run of letters,
-    digits and hyphens (no underscores). It is an ID if it has 9 or more digits (35202-1234567-8), or 5 or more digits
-    plus a letter (KHI-21-725642, EMP-27986). Dates (2026-11-24, 06-Jan-2025), year ranges, plain amounts (1200,
-    4,320.50) and amounts with a currency (Rs12500) are left alone."""
-    def hide(m):
-        s = m.group()
-        digits = sum(c.isdigit() for c in s)
-        if DATE.fullmatch(s) or AMOUNT.fullmatch(s) or (digits < 9 and not (digits >= 5 and re.search("[A-Za-z]", s))):
-            return s
-        return re.sub(r"\d", "•", s[:-4]) + s[-4:]
-    return re.sub(r"(?<![A-Za-z0-9-])[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9](?![A-Za-z0-9-])", hide, text)
 
 
 REFUSED = "Agent access is turned off in Sniff's settings. The user can turn it on in Sniff."

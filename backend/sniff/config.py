@@ -46,7 +46,7 @@ SUPPORTED = {".pdf", ".docx", ".pptx", ".txt", ".md", ".png", ".jpg", ".jpeg", "
 # win, unless the env var SNIFF_MCP_ALLOW is set, which is a developer override of both the list and the on/off switch.
 _MCP_ENV = json.loads(os.environ.get("SNIFF_MCP_ALLOW", "null"))
 MCP_ENV_OVERRIDE = bool(_MCP_ENV)
-MCP_ALLOW: dict[str, list[str]] = _MCP_ENV or {
+MCP_DEFAULT: dict[str, list[str]] = {
     "utility_bill": ["provider", "billing_month", "bill_date", "due_date", "current_charges", "previous_balance", "tax", "amount_due",
                      "payment_status", "payment_date"],
     "certificate": ["title", "institution", "issue_date"],
@@ -55,3 +55,4 @@ MCP_ALLOW: dict[str, list[str]] = _MCP_ENV or {
     "fee_voucher": ["institution", "semester", "amount", "issue_date", "due_date"],
     "insurance_policy": ["insurer", "premium", "start_date", "end_date"],
     "tenancy_agreement": ["monthly_rent", "security_deposit", "start_date", "end_date"]}
+MCP_ALLOW: dict[str, list[str]] = _MCP_ENV or MCP_DEFAULT
