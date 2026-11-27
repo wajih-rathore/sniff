@@ -1,9 +1,11 @@
 import json
+import re
 import threading
 from collections import Counter
 import webbrowser
 from contextlib import asynccontextmanager
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -11,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
-from . import config, db, gcal, ics, mcp_settings, records, verify, watch
+from . import config, db, gcal, ics, mcp_settings, records, titles, verify, watch
 from .ask import ask, ask_stream
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
@@ -106,7 +108,19 @@ def index_status(conn=Depends(get_conn)):
 
 @app.get("/watch")
 def watch_list():
-    return {"folders": WATCHER.folders(), "last": STATUS.get("watch_last"), "error": STATUS.get("watch_error")}
+    """counts: per folder, its documents, those still waiting for their facts, and those that could not be read."""
+    conn = db.connect()
+    try:
+        counts = {}
+        for f in WATCHER.folders():
+            prefix = f.rstrip("\\/") + ("\\" if "\\" in f else "/")
+            r = conn.execute("SELECT count(*) AS files, coalesce(sum(status='error'), 0) AS errors, "
+                             "coalesce(sum(id IN (SELECT file_id FROM queue)), 0) AS waiting "
+                             "FROM files WHERE copy_of IS NULL AND substr(path, 1, ?)=?", (len(prefix), prefix)).fetchone()
+            counts[f] = dict(r)
+    finally:
+        conn.close()
+    return {"folders": WATCHER.folders(), "last": STATUS.get("watch_last"), "error": STATUS.get("watch_error"), "counts": counts}
 
 
 @app.post("/watch")
@@ -128,7 +142,7 @@ def watch_remove(req: WatchReq):
 @app.get("/search", response_model=list[Hit])
 def search_route(q: str, k: int = 10, mode: str = "hybrid", conn=Depends(get_conn)):
     WORKER.user_active()  # someone is typing: the background reading waits, so an answer gets the model at once
-    return search(conn, q, k=k, mode=mode)
+    return titles.describe(conn, q, search(conn, q, k=k, mode=mode))
 
 
 @app.post("/ask", response_model=Answer)
@@ -137,7 +151,7 @@ def ask_route(req: AskReq, conn=Depends(get_conn)):
     answer = ask(conn, req.question)
     if _refresh_stale(conn, answer):
         answer = ask(conn, req.question)
-    return answer
+    return titles.name_sources(conn, answer)
 
 
 @app.post("/ask/stream")
@@ -153,6 +167,8 @@ def ask_stream_route(req: AskReq):
                 WORKER.user_active()
                 if kind == "answer" and _refresh_stale(conn, item):
                     item = ask(conn, req.question)
+                if kind == "answer":
+                    item = titles.name_sources(conn, item)
                 yield f"event: {kind}\ndata: {item.model_dump_json() if kind == 'answer' else json.dumps(item)}\n\n"
         except Exception as e:
             yield f"event: error\ndata: {json.dumps(f'{type(e).__name__}: {e}')}\n\n"
@@ -186,8 +202,10 @@ def _paths(conn, file_id: int) -> list[str]:
 
 def _document(conn, r, near: list[int] | None = None) -> Document:
     pages = conn.execute("SELECT max(page) FROM chunks WHERE file_id=?", (r["id"],)).fetchone()[0] or 1
+    facts = _facts(conn, r["id"])
+    name = titles.title(r["doc_type"], {f.field: f.value for f in reversed(facts) if f.status != "superseded"}, r["path"])
     return Document(id=r["id"], path=r["path"], name=Path(r["path"]).name, doc_type=r["doc_type"], indexed_at=r["indexed_at"],
-                    status=r["status"], facts=_facts(conn, r["id"]), paths=_paths(conn, r["id"]), near_duplicates=near or [], pages=pages)
+                    status=r["status"], facts=facts, paths=_paths(conn, r["id"]), near_duplicates=near or [], pages=pages, title=name)
 
 
 def _canonical(conn, file_id: int):
@@ -200,9 +218,11 @@ def _canonical(conn, file_id: int):
 
 
 @app.get("/documents", response_model=list[Document])
-def documents(type: str | None = None, conn=Depends(get_conn)):
-    sql = "SELECT * FROM files WHERE copy_of IS NULL" + (" AND doc_type=?" if type else "") + " ORDER BY path"
-    return [_document(conn, r) for r in conn.execute(sql, (type,) if type else ())]
+def documents(type: str | None = None, recent: int | None = None, conn=Depends(get_conn)):
+    """recent=N: the N documents read most recently, newest first (the launcher's empty state)."""
+    sql = "SELECT * FROM files WHERE copy_of IS NULL" + (" AND doc_type=?" if type else "")
+    sql += " AND status='indexed' ORDER BY indexed_at DESC, id DESC LIMIT ?" if recent else " ORDER BY path"
+    return [_document(conn, r) for r in conn.execute(sql, (*([type] if type else []), *([recent] if recent else [])))]
 
 
 @app.get("/documents/{file_id}", response_model=Document)
@@ -234,6 +254,74 @@ def page_image(file_id: int, n: int, conn=Depends(get_conn)):
     if p.suffix.lower() in readers.IMAGES and n == 1:
         return FileResponse(p)
     raise HTTPException(404, "No page image for this kind of file")
+
+
+HL = (79 / 255, 70 / 255, 229 / 255)  # the launcher's highlight colour
+
+
+def _needles(value: str, value_type: str, source_text: str | None) -> list[str]:
+    """How a stored value may be printed, most specific first: 5558.0 as "5,558.00", "5,558" or "5558"."""
+    out = [value]
+    if value_type == "money":
+        try:
+            x = float(value)
+            out = [f"{x:,.2f}", f"{x:,.0f}" if x == int(x) else f"{x:,.2f}", f"{x:.2f}", f"{x:g}"]
+        except ValueError:
+            pass
+    return list(dict.fromkeys(out + ([source_text.strip()] if source_text else [])))
+
+
+def _spot(page, value: str, value_type: str, source_text: str | None):
+    """Where the value is printed: on its source line if that line is found, else anywhere on the page. None for scans."""
+    line = page.search_for(source_text.strip()) if source_text and source_text.strip() else []
+    for text in _needles(value, value_type, None):
+        rects = page.search_for(text)
+        if near := [r for r in rects if any(r.intersects(x) for x in line)]:
+            return near[0]
+        if rects and not line:
+            return rects[0]
+    return line[0] if line else None
+
+
+@lru_cache(maxsize=32)
+def _crop_png(path: str, mtime: float, n: int, value: str | None, value_type: str, source_text: str | None, q: str) -> bytes:
+    import pymupdf  # only when a page is shown, so an idle back end does not load it
+
+    with pymupdf.open(path) as doc:
+        if not 1 <= n <= len(doc):
+            raise HTTPException(404, "No such page")
+        page = doc[n - 1]  # drawn on in memory only; the file is never saved
+        w, h = page.rect.width, page.rect.height
+        spot = _spot(page, value, value_type, source_text) if value else None
+        marks = [r for word in re.findall(r"\w{3,}", q) for r in page.search_for(word)][:20]
+        for r in marks:
+            page.draw_rect(r, color=None, fill=HL, fill_opacity=.22, width=0)
+        if spot:
+            page.draw_rect(spot + (-3, -1, 3, 1), color=HL, fill=HL, fill_opacity=.16, width=1.2)
+        focus = spot or (marks[0] if marks else None)
+        band = min(h, w * .5)  # a landscape strip of the page
+        top = 0 if focus is None else min(max(0, (focus.y0 + focus.y1) / 2 - band / 2), h - band)
+        return page.get_pixmap(dpi=144, clip=pymupdf.Rect(0, top, w, top + band)).tobytes("png")
+
+
+@app.get("/documents/{file_id}/crop")
+def crop(file_id: int, fact_id: int | None = None, page: int = 1, q: str = "", conn=Depends(get_conn)):
+    """A PNG strip of a page around a fact's value (outlined), or around the first of the query's words. Without either,
+    or on a scan (no text layer to search), the top of the page. Cached by file, page, value and query."""
+    doc = _canonical(conn, file_id)
+    fact = _fact_row(conn, fact_id) if fact_id is not None else None
+    if fact and fact["file_id"] != doc["id"]:
+        raise HTTPException(404, "This fact belongs to another document")
+    paths = [Path(p) for p in _paths(conn, doc["id"]) if Path(p).exists()]
+    if not paths:
+        raise HTTPException(404, "File not found on disk")
+    p = paths[0]
+    try:
+        png = _crop_png(str(p), p.stat().st_mtime, fact["page"] if fact else page, fact["value"] if fact else None,
+                        fact["value_type"] if fact else "text", fact["source_text"] if fact else None, q)
+    except (RuntimeError, ValueError) as e:  # a format PyMuPDF cannot open, e.g. a Word file
+        raise HTTPException(404, f"No page image for this file: {e}")
+    return Response(png, media_type="image/png")
 
 
 def _fact_row(conn, fact_id: int):
@@ -279,8 +367,10 @@ def approve_fact(fact_id: int, conn=Depends(get_conn)):
 def review(conn=Depends(get_conn)):
     """Facts that need a person to look at them, grouped by document."""
     rows = conn.execute("SELECT fa.*, f.path, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id "
-                        "WHERE fa.status='needs_review' AND f.copy_of IS NULL ORDER BY f.path, fa.id")
-    return [ReviewItem(fact=records.fact(r), document=Path(r["path"]).name, path=r["path"], doc_type=r["doc_type"]) for r in rows]
+                        "WHERE fa.status='needs_review' AND f.copy_of IS NULL ORDER BY f.path, fa.id").fetchall()
+    names = titles.for_files(conn, {r["file_id"] for r in rows})
+    return [ReviewItem(fact=records.fact(r), document=Path(r["path"]).name, path=r["path"], doc_type=r["doc_type"], title=names[r["file_id"]])
+            for r in rows]
 
 
 @app.get("/conflicts", response_model=list[Conflict])
