@@ -1,0 +1,36 @@
+{
+ "split": "dev",
+ "docs": 72,
+ "abstained": 7,
+ "top_guess_right": 6,
+ "floors": {
+  "0.2": {
+   "guessed": 7,
+   "right": 6
+  },
+  "0.3": {
+   "guessed": 6,
+   "right": 6
+  },
+  "0.4": {
+   "guessed": 6,
+   "right": 6
+  },
+  "0.5": {
+   "guessed": 6,
+   "right": 6
+  },
+  "0.6": {
+   "guessed": 5,
+   "right": 5
+  },
+  "0.7": {
+   "guessed": 3,
+   "right": 3
+  },
+  "0.8": {
+   "guessed": 2,
+   "right": 2
+  }
+ }
+}
