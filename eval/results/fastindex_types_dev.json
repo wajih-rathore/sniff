@@ -1,0 +1,19 @@
+{
+ "split": "dev",
+ "docs": 72,
+ "threshold": 0.3,
+ "abstain_rate": 0.097,
+ "answered_right": 1.0,
+ "classifier_alone_accuracy": 0.986,
+ "rules_alone_accuracy": 0.917,
+ "abstained_by_type": {
+  "receipt": 1,
+  "id_card": 1,
+  "other": 1,
+  "certificate": 1,
+  "warranty_card": 2,
+  "bank_statement": 1
+ },
+ "other_skipped": 3,
+ "other_docs": 4
+}

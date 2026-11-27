@@ -1,0 +1,12 @@
+{
+ "split": "dev",
+ "before": 0,
+ "after": 1,
+ "values_on_page": 382,
+ "recall": 0.997,
+ "whole_document_windows": 19,
+ "window_share_of_text": 0.219,
+ "per_field": {
+  "offer_letter.monthly_salary": 0.75
+ }
+}

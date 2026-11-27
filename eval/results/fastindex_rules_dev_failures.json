@@ -1,0 +1,205 @@
+[
+ {
+  "file": "dev/Documents/old/IMG_7333.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 5219.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_14.png",
+  "format": "image",
+  "field": "receipt.date",
+  "gold": "2025-06-11",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.id_number",
+  "gold": "81004-5001148-1",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.date_of_birth",
+  "gold": "1985-02-11",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.issue_date",
+  "gold": "2019-05-06",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.expiry_date",
+  "gold": "2029-05-06",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/download (14).pdf",
+  "format": "pdf_text",
+  "field": "utility_bill.payment_status",
+  "gold": "paid",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/IMG_4953.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 21845.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/scan_9174.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.institution",
+  "gold": "Metro Institute of Technology",
+  "pred": "METROINSTITUTEOF"
+ },
+ {
+  "file": "dev/Desktop/file_2221.pdf",
+  "format": "pdf_text",
+  "field": "certificate.title",
+  "gold": "Bachelor of Fine Arts",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/Scan 13.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2007-08-02",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250625-WA0678.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 3451.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/Document (17).pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.end_date",
+  "gold": "2030-02-28",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/PXL_20250201_151805.jpg",
+  "format": "image",
+  "field": "insurance_policy.end_date",
+  "gold": "2026-01-31",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/Document (4).pdf",
+  "format": "pdf_scan",
+  "field": "tenancy_agreement.start_date",
+  "gold": "2025-01-01",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/Document (4).pdf",
+  "format": "pdf_scan",
+  "field": "tenancy_agreement.end_date",
+  "gold": "2025-12-31",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/IMG_9204.jpg",
+  "format": "image",
+  "field": "offer_letter.position",
+  "gold": "Finance Manager",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/IMG_9204.jpg",
+  "format": "image",
+  "field": "offer_letter.monthly_salary",
+  "gold": 230000.0,
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250903-WA0341.jpg",
+  "format": "image",
+  "field": "tenancy_agreement.start_date",
+  "gold": "2025-09-01",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/IMG_4574.jpg",
+  "format": "image",
+  "field": "fee_voucher.registration_number",
+  "gold": "2024-LU-FA-031",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/scan_9417.pdf",
+  "format": "pdf_scan",
+  "field": "passport.date_of_birth",
+  "gold": "1970-07-30",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_9.png",
+  "format": "image",
+  "field": "transcript.student_name",
+  "gold": "Zainab Malik",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_9.png",
+  "format": "image",
+  "field": "transcript.registration_number",
+  "gold": "2024-LU-FA-031",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_9.png",
+  "format": "image",
+  "field": "transcript.program",
+  "gold": "Master of Fine Arts",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.account_number",
+  "gold": "9978-13980831-31",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.period_start",
+  "gold": "2025-04-01",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.period_end",
+  "gold": "2025-04-30",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.opening_balance",
+  "gold": 410701.3,
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.total_credits",
+  "gold": 160000.0,
+  "pred": null
+ }
+]

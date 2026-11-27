@@ -1,0 +1,65 @@
+[
+ {
+  "file": "dev/Documents/old/photo_14.png",
+  "format": "image",
+  "gold": "receipt",
+  "decided": null,
+  "classifier": "receipt",
+  "p": 0.904,
+  "rules": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250109-WA0055.jpg",
+  "format": "image",
+  "gold": "id_card",
+  "decided": null,
+  "classifier": "id_card",
+  "p": 0.685,
+  "rules": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20261101-WA0274.jpg",
+  "format": "image",
+  "gold": "other",
+  "decided": null,
+  "classifier": "certificate",
+  "p": 0.254,
+  "rules": null
+ },
+ {
+  "file": "dev/Desktop/Scan 13.pdf",
+  "format": "pdf_scan",
+  "gold": "certificate",
+  "decided": null,
+  "classifier": "certificate",
+  "p": 0.549,
+  "rules": null
+ },
+ {
+  "file": "dev/Desktop/CamScanner 08-30-2025 15.14.pdf",
+  "format": "pdf_scan",
+  "gold": "warranty_card",
+  "decided": null,
+  "classifier": "warranty_card",
+  "p": 0.794,
+  "rules": "certificate"
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250424-WA0861.jpg",
+  "format": "image",
+  "gold": "warranty_card",
+  "decided": null,
+  "classifier": "warranty_card",
+  "p": 0.659,
+  "rules": "certificate"
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "gold": "bank_statement",
+  "decided": null,
+  "classifier": "bank_statement",
+  "p": 0.812,
+  "rules": "utility_bill"
+ }
+]
