@@ -634,7 +634,7 @@ export default function Launcher() {
     : screen === 'settings' && adding ? 'Type a folder path, then press Enter' : screen === 'settings' && level === 'top' ? 'Filter settings…'
     : editing === 'key' ? 'Paste the key, then press Enter' : editing ? `Type the ${FIELD[editing].toLowerCase()}, then press Enter`
     : level === 'aipreview' && screen === 'settings' ? 'Type a question, then press Enter' : ''
-  const loading = (screen === 'search' && busy) || (screen === 'answer' && asking)
+  const loading = (screen === 'search' && busy) || (screen === 'answer' && asking) || (screen === 'settings' && level === 'aipreview' && !!aiPv && !aiPv.r)
   const listId = `list-${screen}`
   const activeId = screen === 'search' && cur ? `o-${cur.id}` : (screen === 'overview' || screen === 'settings') && rCur ? `o-${rCur.id}` : undefined
 
@@ -871,7 +871,8 @@ export default function Launcher() {
     )
     const where = aiPv?.r?.provider === 'off' ? 'AI is off, so nothing is sent. This is what a cloud provider would get'
       : aiPv?.r?.leaves_laptop ? `Exactly this would go to ${PROVIDERS[aiPv.r.provider][0]}, with ID numbers masked` : 'This stays on this laptop'
-    const pvCtx = !aiPv?.r ? 'Type a question and press Enter, or pick a document' : aiPv.doc ? `${aiPv.of}. ${where}` : where
+    const pvCtx = !aiPv ? 'Type a question and press Enter, or pick a document'
+      : !aiPv.r ? (aiPv.doc ? `Reading ${aiPv.of} again` : 'Working out what would be sent') : aiPv.doc ? `${aiPv.of}. ${where}` : where
     const ctx = orow ? rCur?.ctx ?? '' : adding ? 'Sniff reads the folder now, then keeps it up to date'
       : editing === 'key' ? "It goes to the system's password store. Sniff never shows it again" : editing ? rCur?.ctx ?? ''
       : level === 'aipreview' ? pvCtx : rCur?.ctx
