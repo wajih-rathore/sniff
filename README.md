@@ -4,6 +4,22 @@ Sniff is a desktop app that indexes the documents on your laptop (PDFs, Office f
 
 Reading, OCR, the models, the index and the answers all run on the laptop. Two optional features send data out; see [What leaves the laptop](#what-leaves-the-laptop).
 
+![The launcher: search results on the left, the matching bill's page on the right](docs/media/hero.png)
+
+Find a file and look at its page before opening it:
+
+![Typing "metro gas", previewing the bill's page, opening it](docs/media/search-open.gif)
+
+Ask a question. Two copies of a fee voucher disagree, so Sniff shows both totals and you pick the right copy:
+
+![Asking for a total, seeing two possible totals, picking the right copy](docs/media/ask-conflict.gif)
+
+Check one extracted value at a time, next to the part of the page it came from:
+
+![Reviewing a fact: accept it, or skip it for later](docs/media/review.gif)
+
+Recorded from the launcher running in a browser against the real back end, on the synthetic test documents (all names are made up), with the chat model off.
+
 Sniff started as a term project for the Generative AI course (AI-4009) at FAST-NUCES. How it is evaluated is in [docs/EVAL.md](docs/EVAL.md).
 
 ## How it works
