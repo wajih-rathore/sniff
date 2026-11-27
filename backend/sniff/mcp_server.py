@@ -8,7 +8,8 @@ Limits (feedback point 10):
 - the allow-list (saved settings, else config.MCP_ALLOW) lists the document types an agent may read and their fields. Other types are hidden: their
   files, facts and page text are never returned. Page text (search snippets, search answers) is given only for
   types allowed with every field ("*"), since text cannot be cut down to a few fields. ID cards are hidden by default.
-- ID numbers are masked (last 4 digits kept).
+- ID numbers are masked (last 4 characters kept), staff-style ones like EMP-27986 too.
+- A refused call says why ("agent access is off", "this type is hidden"), so the agent can tell the user.
 - Every call is appended to .sniff/mcp_access.log: time, tool, arguments and the ids of the documents returned.
 Run: uv run python -m sniff.mcp_server
 """
@@ -18,32 +19,40 @@ from contextlib import closing
 from datetime import datetime
 
 from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
 from . import ask as ask_mod
 from . import config, db, mcp_settings
 from .search import search
 
 mcp = MCPServer("sniff")
-WITHHELD = "Withheld: the answer would use documents or fields this agent is not allowed to read."
+WITHHELD = "Withheld:"  # the start of every withheld answer; withheld() says why
 
 
-DATE = re.compile(r"\d{4}-\d{2}-\d{2}(?:T\d+)?|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}")
+def withheld(types: set) -> str:
+    names = ", ".join(sorted((t or "unclassified").replace("_", " ") for t in types)) or "some"
+    return f"{WITHHELD} the answer needs {names} documents, or fields or page text of them, that Sniff's settings hide from agents."
+
+
+DATE = re.compile(r"\d{4}-\d{2}-\d{2}(?:T\d+)?|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}-?[A-Za-z]{3,9}-?\d{2,4}|[A-Za-z]{3,9}-\d{1,2}-\d{2,4}")
+AMOUNT = re.compile(r"(?i)(?:rs|pkr|usd|aed|inr)\d+")  # "Rs12500" as OCR writes it
 
 
 def mask_ids(text: str) -> str:
     """Hide ID-like tokens (keep the last 4 characters), whatever the document type. A token is a run of letters,
-    digits and hyphens (no underscores). It is an ID if it has 9 or more digits (35202-1234567-8), or 6 or more digits
-    plus a letter (KHI-21-725642). Dates, year ranges and plain amounts (1200, 4,320.50) are left alone."""
+    digits and hyphens (no underscores). It is an ID if it has 9 or more digits (35202-1234567-8), or 5 or more digits
+    plus a letter (KHI-21-725642, EMP-27986). Dates (2026-11-24, 06-Jan-2025), year ranges, plain amounts (1200,
+    4,320.50) and amounts with a currency (Rs12500) are left alone."""
     def hide(m):
         s = m.group()
         digits = sum(c.isdigit() for c in s)
-        if DATE.fullmatch(s) or (digits < 9 and not (digits >= 6 and re.search("[A-Za-z]", s))):
+        if DATE.fullmatch(s) or AMOUNT.fullmatch(s) or (digits < 9 and not (digits >= 5 and re.search("[A-Za-z]", s))):
             return s
         return re.sub(r"\d", "•", s[:-4]) + s[-4:]
     return re.sub(r"(?<![A-Za-z0-9-])[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9](?![A-Za-z0-9-])", hide, text)
 
 
-REFUSED = "MCP access is turned off in Sniff's settings."
+REFUSED = "Agent access is turned off in Sniff's settings. The user can turn it on in Sniff."
 _allow: dict[str, list[str]] = {}  # set by gate() at the start of each call; the server handles one call at a time
 
 
@@ -55,7 +64,7 @@ def gate(tool: str, args: dict) -> None:
     _allow = s["allow"]
     if not s["enabled"]:
         log(tool, args, [], refused=True)
-        raise ValueError(REFUSED)
+        raise ToolError(REFUSED)  # a ToolError's text reaches the agent; any other exception becomes "Error executing tool"
 
 
 def allowed(doc_type: str | None, field: str | None = None) -> bool:
@@ -94,12 +103,14 @@ def ask(question: str) -> dict:
         ids = {s.file_id for s in a.sources + a.counted + a.skipped_duplicates} | {f.file_id for f in a.facts + a.unreviewed}
         if a.route == "search":  # the model read every passage search gave it, cited or not
             ids |= {h.file_id for h in search(conn, question, k=5)}
-            ok = all(text_allowed(types.get(i)) for i in ids)
+            hidden = {types.get(i) for i in ids if not text_allowed(types.get(i))}
         else:
-            ok = (all(allowed(types.get(i)) for i in ids) and all(allowed(types.get(f.file_id), f.field) for f in a.facts + a.unreviewed)
-                  and all(allowed(c.doc_type, c.field) for c in a.conflicts))
+            hidden = ({types.get(i) for i in ids if not allowed(types.get(i))}
+                      | {types.get(f.file_id) for f in a.facts + a.unreviewed if not allowed(types.get(f.file_id), f.field)}
+                      | {c.doc_type for c in a.conflicts if not allowed(c.doc_type, c.field)})
+        ok = not hidden
     out = {"answer": mask_ids(a.answer), "route": a.route, "sources": [f"{s.path} (page {s.page})" for s in a.sources]} if ok \
-        else {"answer": WITHHELD, "route": a.route, "sources": []}
+        else {"answer": withheld(hidden), "route": a.route, "sources": []}
     log("ask", {"question": question}, sorted({s.file_id for s in a.sources}) if ok else [])
     return out
 
@@ -110,6 +121,9 @@ def list_documents(doc_type: str | None = None) -> list[dict]:
     fee_voucher, insurance_policy, tenancy_agreement, other.
     Types the user has not allowed are not listed."""
     gate("list_documents", {"doc_type": doc_type})
+    if doc_type and not allowed(doc_type):
+        log("list_documents", {"doc_type": doc_type}, [], refused=True)
+        raise ToolError(f"{doc_type.replace('_', ' ').capitalize()} documents are hidden from agents in Sniff's settings.")
     with closing(db.connect()) as conn:
         rows = [r for r in conn.execute("SELECT * FROM files WHERE copy_of IS NULL AND (? IS NULL OR doc_type=?) ORDER BY path",
                                         (doc_type, doc_type)) if allowed(r["doc_type"])]

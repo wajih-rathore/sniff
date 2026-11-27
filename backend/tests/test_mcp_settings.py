@@ -3,6 +3,7 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from mcp.server.mcpserver.exceptions import ToolError
 
 from sniff import api, config, mcp_server, mcp_settings
 
@@ -20,7 +21,7 @@ def test_off_by_default_and_every_tool_refuses_but_logs(conn, add_doc):
     add_doc("C:/docs/bill.pdf", "utility_bill", {"provider": "LESCO"})
     assert mcp_settings.load(conn) == {"enabled": False, "allow": config.MCP_ALLOW, "env_override": False}
     for call in (lambda: mcp_server.list_documents(), lambda: mcp_server.search_documents("bill"), lambda: mcp_server.ask("bill?")):
-        with pytest.raises(ValueError, match="turned off"):
+        with pytest.raises(ToolError, match="Agent access is turned off"):
             call()
     rows = logged()
     assert [r["tool"] for r in rows] == ["list_documents", "search_documents", "ask"]
@@ -35,12 +36,12 @@ def test_default_allow_list_hides_the_private_types(conn):
 
 def test_settings_are_read_on_every_call(conn, add_doc):
     add_doc("C:/docs/bill.pdf", "utility_bill", {"provider": "LESCO"})
-    with pytest.raises(ValueError):
+    with pytest.raises(ToolError):
         mcp_server.list_documents()
     mcp_settings.save(conn, True, {"utility_bill": ["provider"]})  # no restart in between
     assert mcp_server.list_documents()[0]["facts"] == {"provider": "LESCO"}
     mcp_settings.save(conn, False, {"utility_bill": ["provider"]})
-    with pytest.raises(ValueError):
+    with pytest.raises(ToolError):
         mcp_server.list_documents()
 
 
@@ -80,7 +81,7 @@ def test_settings_include_each_types_field_list(client):
 
 def test_log_rows_say_whether_the_call_was_refused(client, conn, add_doc):
     add_doc("C:/docs/bill.pdf", "utility_bill", {"provider": "LESCO"})
-    with pytest.raises(ValueError):
+    with pytest.raises(ToolError):
         mcp_server.list_documents()  # off: refused
     client.put("/mcp/settings", json={"enabled": True, "allow": {"utility_bill": ["provider"]}})
     mcp_server.list_documents()  # on: answered
@@ -99,3 +100,12 @@ def test_default_allow_list_opens_every_type_with_field_rules_but_five_and_names
             assert f == "*" or FIELDS[doc_type][f].kind not in ("id", "passport", "serial"), (doc_type, f)
             assert f in ("*",) or "name" not in f and f not in ("landlord", "tenant", "property_address"), (doc_type, f)
     assert not any("*" in fields for fields in config.MCP_ALLOW.values())  # no page text unless the user grants it
+
+
+def test_the_refusal_reason_reaches_the_agent(conn):
+    """The SDK hides the text of any exception except ToolError ("Error executing tool"); the reason must survive."""
+    import anyio
+    from mcp.server.mcpserver.exceptions import UnexpectedToolError
+    with pytest.raises(ToolError, match="Agent access is turned off in Sniff's settings") as e:
+        anyio.run(mcp_server.mcp.call_tool, "list_documents", {})
+    assert not isinstance(e.value, UnexpectedToolError)

@@ -2,6 +2,7 @@
 import json
 
 import pytest
+from mcp.server.mcpserver.exceptions import ToolError
 
 from sniff import config, mcp_server
 from sniff.schemas import Answer, Fact, Hit, Source
@@ -41,7 +42,8 @@ def test_list_hides_id_cards_and_copies_and_masks_numbers(docs):
     out = mcp_server.list_documents()
     assert [d["file"] for d in out] == ["C:/docs/bill.pdf"]
     assert out[0]["facts"]["account_number"] == "••••••••••4556" and out[0]["facts"]["provider"] == "LESCO"
-    assert mcp_server.list_documents("id_card") == []
+    with pytest.raises(ToolError, match="Id card documents are hidden from agents"):  # the agent is told why
+        mcp_server.list_documents("id_card")
 
 
 def test_field_allow_list(docs, monkeypatch):
@@ -70,9 +72,10 @@ def test_ask_withholds_answers_built_on_hidden_documents(docs, monkeypatch):
     monkeypatch.setattr(mcp_server.ask_mod, "ask", lambda conn, q: next(answers))
     passages = [[hit(bill, "utility_bill", ""), hit(card, "id_card", "")], [hit(bill, "utility_bill", "")]]
     monkeypatch.setattr(mcp_server, "search", lambda conn, q, k: passages.pop(0))
-    assert mcp_server.ask("bill?")["answer"] == mcp_server.WITHHELD  # ...but the model also read the ID card's text
+    assert mcp_server.ask("bill?")["answer"] == mcp_server.withheld({"id_card"})  # ...but the model also read the ID card's text
+    assert "id card documents" in mcp_server.withheld({"id_card"})
     assert mcp_server.ask("bill?") == {"answer": "Your bill is 1200.", "route": "search", "sources": [f"C:/docs/{bill} (page 1)"]}
-    assert mcp_server.ask("cnic?") == {"answer": mcp_server.WITHHELD, "route": "facts", "sources": []}
+    assert mcp_server.ask("cnic?") == {"answer": mcp_server.withheld({"id_card"}), "route": "facts", "sources": []}
 
 
 def test_every_call_is_logged(docs, monkeypatch):
@@ -92,6 +95,8 @@ def test_every_call_is_logged(docs, monkeypatch):
     ("Account 04112233344556", "Account ••••••••••4556"),
     ("Due 2026-11-24 or 24/11/2026, 2024-2026, Rs. 1,250,000 and 4320.50", "Due 2026-11-24 or 24/11/2026, 2024-2026, Rs. 1,250,000 and 4320.50"),
     ("scan_2026-11-24.pdf", "scan_2026-11-24.pdf"),
+    ("Staff card EMP-27986 issued 06-Jan-2025", "Staff card EMP-•7986 issued 06-Jan-2025"),  # the acceptance test's unmasked ID
+    ("Roll 22K-45123, paid Rs12500 on 06Jan2025 and 12500 later", "Roll ••K-•5123, paid Rs12500 on 06Jan2025 and 12500 later"),
 ])
 def test_mask_ids(text, masked):
     assert mcp_server.mask_ids(text) == masked
