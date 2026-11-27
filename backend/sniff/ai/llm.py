@@ -59,11 +59,12 @@ def document_message(pages: list[tuple[int, str]], task: str) -> list[dict]:
 T = TypeVar("T", bound=BaseModel)
 
 
-def chat_json(messages: list[dict], model: type[T], retries: int = 2) -> T:
-    """Ask for JSON matching `model` (the server constrains output to the schema), validate, retry with the error."""
+def chat_json(messages: list[dict], model: type[T], retries: int = 2, **kw) -> T:
+    """Ask for JSON matching `model` (the server constrains output to the schema), validate, retry with the error.
+    Extra keywords (such as max_tokens) go to every call."""
     fmt = {"type": "json_schema", "json_schema": {"name": model.__name__, "schema": model.model_json_schema()}}
     for attempt in range(retries + 1):
-        text = chat(messages, response_format=fmt)
+        text = chat(messages, response_format=fmt, **kw)
         try:
             return model.model_validate_json(text)
         except ValidationError as e:

@@ -2,7 +2,7 @@
 its label (ai/rules.py). The model is asked only for required fields the rules left empty, and it sees only the
 lines near those fields' labels (rules.window). It copies each value exactly as printed; code then parses dates,
 months and amounts, and verify.check decides whether each value can be trusted, whoever read it."""
-from pydantic import create_model
+from pydantic import ValidationError, create_model
 
 from .. import verify
 from ..schemas import FIELDS
@@ -15,6 +15,10 @@ Use null for any field that is not in the document. Do not guess or calculate.
 Reply with JSON only."""
 
 
+# a printed value is a few tokens; the cap stops a small model that starts repeating itself inside a string
+MAX_TOKENS_PER_FIELD = 40
+
+
 def _raw_model(doc_type: str, fields: list[str]):
     """The fields asked for, every value the string as printed. Only these keys, so the reply stays short."""
     return create_model(f"{doc_type.title().replace('_', '')}Printed", **{f: (str | None, None) for f in fields})
@@ -25,7 +29,7 @@ def ask_model(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) ->
     spec = FIELDS[doc_type]
     listing = "\n".join(f"- {f}: {spec[f].meaning}" for f in fields)
     printed = llm.chat_json(llm.document_message(pages, PROMPT.format(doc_type=doc_type.replace("_", " "), fields=listing)),
-                            _raw_model(doc_type, fields))
+                            _raw_model(doc_type, fields), max_tokens=MAX_TOKENS_PER_FIELD * len(fields) + 20)
     return {f: v for f, v in printed.model_dump().items() if v and v.strip()}
 
 
@@ -38,7 +42,10 @@ def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = No
         printed = rules.extract(doc_type, pages, boxes)
         missing = [f for f, s in spec.items() if s.required and f not in printed]
         if missing:
-            printed |= ask_model(doc_type, missing, rules.window(doc_type, pages, boxes, missing))
+            try:
+                printed |= ask_model(doc_type, missing, rules.window(doc_type, pages, boxes, missing))
+            except ValidationError:  # the model's reply stayed invalid: keep what the rules read
+                pass
     else:
         printed = ask_model(doc_type, list(spec), pages)
 

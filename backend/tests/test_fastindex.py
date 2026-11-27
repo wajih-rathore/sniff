@@ -71,7 +71,7 @@ def test_window_keeps_the_lines_near_the_labels():
 def test_the_model_is_asked_only_for_missing_required_fields(monkeypatch):
     asked = []
 
-    def fake_chat_json(messages, model):
+    def fake_chat_json(messages, model, **kw):
         asked.append((list(model.model_fields), messages[1]["content"]))
         return model(expiry_date="06 May 2029")
     monkeypatch.setattr(llm, "chat_json", fake_chat_json)
