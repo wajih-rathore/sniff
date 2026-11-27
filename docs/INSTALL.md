@@ -39,7 +39,7 @@ end's libraries (OpenCV, PyMuPDF and ONNX Runtime for reading and OCR).
 | `sniff.exe` | The desktop app: the launcher window, the tray icon and the global shortcut |
 | `backend\` | The Sniff back end (FastAPI, frozen with PyInstaller): readers, OCR models, search and the database code |
 | `llama\` | `llama-server.exe` (llama.cpp build b12628, CPU) and its DLLs, including the Visual C++ runtime it needs |
-| `models\` | The two model files, downloaded on first run |
+| `models\` | The embedding model, downloaded on first run, and the chat model if you download it for Settings > AI > This laptop |
 | `data\` | `sniff.db` (the index, facts and reminders), the MCP access log. The Google sign-in token is in Windows Credential Manager (`Sniff`); it falls back to a file here only when that fails |
 | `logs\` | One log per process: `desktop.log`, `backend.log`, `chat-server.log`, `embed-server.log` |
 | `secrets\` | Put `google_client.json` here to turn on Google Calendar reminders |
@@ -48,16 +48,26 @@ The browser engine keeps its cache in `%LOCALAPPDATA%\pk.edu.nu.sniff`.
 
 ### First run
 
-When the model files are missing, Sniff shows a download screen. It fetches two models from the Ollama registry,
-the same files and checksums as `eval/fetch_models.py`:
+When the embedding model is missing, Sniff shows a download screen. It fetches the one model that search,
+sorting and facts need from the Ollama registry, the same file and checksum as `eval/fetch_models.py`. The OCR models
+come with the back end.
 
 | Model | File | Size |
 |---|---|---|
-| Qwen3-1.7B, Q4_K_M (chat) | `qwen3-1.7b-q4_k_m.gguf` | 1,359,279,776 bytes |
-| all-MiniLM-L6-v2 (embeddings) | `all-minilm-l6-v2.gguf` | 45,949,216 bytes |
+| all-MiniLM-L6-v2 (embeddings) | `all-minilm-l6-v2.gguf` | 45,949,216 bytes (46 MB) |
 
-That is 1.41 GB in total. A broken download resumes where it stopped, also after closing the app. Each file
-gets its final name only after its sha256 matches; a file that does not match is deleted.
+A broken download resumes where it stopped, also after closing the app. Each file gets its final name only after its
+sha256 matches; a file that does not match is deleted.
+
+The chat model for Settings > AI > This laptop is not part of the first run, and Sniff works without it:
+
+| Model | File | Size |
+|---|---|---|
+| Qwen3-1.7B, Q4_K_M (chat) | `qwen3-1.7b-q4_k_m.gguf` | 1,359,279,776 bytes (1.36 GB) |
+
+`POST /ai/local/download` fetches it the same way (resumable, sha256 checked) and `GET /ai/local` reports its progress
+(`size`, `have`, `running`, `error`, `ready`). This laptop is offered only once the file is there. A button for it in
+Settings > AI is planned.
 
 ### Running
 
@@ -233,8 +243,8 @@ shasum -a 256 "models/$F"   # must match the value in scripts/build-desktop.ps1
 tar -xzf "models/$F" -C models/llama --strip-components 1
 # On a Mac, `brew install llama.cpp` works too: Sniff then uses the llama-server on the PATH (a newer build).
 
-# 3. the two models, 1.41 GB, resumable
-python3 eval/fetch_models.py qwen3-1.7b all-minilm
+# 3. the embedding model, 46 MB, resumable. Add qwen3-1.7b (1.36 GB) to run AI on this laptop
+python3 eval/fetch_models.py all-minilm
 
 # 4. the embedding server; leave it running
 models/llama/llama-server -m models/all-minilm-l6-v2.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
@@ -265,14 +275,14 @@ For each item write pass or fail, and what you saw. A screenshot helps for anyth
 1. **System:** OS and version, the chip (Apple Silicon or Intel / x86-64), RAM, and on Linux X11 or Wayland
    (`echo $XDG_SESSION_TYPE`).
 2. **Install:** which file, any warning and what you clicked, time to install.
-3. **First run:** the download screen appears. Note how long 1.41 GB takes. Close Sniff halfway and start it again:
-   it should resume. Afterwards `models/` in the data folder holds two `.gguf` files and no `.part` file.
+3. **First run:** the download screen appears. Note how long 46 MB takes. Close Sniff halfway and start it again:
+   it should resume. Afterwards `models/` in the data folder holds `all-minilm-l6-v2.gguf` and no `.part` file.
 4. **Index a folder:** Settings > add a folder with about 10 documents (PDFs, a Word file, a photo of a receipt).
    Note the time until they show as indexed.
 5. **Search:** type a word from one document. Is the right file at the top? Enter opens it, Ctrl+Enter shows it in
    the file manager.
 6. **Ask:** a question your documents can answer, such as "When does my passport expire?". Note the answer, whether
-   it is right, and how long the first answer took (the chat model loads then).
+   it is right, and how long the first answer took (with AI set to This laptop, the chat model loads then).
 7. **Hotkey:** from another app, Alt+Shift+Space (Option+Shift+Space on a Mac) shows the window, and again hides
    it. On Wayland, set up `sniff --toggle` as above and try that. Change the hotkey in Settings and restart Sniff:
    the new one is kept.
@@ -327,8 +337,8 @@ Status: ready, not run yet. Windows Sandbox must be turned on once (Windows 11 P
 4. Double-click `scripts\sandbox\sniff-8gb.wsb`. At logon the sandbox runs `smoke.ps1`, which:
    1. installs Sniff silently for the sandbox user;
    2. starts it and waits for the back end;
-   3. starts the first-run download (the same call as the Download button), 1.41 GB, and waits until both model
-      servers answer;
+   3. starts the first-run download (the same call as the Download button), 46 MB, and waits until the
+      embedding server answers;
    4. indexes the 5 documents;
    5. runs one search and one ask, timed;
    6. quits from the tray menu and checks that no Sniff process is left.
@@ -347,10 +357,10 @@ Not done yet. Things the sandbox run does not cover. On a fresh Windows 11 VM wi
 
 1. Copy the installer to the VM. Run it as a normal user. Note any SmartScreen or UAC prompt (there should be no UAC prompt).
 2. Check that `%LOCALAPPDATA%\Sniff` has `sniff.exe`, `backend\` and `llama\`, and nothing was written to `Program Files`.
-3. Start Sniff. The download screen should appear. Note the time to download 1.41 GB.
+3. Start Sniff. The download screen should appear. Note the time to download 46 MB.
 4. Stop the network in the middle of the download, start it again, and check that it resumes rather than restarts.
 5. Close and reopen Sniff in the middle of the download. Press Resume and check that it continues.
-6. After the download, check `models\` holds the two files and no `.part` file is left.
+6. After the download, check `models\` holds `all-minilm-l6-v2.gguf` and no `.part` file is left.
 7. Check that `logs\embed-server.log` shows the embedding server loaded, and that no chat `llama-server.exe` runs yet.
 8. Index a folder of 10 test documents in Settings. Note the time per document.
 9. Run a search and ask a question. Note the answer time.

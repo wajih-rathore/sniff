@@ -44,16 +44,17 @@ Sniff started as a term project for the Generative AI course (AI-4009) at FAST-N
 
 ## Run it (Windows)
 
-Requirements: Python 3.11 with [uv](https://docs.astral.sh/uv/), Node 22, and about 1.5 GB of disk for the models. The app was built and tested on Windows 11.
+Requirements: Python 3.11 with [uv](https://docs.astral.sh/uv/), Node 22, and about 50 MB of disk for the embedding model (1.4 GB more for the optional chat model). The app was built and tested on Windows 11.
 
 ```powershell
 # 1. llama.cpp (CPU build b12628): unzip it into models/llama/
 #    https://github.com/ggml-org/llama.cpp/releases/download/b12628/llama-b12628-bin-win-cpu-x64.zip
 
-# 2. back end and models (Qwen3-1.7B Q4_K_M, 1.4 GB, and all-MiniLM-L6-v2, 46 MB; sha256 checked)
+# 2. back end and the embedding model (all-MiniLM-L6-v2, 46 MB; sha256 checked). Add qwen3-1.7b
+#    (Qwen3-1.7B Q4_K_M, 1.4 GB) only to run AI on this laptop (Settings > AI > This laptop)
 cd backend
 uv sync
-uv run python ../eval/fetch_models.py qwen3-1.7b all-minilm
+uv run python ../eval/fetch_models.py all-minilm
 
 # 3. front end
 cd ../frontend
