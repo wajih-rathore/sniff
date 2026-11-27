@@ -272,6 +272,7 @@ class Answer(BaseModel):
     skipped_duplicates: list[Source] = []  # near-duplicates left out so nothing is counted twice
     unreviewed: list[Fact] = []  # facts used that still need review
     conflicts: list[Conflict] = []
+    parser: Literal["rules", "model"] | None = None  # who turned the question into a query: code's rules or the LLM router
 
 
 class Document(BaseModel):

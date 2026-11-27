@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from sniff import api, ask, gcal
 from sniff.ask import Filters, Route
+from sniff.schemas import Answer
 
 TODAY = date(2026, 11, 22)
 
@@ -115,9 +116,9 @@ def test_holder_filter(docs, monkeypatch):
 
 def test_invalid_template_falls_back_to_search(docs, monkeypatch):
     called = []
-    monkeypatch.setattr(ask, "answer_from_search", lambda conn, q: called.append(q) or "searched")
-    assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="amount_due", op="sum")) == "searched"
-    assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="expiry_date", op="outstanding")) == "searched"
+    monkeypatch.setattr(ask, "answer_from_search", lambda conn, q: called.append(q) or Answer(question=q, answer="searched", route="search"))
+    assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="amount_due", op="sum")).answer == "searched"
+    assert run(docs, monkeypatch, Route(route="facts", doc_type="id_card", field="expiry_date", op="outstanding")).answer == "searched"
     assert len(called) == 2
 
 
@@ -166,3 +167,55 @@ def test_totals_need_total_words_or_a_period(docs, monkeypatch, question, slip):
     from sniff.ai import llm
     monkeypatch.setattr(llm, "chat_json", lambda messages, model: slip.model_copy(deep=True))
     assert ask.route(question).op == "sum"
+
+
+# ---------- rules first, model second ----------
+def no_model(*a, **kw):
+    raise AssertionError("the rules should have answered this without the model")
+
+
+@pytest.mark.parametrize("question, answer", [
+    ("How much did we spend on electricity in 2026?", "5,500.50 in total, from 2 documents."),
+    ("How many ID cards do I have?", "3 documents."),
+    ("What is the newest electricity bill amount?", "2,500.50 (bill_2026-02.pdf), from the newest document (2026-02)."),
+    ("When does Sara's ID card expire?", "2026-12-05 (id_sara.jpg)."),
+    ("Which ID card expires next?", "id_sara.jpg: expiry date 2026-12-05, in 13 days."),
+    ("What expires in the next 20 days?", "2026-12-05 (id_sara.jpg)."),
+    ("List my gas bills.", "700 (gas.pdf)."),
+    ("When does Zara's ID card expire?", "No matching documents found."),  # a name the index does not have filters to nothing
+])
+def test_rules_answer_common_questions_without_the_model(docs, monkeypatch, question, answer):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", no_model)
+    a = ask.ask(docs, question, today=TODAY)
+    assert a.answer == answer and a.parser == "rules"
+
+
+def test_names_are_matched_against_the_indexed_facts(docs, add_doc, monkeypatch):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", no_model)
+    add_doc("/x/id_scan.jpg", "id_card", {"name": "OMARFAROOQ", "id_number": "44444-4444444-4", "expiry_date": "2028-01-06"})  # OCR joined the words
+    a = ask.ask(docs, "When does Omar Farooq's card expire?", today=TODAY)
+    assert a.answer == "2028-01-06 (id_scan.jpg)." and a.query["filters"]["holder"] == "omar farooq"
+
+
+def test_when_reads_times_in_code():
+    today = date(2026, 11, 30)
+    assert ask.when("what expires in the next 3 months", today) == {"date_from": "2026-11-30", "date_to": "2027-02-28"}
+    assert ask.when("anything due within the next 2 weeks", today) == {"date_from": "2026-11-30", "date_to": "2026-12-14"}
+    assert ask.when("money out from january to march 2025", today) == {"date_from": "january 2025", "date_to": "march 2025"}
+    assert ask.when("what did i spend last month", today) == {"period": "last_month"}
+    assert ask.when("bills due next month", today) == {"date_from": "2026-12-01", "date_to": "2026-12-31"}
+    assert ask.when("my gas bill in december", today) == {"month": "december 2025"}  # no year: the last December up to today
+    assert ask.when("receipts from 2025", today) == {"year": 2025}
+    assert ask.when("may i see my receipts", today) == {}  # "may" is a month only next to a year
+
+
+def test_model_output_is_checked_against_the_question(docs, monkeypatch):
+    from sniff.ai import llm
+    slip = Route(route="facts", doc_type="id_card", field="expiry_date", op="list", filters=Filters(year=2023, provider="NADRA"))
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: slip.model_copy(deep=True))
+    a = ask.ask(docs, "Ali Khan ID card?", today=TODAY)  # no operation word: the rules leave it to the model
+    assert a.parser == "model" and a.answer == "2027-01-10 (id_ali.jpg)."
+    f = a.query["filters"]
+    assert f["year"] is None and f["provider"] is None and f["holder"] == "ali khan"  # invented year and name dropped, the dropped name put back
