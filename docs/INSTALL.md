@@ -332,11 +332,12 @@ Status: ready, not run yet. Windows Sandbox must be turned on once (Windows 11 P
 `Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM`.
 
 1. Build the installer (`scripts\build-desktop.ps1`).
-2. Run `scripts\sandbox\prepare.ps1`. It fills `E:\E\FAST\Semester 7\GenAI\.cache\sandbox\in` (installer,
-   `smoke.ps1`, 5 documents from the dev split: a gas bill, a receipt photo, a certificate, a scanned ID card and a
-   recipe). On another machine, change the two host paths in `sniff-8gb.wsb` and pass `-Box`.
+2. From the repository root, run `.\scripts\sandbox\prepare.ps1 -Box (Join-Path $PWD '.cache\sandbox')` in
+   PowerShell. It fills `.cache\sandbox\in` with the installer, `smoke.ps1` and five documents from the dev split.
+   Make a local copy of `scripts\sandbox\sniff-8gb.wsb` and set its two `HostFolder` paths to the absolute paths of
+   your `.cache\sandbox\in` and `.cache\sandbox\results` directories.
 3. Close other heavy programs first: the sandbox may take up to 8 GB of the host's memory.
-4. Double-click `scripts\sandbox\sniff-8gb.wsb`. At logon the sandbox runs `smoke.ps1`, which:
+4. Double-click your local `sniff-8gb.wsb` copy. At logon the sandbox runs `smoke.ps1`, which:
    1. installs Sniff silently for the sandbox user;
    2. starts it and waits for the back end;
    3. starts the first-run download (the same call as the Download button), 46 MB, and waits until the

@@ -10,7 +10,7 @@ results can be compared.
   for "how much is my gas bill" (`f1287e5`), which is only on `main`. The launcher build is `frontend/dist` of the
   desktop worktree: its script name `index-3hb6qd1z.js` is the one inside the installed `sniff.exe`.
 - **How it ran:** a copy of the installed back end on port 8790 with its own data folder
-  (`E:\E\FAST\Semester 7\GenAI\.cache\acceptance\home`). Wajih's own copy on 8765 was not touched. The installed back
+  (`.cache\acceptance\home` under the workspace). The installed copy on 8765 was not touched. The installed back
   end always listens on 8765 (`desktop.py` has no setting for it), so `eval/acceptance.py copy` changes that one number
   inside a copy of the exe; nothing else differs. It used the shared model servers (Qwen3-1.7B on 8080, all-MiniLM on
   8081) through a small proxy that logs every model call, so model time and model calls could be counted.
@@ -43,7 +43,8 @@ uv run python ../eval/acceptance.py selftest     # the checkers on known input
 
 `run` needs an empty data folder for its first step (index). The steps run in the order index, search, ui,
 reminders, overview, ask, mcp, facts, changes, badinput, because facts and the later steps change the index. Results
-go to `eval/results/acceptance.json`; each step replaces its own section. When the back end has `/ask/stream`, the
+go to `eval/results/acceptance.json`; each step replaces its own section. The checked-in report uses `<workspace>`
+in recorded paths as a placeholder for the checkout and its adjacent worktrees. When the back end has `/ask/stream`, the
 script also times the first token. If `desktop.py` learns to read its port from the environment, `copy` is no longer
 needed.
 

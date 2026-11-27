@@ -1,6 +1,6 @@
 {
  "startup_empty": {
-  "exe": "E:/E/FAST/Semester 7/GenAI/.cache/acceptance/bin/sniff-backend.exe",
+  "exe": "<workspace>/.cache/acceptance/bin/sniff-backend.exe",
   "index_had_files": false,
   "runs": [
    {
@@ -96,10 +96,10 @@
    "current": null,
    "errors": 0,
    "watching": [
-    "E:\\E\\FAST\\Semester 7\\GenAI\\.cache\\acceptance\\docs"
+    "<workspace>\\.cache\\acceptance\\docs"
    ],
    "watch_last": {
-    "folder": "E:\\E\\FAST\\Semester 7\\GenAI\\.cache\\acceptance\\docs",
+    "folder": "<workspace>\\.cache\\acceptance\\docs",
     "at": "2026-11-27T19:33:37",
     "indexed": 82,
     "unchanged": 0,
@@ -1646,7 +1646,7 @@
    "mains": true,
    "at": "2026-11-27 20:24:34"
   },
-  "frontend": "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\frontend\\dist",
+  "frontend": "<workspace>\\sniff-wt\\desktop\\frontend\\dist",
   "ms": {
    "n": 25,
    "p50": 193.5,
@@ -3361,11 +3361,11 @@
    "at": "2026-11-27 21:09:04"
   },
   "command": [
-   "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\backend\\.venv\\Scripts\\python.exe",
+   "<workspace>\\sniff-wt\\desktop\\backend\\.venv\\Scripts\\python.exe",
    "-m",
    "sniff.mcp_server"
   ],
-  "server_source": "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\backend\\sniff\\__init__.py",
+  "server_source": "<workspace>\\sniff-wt\\desktop\\backend\\sniff\\__init__.py",
   "pass": false,
   "checks": {
    "refused_while_off": {
@@ -3692,19 +3692,19 @@
   },
   "backend_alive": true,
   "settled_s": 6.258,
-  "watch_error": "PermissionError: [Errno 13] Permission denied: 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\locked.pdf'",
+  "watch_error": "PermissionError: [Errno 13] Permission denied: '<workspace>\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\locked.pdf'",
   "files": {
    "corrupt.pdf": {
     "in_index": true,
     "status": "error",
-    "error": "FileDataError: Failed to open file 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf.",
+    "error": "FileDataError: Failed to open file '<workspace>\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf.",
     "expected": "error",
     "pass": true
    },
    "empty.pdf": {
     "in_index": true,
     "status": "error",
-    "error": "EmptyFileError: Cannot open empty file: filename='E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'.",
+    "error": "EmptyFileError: Cannot open empty file: filename='<workspace>\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'.",
     "expected": "error",
     "pass": true
    },
@@ -3744,11 +3744,11 @@
   "after_unlock": {
    "corrupt.pdf": {
     "status": "error",
-    "error": "FileDataError: Failed to open file 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf."
+    "error": "FileDataError: Failed to open file '<workspace>\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf."
    },
    "empty.pdf": {
     "status": "error",
-    "error": "EmptyFileError: Cannot open empty file: filename='E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'."
+    "error": "EmptyFileError: Cannot open empty file: filename='<workspace>\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'."
    },
    "protected.pdf": {
     "status": "error",
@@ -3774,7 +3774,7 @@
   "pass": false
  },
  "startup_indexed": {
-  "exe": "E:/E/FAST/Semester 7/GenAI/.cache/acceptance/bin/sniff-backend.exe",
+  "exe": "<workspace>/.cache/acceptance/bin/sniff-backend.exe",
   "index_had_files": true,
   "runs": [
    {
