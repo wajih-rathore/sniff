@@ -18,6 +18,8 @@ SETS = {"test": SYNTH, "hard": ROOT / "data" / "hard" / "out", "real": ROOT / "d
 
 # the evaluation uses its own database so it never touches the user's index
 os.environ.setdefault("SNIFF_DB", str(EVAL_DB))
+# it measures this laptop's model; the app itself starts with AI off (backend/sniff/ai_settings.py)
+os.environ.setdefault("SNIFF_AI", "local")
 sys.path.insert(0, str(ROOT / "backend"))
 
 

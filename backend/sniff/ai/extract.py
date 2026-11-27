@@ -1,10 +1,12 @@
 """Extract a document's key fields. Rules come first: they read every field they can from the value printed next to
 its label (ai/rules.py). The model is asked only for required fields the rules left empty, and it sees only the
 lines near those fields' labels (rules.window). It copies each value exactly as printed; code then parses dates,
-months and amounts, and verify.check decides whether each value can be trusted, whoever read it."""
+months and amounts, and verify.check decides whether each value can be trusted, whoever read it. If AI is off or the
+provider fails, the rules' facts are kept. A provider off this laptop gets those lines only for the types the user lets
+leave it (ai_settings.may_send), and never the whole document, with ID numbers masked (llm.outgoing)."""
 from pydantic import ValidationError, create_model
 
-from .. import verify
+from .. import ai_settings, verify
 from ..schemas import FIELDS
 from . import llm, rules
 
@@ -24,13 +26,31 @@ def _raw_model(doc_type: str, fields: list[str]):
     return create_model(f"{doc_type.title().replace('_', '')}Printed", **{f: (str | None, None) for f in fields})
 
 
-def ask_model(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) -> dict[str, str]:
-    """{field: printed value} from the chat model, for the given fields only."""
+def messages(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) -> list[dict]:
     spec = FIELDS[doc_type]
     listing = "\n".join(f"- {f}: {spec[f].meaning}" for f in fields)
-    printed = llm.chat_json(llm.document_message(pages, PROMPT.format(doc_type=doc_type.replace("_", " "), fields=listing)),
-                            _raw_model(doc_type, fields), max_tokens=MAX_TOKENS_PER_FIELD * len(fields) + 20)
-    return {f: v for f, v in printed.model_dump().items() if v and v.strip()}
+    return llm.document_message(pages, PROMPT.format(doc_type=doc_type.replace("_", " "), fields=listing))
+
+
+def ask_model(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) -> dict[str, str]:
+    """{field: printed value} from the chat model, for the given fields only."""
+    printed = llm.chat_json(messages(doc_type, fields, pages), _raw_model(doc_type, fields), max_tokens=MAX_TOKENS_PER_FIELD * len(fields) + 20)
+    return {f: v for f, v in printed.model_dump().items() if v and v.strip() and "•" not in v}  # • : a masked ID came back
+
+
+def lines_to_send(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None, fields: list[str], s: dict) -> list[tuple[int, str]]:
+    """The candidate lines the model reads for `fields`; [] when nothing may be sent for this type."""
+    if not ai_settings.remote(s):
+        return rules.window(doc_type, pages, boxes, fields)
+    return rules.window(doc_type, pages, boxes, fields, whole=False) if ai_settings.may_send(s, doc_type) else []
+
+
+def outbound(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None, s: dict) -> list[dict]:
+    """What extract() sends for this document, as [{"purpose", "messages"}] before masking; [] when nothing."""
+    printed = rules.extract(doc_type, pages, boxes or {})
+    missing = [f for f, spec in FIELDS[doc_type].items() if spec.required and f not in printed]
+    lines = lines_to_send(doc_type, pages, boxes or {}, missing, s) if missing else []
+    return [{"purpose": f"Fill the fields the rules missed: {', '.join(missing)}", "messages": messages(doc_type, missing, lines)}] if lines else []
 
 
 def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = None, rules_first: bool = True) -> list[dict]:
@@ -41,10 +61,10 @@ def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = No
     if rules_first:
         printed = rules.extract(doc_type, pages, boxes)
         missing = [f for f, s in spec.items() if s.required and f not in printed]
-        if missing:
+        if missing and (lines := lines_to_send(doc_type, pages, boxes, missing, ai_settings.current())):
             try:
-                printed |= ask_model(doc_type, missing, rules.window(doc_type, pages, boxes, missing))
-            except ValidationError:  # the model's reply stayed invalid: keep what the rules read
+                printed |= ask_model(doc_type, missing, lines)
+            except (ValidationError, llm.Unavailable):  # an invalid reply, AI off or the provider failed: keep what the rules read
                 pass
     else:
         printed = ask_model(doc_type, list(spec), pages)

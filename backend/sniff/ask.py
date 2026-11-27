@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from . import records, verify
+from . import ai_settings, records, verify
 from .ai import llm
 from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Alternative, Answer, Conflict, Source
 from .search import STOP, search
@@ -93,14 +93,15 @@ If the passages do not contain the answer, reply exactly: NOT FOUND
 """ + llm.DATA_RULE
 
 
-def route(question: str) -> Route:
+def router_messages(question: str) -> list[dict]:
     def show(f, spec):
         return f"{f} ({spec.meaning})" if spec.kind in ("money", "status") else f
     fields = "\n".join(f"- {t}: {', '.join(show(f, s) for f, s in specs.items())}" for t, specs in FIELDS.items())
-    r = llm.chat_json(
-        [{"role": "system", "content": ROUTER_PROMPT.format(fields=fields)}, {"role": "user", "content": question}],
-        Route,
-    )
+    return [{"role": "system", "content": ROUTER_PROMPT.format(fields=fields)}, {"role": "user", "content": question}]
+
+
+def route(question: str) -> Route:
+    r = llm.chat_json(router_messages(question), Route)
     if r.field in EXPIRY_FIELDS and r.doc_type and r.field not in FIELDS[r.doc_type]:
         r.doc_type, r.field = None, "expiry_date"  # an expiry asked of a type that has none: the question is about every type
     return repair(question, r) if r.route == "facts" else r
@@ -359,17 +360,27 @@ def rules(conn: sqlite3.Connection, question: str, today: date) -> Route | None:
     return r if field and valid(r) else None
 
 
-def understand(conn: sqlite3.Connection, question: str, today: date) -> tuple[Route, str]:
-    """Rules first; the model router only when they cannot fill the query. Names and times the model left out but
-    code found in the question are put back."""
+def by_rules(conn: sqlite3.Connection, question: str, today: date) -> Route | None:
+    """The query the rules read from the question, or None when only the model router can."""
     if r := rules(conn, question, today):
-        return r, "rules"
+        return r
     q = question.lower()
     found = names(conn, question)
     if found is not None and not (found.get("holder") or found.get("provider") or needs_calc(question)
                                   or any(re.search(p, q) for _, p in TYPE_WORDS) or any(re.search(p, q) for p, _ in FIELD_WORDS)):
-        return Route(route="search"), "rules"  # no type, name, field or sum in it: a question about what a page says
-    r = route(question)
+        return Route(route="search")  # no type, name, field or sum in it: a question about what a page says
+    return None
+
+
+def understand(conn: sqlite3.Connection, question: str, today: date) -> tuple[Route, str]:
+    """Rules first; the model router only when they cannot fill the query. Names and times the model left out but
+    code found in the question are put back. Without a model the question goes to search."""
+    if r := by_rules(conn, question, today):
+        return r, "rules"
+    try:
+        r = route(question)
+    except llm.Unavailable:
+        return Route(route="search"), "rules"
     if r.route == "facts" and (found := names(conn, question)):
         f = r.filters
         f.holder, f.provider = f.holder or found.get("holder"), f.provider or found.get("provider")
@@ -709,8 +720,12 @@ def passage(text: str, q: str, limit: int = PASSAGE_WORDS) -> str:
     return " ".join(units[lo : hi + 1])
 
 
-def _search_prompt(conn, question: str, k: int):
-    hits = search(conn, question, k=k)
+def _search_prompt(conn, question: str, k: int, s: dict | None = None):
+    s = s or ai_settings.current()
+    if ai_settings.remote(s):  # only types the user lets leave this laptop; fetch extra, as hidden ones drop out
+        hits = [h for h in search(conn, question, k=k * 4) if ai_settings.may_send(s, h.doc_type)][:k]
+    else:
+        hits = search(conn, question, k=k)
     texts = [passage(conn.execute("SELECT text FROM chunks WHERE id=?", (h.chunk_id,)).fetchone()["text"], question) for h in hits]
     passages = "\n\n".join(f"[{i}] ({h.name}, page {h.page}) {t}" for i, (h, t) in enumerate(zip(hits, texts), 1))
     return hits, [
@@ -755,11 +770,22 @@ def _search_answer(question: str, hits, text: str, given: str) -> Answer:
 UNGROUNDED = "(not in your documents)"
 
 
+def no_writer(question: str, hits, why: llm.Unavailable) -> Answer:
+    """No model could write the answer (AI is off, or the provider failed): say why, and where to look."""
+    pages = {h.file_id: h for h in hits}.values()
+    return Answer(question=question, answer=f"{why} A written answer needs AI. Documents that look related: {', '.join(h.name for h in pages)}.",
+                  route="none", sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in pages])
+
+
 def answer_from_search(conn, question: str, k: int = TOP) -> Answer:
     hits, messages = _search_prompt(conn, question, k)
     if not hits:
         return Answer(question=question, answer=NOT_FOUND, route="none")
-    return _search_answer(question, hits, llm.chat(messages), messages[-1]["content"])
+    try:
+        text = llm.chat(messages)
+    except llm.Unavailable as e:
+        return no_writer(question, hits, e)
+    return _search_answer(question, hits, text, messages[-1]["content"])
 
 
 def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = None):
@@ -775,10 +801,31 @@ def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = Non
         yield "answer", Answer(question=question, answer=NOT_FOUND, route="none", parser=how)
         return
     text, sent = "", 0
-    for delta in llm.chat_stream(messages):
-        text += delta
-        if "NOT FOUND".startswith(text.strip()):  # the reply may still turn out to be NOT FOUND: hold it back
-            continue
-        yield "token", text[sent:]
-        sent = len(text)
+    try:
+        for delta in llm.chat_stream(messages):
+            text += delta
+            if "NOT FOUND".startswith(text.strip()):  # the reply may still turn out to be NOT FOUND: hold it back
+                continue
+            yield "token", text[sent:]
+            sent = len(text)
+    except llm.Unavailable as e:  # the "answer" event replaces any text streamed so far
+        yield "answer", no_writer(question, hits, e).model_copy(update={"parser": how})
+        return
     yield "answer", _search_answer(question, hits, llm.clean(text), messages[-1]["content"]).model_copy(update={"parser": how})
+
+
+def outbound(conn: sqlite3.Connection, question: str, s: dict, today: date | None = None) -> list[dict]:
+    """The model calls ask() can make for this question, each as {"purpose", "messages"} before masking: the router's
+    when the rules cannot read the question, then the written answer's when it goes to search."""
+    today = today or date.today()
+    if re.search(UNSUPPORTED, question.lower()):
+        return []
+    r = by_rules(conn, question, today)
+    calls = [] if r else [{"purpose": "Understand the question (the rules could not)", "messages": router_messages(question)}]
+    if r and valid(r) or needs_calc(question):
+        return calls
+    hits, messages = _search_prompt(conn, question, TOP, s)
+    if hits:
+        calls.append({"purpose": "Write the answer from these passages" + ("" if r else ", if the model sends the question to search"),
+                      "messages": messages})
+    return calls

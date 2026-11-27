@@ -25,6 +25,14 @@ def no_chat_server(monkeypatch):
     monkeypatch.setattr(server, "ensure", lambda: None)
 
 
+@pytest.fixture(autouse=True)
+def own_database(tmp_path, monkeypatch):
+    """Model calls read the AI settings from the database: never from the developer's own, nor from SNIFF_AI."""
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path / "data")
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "data" / "test.db")
+    monkeypatch.delenv("SNIFF_AI", raising=False)
+
+
 @pytest.fixture
 def conn(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DATA_DIR", tmp_path / "data")

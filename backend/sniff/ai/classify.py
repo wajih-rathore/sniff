@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from .. import ai_settings
 from ..schemas import DocType
 from . import llm
 
@@ -24,5 +25,12 @@ class TypeOut(BaseModel):
     doc_type: DocType
 
 
-def classify(pages: list[tuple[int, str]]) -> str:
-    return llm.chat_json(llm.document_message(pages, PROMPT), TypeOut).doc_type
+def classify(pages: list[tuple[int, str]]) -> str | None:
+    """The type the chat model reads, or None (the document stays unclassified): when AI is off, and for a provider off
+    this laptop, which never gets a whole document."""
+    if ai_settings.remote(ai_settings.current()):
+        return None
+    try:
+        return llm.chat_json(llm.document_message(pages, PROMPT), TypeOut).doc_type
+    except llm.Unavailable:
+        return None

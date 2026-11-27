@@ -18,6 +18,7 @@ dependencies = [
     "google-auth-oauthlib",
     "watchdog>=7.1.1",
     "keyring>=25.7.0",
+    "anthropic>=2.14.0",
 ]
 
 [dependency-groups]
