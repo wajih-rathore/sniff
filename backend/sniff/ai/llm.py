@@ -90,24 +90,39 @@ class Claude:
             yield from s.text_stream
 
 
+class Unusable:
+    """AI is off, or the provider is not set up yet: every call raises Unavailable with the reason, and nothing is sent."""
+
+    def __init__(self, reason: str, remote: bool):
+        self.reason, self.remote = reason, remote
+
+    def chat(self, *a, **kw) -> str:
+        raise Unavailable(self.reason)
+
+    def stream(self, *a, **kw):
+        raise Unavailable(self.reason)
+
+
 @lru_cache(4)
 def _build(provider: str, base_url: str, model: str, key: str | None):
     if provider == "openai":
         if not (base_url and model):  # the app saves each field as it is typed, so one can still be missing
-            raise Unavailable("Set the base URL and the model first.")
+            return Unusable("Set the base URL and the model first.", remote=True)
         return OpenAICompatible(base_url, model, key)
     if not key:
-        raise Unavailable("No API key is saved.")
+        return Unusable("No API key is saved.", remote=True)
     return Claude(model, key)
 
 
-def provider():
-    """The provider the saved settings pick, for this call. Raises Unavailable while AI is off."""
-    s = ai_settings.current()
+def provider(s: dict | None = None):
+    """The provider settings `s` pick (read now if not given). A call chain reads the settings once, decides with them
+    what may be sent, and passes this provider to every send and retry (the p= keyword), so a change in Settings cannot
+    slip in between."""
+    s = s or ai_settings.current()
     if s["provider"] == "local":
         return Local()
     if not ai_settings.remote(s):
-        raise Unavailable("AI is off.")
+        return Unusable("AI is off.", remote=False)
     return _build(s["provider"], s["base_url"], s["model"] or ai_settings.DEFAULT_MODEL.get(s["provider"], ""), ai_settings.key(s["provider"]))
 
 
@@ -136,8 +151,8 @@ def plain(e: Exception) -> str:
     return "The provider's reply could not be read."
 
 
-def chat(messages: list[dict], **kw) -> str:
-    p = provider()
+def chat(messages: list[dict], p=None, **kw) -> str:
+    p = p or provider()
     if not p.remote:
         return clean(p.chat(messages, **kw))
     try:
@@ -146,9 +161,9 @@ def chat(messages: list[dict], **kw) -> str:
         raise Unavailable(plain(e)) from None  # from None: a traceback does not show the original error, which can quote the key
 
 
-def chat_stream(messages: list[dict], **kw):
+def chat_stream(messages: list[dict], p=None, **kw):
     """The same reply as chat(), as pieces of text while the model writes them."""
-    p = provider()
+    p = p or provider()
     if not p.remote:
         yield from p.stream(messages, **kw)
         return
@@ -197,12 +212,14 @@ def document_message(pages: list[tuple[int, str]], task: str) -> list[dict]:
 T = TypeVar("T", bound=BaseModel)
 
 
-def chat_json(messages: list[dict], model: type[T], retries: int = 2, **kw) -> T:
+def chat_json(messages: list[dict], model: type[T], retries: int = 2, p=None, **kw) -> T:
     """Ask for JSON matching `model` (the server constrains output to the schema), validate, retry with the error.
-    Extra keywords (such as max_tokens) go to every call."""
+    Every try goes to the same provider `p` (resolved once if not given). Extra keywords (such as max_tokens) go to
+    every call."""
+    p = p or provider()
     fmt = {"type": "json_schema", "json_schema": {"name": model.__name__, "schema": model.model_json_schema()}}
     for attempt in range(retries + 1):
-        text = chat(messages, response_format=fmt, **kw)
+        text = chat(messages, p=p, response_format=fmt, **kw)
         try:
             return model.model_validate_json(text)
         except ValidationError as e:
