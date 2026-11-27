@@ -17,6 +17,7 @@ dependencies = [
     "google-api-python-client",
     "google-auth-oauthlib",
     "watchdog>=7.1.1",
+    "keyring>=25.7.0",
 ]
 
 [dependency-groups]

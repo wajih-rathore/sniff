@@ -1,11 +1,16 @@
 """Tests run without the LLM server and without downloading models: AI calls are replaced by small fakes."""
 import hashlib
+import os
 
 import numpy as np
 import pytest
 
 from sniff import config, db
 from sniff.ai import classify, embed, extract, server, typer
+
+# Tests never read or write the real credential store (Credential Manager, Keychain, Secret Service): keyring's
+# "fail" backend behaves like a system without one.
+os.environ.setdefault("PYTHON_KEYRING_BACKEND", "keyring.backends.fail.Keyring")
 
 
 def fake_vector(text: str) -> np.ndarray:

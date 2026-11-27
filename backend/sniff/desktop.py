@@ -6,6 +6,8 @@ Imports are absolute so PyInstaller can run this file as the main script.
 """
 import hashlib
 import http.client
+import os
+import signal
 import socket
 import sys
 import threading
@@ -114,5 +116,18 @@ def check() -> None:
     print(f"OCR read {text!r}; sqlite-vec {vec}")
 
 
+def end_with_parent(poll: float = 2.0) -> None:
+    """macOS and Linux: the desktop app starts this back end as the leader of its own process group, and the chat
+    server started here stays in that group. The app stops the group when it quits; if the app dies without doing so
+    (a crash, SIGKILL), we are handed to another parent, and this ends the group. Windows uses a job object instead."""
+    parent = os.getppid()
+    while os.getppid() == parent:
+        time.sleep(poll)
+    os.killpg(os.getpgrp(), signal.SIGTERM)
+
+
 if __name__ == "__main__":
+    # only when we lead our own process group (the app starts us so): the signal then reaches no one else's processes
+    if os.name == "posix" and config.HOME and os.getpgrp() == os.getpid():
+        threading.Thread(target=end_with_parent, daemon=True, name="end-with-parent").start()
     check() if "--check" in sys.argv else uvicorn.run(app, host="127.0.0.1", port=PORT)

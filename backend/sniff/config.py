@@ -1,10 +1,26 @@
 import json
 import os
+import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]  # repo root
-# The desktop app sets SNIFF_HOME (%LOCALAPPDATA%\Sniff): data, models and secrets then live under it.
-HOME = os.environ.get("SNIFF_HOME")
+
+
+def app_home(platform: str = sys.platform, env: Mapping[str, str] = os.environ) -> Path:
+    """Where the desktop app keeps data, models and logs on each system. The same rule as home() in
+    desktop/src-tauri/src/platform.rs. Relative XDG paths are ignored, as the XDG spec asks."""
+    if platform == "win32":
+        return Path(env["LOCALAPPDATA"], "Sniff")
+    if platform == "darwin":
+        return Path(env["HOME"], "Library", "Application Support", "Sniff")
+    xdg = env.get("XDG_DATA_HOME", "")
+    return Path(xdg if xdg.startswith("/") else Path(env["HOME"], ".local", "share"), "sniff")
+
+
+# The desktop app sets SNIFF_HOME (app_home()): data, models and secrets then live under it. A frozen back end
+# started on its own uses the same folder; a source checkout keeps its data in the repo.
+HOME = os.environ.get("SNIFF_HOME") or (str(app_home()) if getattr(sys, "frozen", False) else None)
 DATA_DIR = Path(os.environ.get("SNIFF_DATA", Path(HOME, "data") if HOME else ROOT / ".sniff"))
 DB_PATH = Path(os.environ.get("SNIFF_DB", DATA_DIR / "sniff.db"))
 MODELS_DIR = Path(os.environ.get("SNIFF_MODELS", Path(HOME, "models") if HOME else ROOT / "models"))

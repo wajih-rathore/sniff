@@ -4,11 +4,13 @@ while it is needed. Most documents never need it (type and fields come from rule
 
 Sniff manages only a server it started itself, on a local URL, with llama-server and the model file on disk. If
 something else already answers on the chat URL (a server started by hand, the team server), it is used as it is and
-never stopped. In the desktop app the back end runs inside the app's job object, and a process it starts joins that
-job, so the server also ends if Sniff crashes; on a normal exit atexit stops it.
+never stopped. In the desktop app the back end runs inside the app's job object (Windows) or leads its own process
+group (macOS, Linux), and the server it starts joins that job or group, so the server also ends when Sniff quits or
+crashes (see desktop.end_with_parent); on a normal exit atexit stops it.
 """
 import atexit
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -34,13 +36,17 @@ _busy = 0
 STATS = {"starts": 0, "last_start_s": None}
 
 
-def exe() -> Path:
-    """llama-server.exe: next to the frozen back end in the desktop app (resources/llama), else models/llama."""
+def exe(platform: str = sys.platform, frozen: bool = getattr(sys, "frozen", False)) -> Path:
+    """llama-server (llama-server.exe on Windows): SNIFF_LLAMA_SERVER if set; in the desktop app, next to the frozen
+    back end (resources/llama); in a source checkout, models/llama, else the one on the PATH (Homebrew's llama.cpp on
+    macOS, or a distro package)."""
+    name = "llama-server.exe" if platform == "win32" else "llama-server"
     if env := os.environ.get("SNIFF_LLAMA_SERVER"):
         return Path(env)
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).resolve().parent.parent / "llama" / "llama-server.exe"
-    return config.MODELS_DIR / "llama" / "llama-server.exe"
+    if frozen:
+        return Path(sys.executable).resolve().parent.parent / "llama" / name
+    local = config.MODELS_DIR / "llama" / name
+    return local if local.exists() else Path(shutil.which(name) or local)
 
 
 def _port() -> tuple[str, int]:

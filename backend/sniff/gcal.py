@@ -1,11 +1,40 @@
 """Google Calendar integration. Events are only created from POST /reminders, which is the user's approval click."""
+import json
 from datetime import date, timedelta
 
 from . import config
 
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 CLIENT_FILE = config.SECRETS_DIR / "google_client.json"
-TOKEN_FILE = config.DATA_DIR / "google_token.json"
+TOKEN_FILE = config.DATA_DIR / "google_token.json"  # only where no credential store works (and where older versions kept it)
+KEYRING = ("Sniff", "google-calendar-token")  # service and user name in the system's credential store
+
+
+def load_token() -> str | None:
+    """The saved Google sign-in token, from the system's credential store (Windows Credential Manager, the macOS
+    Keychain, or the Secret Service on Linux), else from TOKEN_FILE."""
+    try:
+        import keyring
+
+        if text := keyring.get_password(*KEYRING):
+            return text
+    except Exception:  # no store, a locked one, or a broken backend: the file is the fallback
+        pass
+    return TOKEN_FILE.read_text() if TOKEN_FILE.exists() else None
+
+
+def save_token(text: str) -> None:
+    """Into the credential store, and the old file goes. Without a working store, into TOKEN_FILE."""
+    try:
+        import keyring
+
+        keyring.set_password(*KEYRING, text)
+        TOKEN_FILE.unlink(missing_ok=True)
+        return
+    except Exception:
+        pass
+    TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+    TOKEN_FILE.write_text(text)
 
 
 def _service():
@@ -14,7 +43,8 @@ def _service():
     from google_auth_oauthlib.flow import InstalledAppFlow
     from googleapiclient.discovery import build
 
-    creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES) if TOKEN_FILE.exists() else None
+    text = load_token()
+    creds = Credentials.from_authorized_user_info(json.loads(text), SCOPES) if text else None
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -22,8 +52,7 @@ def _service():
             if not CLIENT_FILE.exists():
                 raise RuntimeError(f"Google Calendar is not set up. Put the OAuth client JSON at {CLIENT_FILE}")
             creds = InstalledAppFlow.from_client_secrets_file(str(CLIENT_FILE), SCOPES).run_local_server(port=0)
-        TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
-        TOKEN_FILE.write_text(creds.to_json())
+        save_token(creds.to_json())
     return build("calendar", "v3", credentials=creds, cache_discovery=False)
 
 
@@ -31,7 +60,7 @@ def connected() -> bool:
     """True if a saved Google token exists and loads (an expired one with a refresh token still counts). Never returns the token."""
     try:
         from google.oauth2.credentials import Credentials
-        creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+        creds = Credentials.from_authorized_user_info(json.loads(load_token() or "null"), SCOPES)
         return bool(creds.valid or creds.refresh_token)
     except Exception:
         return False
