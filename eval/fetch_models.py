@@ -5,7 +5,8 @@ Ollama registry (plain GGUF blobs, addressed by their sha256). EmbeddingGemma co
 from ggml-org on Hugging Face: the Ollama build of it fails to load in llama.cpp
 ("wrong number of tensors; expected 316, got 314").
 
-    python eval/fetch_models.py qwen3-1.7b all-minilm         # what the app needs (1.4 GB)
+    python eval/fetch_models.py all-minilm                    # what the app needs (46 MB)
+    python eval/fetch_models.py qwen3-1.7b                    # optional: AI on this laptop (1.4 GB)
     python eval/fetch_models.py gemma3-1b embeddinggemma      # small ones
     python eval/fetch_models.py qwen3-8b                       # ~5.2 GB
     python eval/fetch_models.py --status                       # progress of every model
