@@ -1,0 +1,48 @@
+{"q": "What did I spend at Daily Needs Mart altogether?", "op": "total", "answer_type": "number", "answer": "12763"}
+{"q": "How much have the FastLink internet bills cost me in total?", "op": "total", "answer_type": "number", "answer": "7327"}
+{"q": "How much did we pay for fuel at CityFuel in 2025?", "op": "total", "answer_type": "number", "answer": "20408"}
+{"q": "Sum of the premiums on Bilal's insurance policies", "op": "total", "answer_type": "number", "answer": "105000"}
+{"q": "How much money went out of the Orchard Bank account from January to March 2025?", "op": "total", "answer_type": "number", "answer": "126728"}
+{"q": "What did the Metro Gas bills come to in 2025, all together?", "op": "total", "answer_type": "number", "answer": "12088.61", "note": "planted photo of the November bill with the month misread as August must be skipped"}
+{"q": "What did the Urban Threads receipts add up to?", "op": "total", "answer_type": "number", "answer": "33854"}
+{"q": "Total paid into the Orchard Bank account in 2025", "op": "total", "answer_type": "number", "answer": "643429.3"}
+{"q": "How many receipts do I have from 2025?", "op": "count", "answer_type": "number", "answer": "16"}
+{"q": "How many certificates does Bilal have?", "op": "count", "answer_type": "number", "answer": "3"}
+{"q": "How many ID cards belong to Omar Farooq?", "op": "count", "answer_type": "number", "answer": "3"}
+{"q": "How many warranty cards do I have?", "op": "count", "answer_type": "number", "answer": "4"}
+{"q": "How many bank statements are there for 2025?", "op": "count", "answer_type": "number", "answer": "4"}
+{"q": "What's the amount on my newest internet bill?", "op": "latest", "answer_type": "number", "answer": "3558"}
+{"q": "What is Bilal's current CGPA?", "op": "latest", "answer_type": "number", "answer": "2.72"}
+{"q": "What is my most recent electricity bill amount?", "op": "latest", "answer_type": "number", "answer": "14473"}
+{"q": "What is the latest closing balance of the Orchard Bank account?", "op": "latest", "answer_type": "number", "answer": "504445.3"}
+{"q": "How much rent does Bilal pay now?", "op": "latest", "answer_type": "number", "answer": "77000"}
+{"q": "What is Zainab's latest CGPA?", "op": "latest", "answer_type": "number", "answer": "3.0"}
+{"q": "When does Bilal's passport expire?", "op": "expires_when", "answer_type": "date", "answer": "2029-03-04"}
+{"q": "When does Zainab's student card expire?", "op": "expires_when", "answer_type": "date", "answer": "2027-06-30"}
+{"q": "When does the Sunwave refrigerator warranty run out?", "op": "expires_when", "answer_type": "date", "answer": "2035-04-22"}
+{"q": "When does Bilal's health insurance end?", "op": "expires_when", "answer_type": "date", "answer": "2026-01-31"}
+{"q": "When does Omar's life insurance policy expire?", "op": "expires_when", "answer_type": "date", "answer": "2030-02-28"}
+{"q": "When does Bilal's car insurance end?", "op": "conflict", "answer_type": "alternatives", "answer": "2026-05-09; 2026-06-09", "note": "planted second copy of the motor policy with another end date"}
+{"q": "Add up Zainab's fee vouchers.", "op": "conflict", "answer_type": "alternatives", "answer": "268800; 274400", "note": "planted re-issued Spring 2025 voucher with another amount"}
+{"q": "When is my next bill due?", "op": "next_due", "answer_type": "date", "answer": "2025-12-25"}
+{"q": "Which payment is due next?", "op": "next_due", "answer_type": "date", "answer": "2025-12-25"}
+{"q": "Pay-by date for the November 2025 Metro Gas bill?", "op": "next_due", "answer_type": "date", "answer": "2025-12-25"}
+{"q": "List my receipts from HomeEase Appliances.", "op": "list", "answer_type": "list", "answer": "35919; 23751"}
+{"q": "Which certificates does Zainab have?", "op": "list", "answer_type": "list", "answer": "Bachelor of Fine Arts; Graphic Design Basics"}
+{"q": "Show the Green Leaf Pharmacy receipts from 2025.", "op": "list", "answer_type": "list", "answer": "1895; 1005"}
+{"q": "What jobs has Bilal been offered?", "op": "list", "answer_type": "list", "answer": "Finance Manager; Store Manager"}
+{"q": "What are the serial numbers of my warranty cards?", "op": "list", "answer_type": "list", "answer": "VX49C6576780; SW68D1295642; KV33H3107771; LM41C2488961"}
+{"q": "What will expire within the next 10 weeks?", "op": "expires_window", "answer_type": "list", "answer": "2025-12-31; 2026-01-31; 2026-02-03"}
+{"q": "What expires in January 2026?", "op": "expires_window", "answer_type": "list", "answer": "2026-01-31"}
+{"q": "Which documents expire in 2027?", "op": "expires_window", "answer_type": "list", "answer": "2027-04-11; 2027-06-30; 2027-08-30"}
+{"q": "Anything running out in the next 3 months?", "op": "expires_window", "answer_type": "list", "answer": "2025-12-31; 2026-01-31; 2026-02-03"}
+{"q": "What expires between June and August 2026?", "op": "expires_window", "answer_type": "list", "answer": "2026-06-14; 2026-06-30; 2026-07-30; 2026-08-09"}
+{"q": "Which job is Zainab applying for in her letter to Cedar Books?", "op": "search", "answer_type": "text", "answer": "Library Assistant"}
+{"q": "How many eggs go into the brownies?", "op": "search", "answer_type": "number", "answer": "3"}
+{"q": "What is the first item on the weekly team sync agenda?", "op": "search", "answer_type": "text", "answer": "quick round"}
+{"q": "What is the trace of a matrix equal to?", "op": "search", "answer_type": "text", "answer": "sum of the eigenvalues"}
+{"q": "What tax did Spice Garden Restaurant charge?", "op": "lookup", "answer_type": "number", "answer": "745.76"}
+{"q": "What is the average of my Daily Needs Mart receipts?", "op": "no_calc", "answer_type": "none", "answer": null, "note": "Sniff has no average: it must say so, not let the model divide"}
+{"q": "How much did the electricity bill go up from June to July 2025?", "op": "no_calc", "answer_type": "none", "answer": null, "note": "a difference: no template, so it must say so"}
+{"q": "What is Sara's passport number?", "op": "unanswerable", "answer_type": "none", "answer": null}
+{"q": "How much did I spend on water bills in 2025?", "op": "unanswerable", "answer_type": "none", "answer": null}
