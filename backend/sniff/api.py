@@ -10,6 +10,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
@@ -36,7 +37,13 @@ async def lifespan(_):
 
 
 app = FastAPI(title="Sniff", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Only Sniff's own window may read the API: the Tauri app (tauri.localhost on Windows, tauri://localhost elsewhere) and
+# a launcher served from this machine. Any other website gets no CORS headers, so it cannot read documents.
+app.add_middleware(CORSMiddleware, allow_origins=["http://tauri.localhost", "https://tauri.localhost", "tauri://localhost"],
+                   allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?", allow_methods=["*"], allow_headers=["*"])
+# A DNS-rebinding page reaches 127.0.0.1 under its own host name; refuse every host but this machine's.
+# "testserver" is the host FastAPI's TestClient uses.
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
 
 EVAL_DIR = config.ROOT / "eval" / "results"
 REMINDER_TITLES = {"expiry_date": "expires", "due_date": "payment due", "warranty_until": "warranty ends", "end_date": "ends"}
