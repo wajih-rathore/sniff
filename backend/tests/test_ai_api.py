@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from sniff import api, ask, config
-from sniff.ai import llm
+from sniff.ai import llm, typer
 from sniff.ingest import readers
 from test_ai_providers import CNIC, KEY, BILL, REAL_EXTRACT, _openai_reply, add_chunks, hits, sent, store, use  # noqa: F401 (fixtures)
 
@@ -38,6 +38,24 @@ def test_preview_of_a_question(conn, sent, monkeypatch):
     assert "Gas bill" in passages and "Passport" not in passages and CNIC not in passages
     assert sent == []  # a preview calls nobody
     assert TestClient(api.app).get("/ai/preview").status_code == 422
+
+
+def test_preview_of_a_file_not_sorted_yet_shows_what_sorting_leads_to(conn, sent, tmp_path, monkeypatch):
+    path = tmp_path / "bill.txt"
+    path.write_text(BILL, encoding="utf-8")
+    conn.execute("INSERT INTO files(id, path, status) VALUES (1, ?, 'indexed')", (str(path),))  # queued: no type yet
+    conn.commit()
+    client = TestClient(api.app)
+    use(conn, "openai")
+
+    monkeypatch.setattr(typer, "classify", lambda conn, file_id, pages: "utility_bill")  # the classifier here is sure
+    preview = client.get("/ai/preview", params={"file_id": 1}).json()
+    REAL_EXTRACT("utility_bill", *readers.read_layout(path))  # what the worker sends once the classifier sorts it
+    assert preview["calls"][0]["messages"] == sent[0][2]["messages"] and "utility bill" in preview["note"]
+
+    monkeypatch.setattr(typer, "classify", lambda conn, file_id, pages: None)  # it is not, and a cloud model never sorts
+    preview = client.get("/ai/preview", params={"file_id": 1}).json()
+    assert preview["calls"] == [] and "nothing is sent" in preview["note"]
 
 
 # ---------- the key ----------

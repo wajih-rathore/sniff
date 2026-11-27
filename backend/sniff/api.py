@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from . import ai_settings, config, db, gcal, ics, mcp_settings, records, titles, verify, watch
 from . import ask as ask_mod
-from .ai import classify, extract, llm, server
+from .ai import classify, extract, llm, server, typer
 from .ask import ask, ask_stream
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
@@ -625,7 +625,7 @@ def ai_preview(file_id: int | None = None, question: str | None = None, conn=Dep
     While AI is off nothing is sent, so it shows what a provider off this laptop would get."""
     s = ai_settings.load(conn)
     view = s | {"provider": "anthropic"} if s["provider"] == "off" else s
-    remote = ai_settings.remote(view)
+    remote, note = ai_settings.remote(view), None
     if question:
         calls = ask_mod.outbound(conn, question, view)
     elif file_id is not None:
@@ -633,15 +633,21 @@ def ai_preview(file_id: int | None = None, question: str | None = None, conn=Dep
         if not Path(r["path"]).exists():
             raise HTTPException(404, "File not found on disk")
         pages, boxes = readers.read_layout(Path(r["path"]))
-        if r["doc_type"] in FIELDS:
-            calls = extract.outbound(r["doc_type"], pages, boxes, view)
-        elif r["doc_type"] is None and not remote:  # this laptop's model reads an unclassified document whole to sort it
+        doc_type = r["doc_type"]
+        if doc_type is None and (doc_type := typer.classify(conn, r["id"], pages)):  # not sorted yet: as the worker will
+            note = f"Not sorted yet. The classifier on this laptop reads it as {doc_type.replace('_', ' ')}."
+        if doc_type in FIELDS:
+            calls = extract.outbound(doc_type, pages, boxes, view)
+        elif doc_type is None and not remote:  # this laptop's model reads an unclassified document whole to sort it
             calls = [{"purpose": "Sort the document into a type", "messages": llm.document_message(pages, classify.PROMPT)}]
+            note = "This laptop's model sorts it first. What it reads next depends on the type it picks."
         else:
             calls = []
+            if doc_type is None:
+                note = "Not sorted into a type, so nothing is sent: a provider off this laptop never sorts documents."
     else:
         raise HTTPException(422, "Give a file_id or a question.")
-    return {"provider": s["provider"], "leaves_laptop": remote,
+    return {"provider": s["provider"], "leaves_laptop": remote, "note": note,
             "calls": [{**c, "messages": llm.outgoing(c["messages"], remote)} for c in calls]}
 
 
