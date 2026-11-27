@@ -230,8 +230,12 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p === '/ai/settings') {
     if (method === 'PUT') {
       const { key, ...rest } = body as AiSave
-      if (rest.base_url && !/^https?:\/\//.test(rest.base_url)) throw new Error('The base URL must start with http:// or https://.')
+      const u = URL.canParse(rest.base_url) ? new URL(rest.base_url) : null, origin = (s: string) => (s ? new URL(s).origin : '')
+      if (rest.base_url && !/^https?:$/.test(u?.protocol ?? '')) throw new Error('The base URL must start with https://.')
+      if (u?.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))
+        throw new Error('Use https://. Plain http:// is only for a server on this laptop (localhost).')
       if (key !== undefined) keys[rest.provider] = !!key.trim()
+      if (ai.base_url && origin(ai.base_url) !== origin(rest.base_url) && !(key !== undefined && rest.provider === 'openai')) keys.openai = false // the key was for the old server
       ai = { ...ai, ...rest }
     }
     return delay({ ...ai, key_saved: !!keys[ai.provider], default_model: ai.provider === 'anthropic' ? 'claude-haiku-5-5' : ai.provider === 'local' ? 'qwen3-1.7b' : '' }, 80)

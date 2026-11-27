@@ -391,7 +391,11 @@ export default function Launcher() {
   const remote = ai?.provider === 'anthropic' || ai?.provider === 'openai'
   const saveAi = (patch: Partial<AiSave>, done?: string) => !ai ? Promise.resolve(false)
     : api.saveAi({ provider: ai.provider, base_url: ai.base_url, model: ai.model, allow: ai.allow, ...patch })
-      .then((s) => { setAi(s); setAiTest(null); if (done) say(done); return true }, (e) => { fail('save')(e); return false })
+      .then((s) => {
+        setAi(s); setAiTest(null)
+        if (done) say(ai.key_saved && !s.key_saved && !('key' in patch) ? `${done}. The key was for the old server, so it was removed` : done)
+        return true
+      }, (e) => { fail('save')(e); return false })
   const startEdit = (f: AiField) => { setEditing(f); setQ(f === 'key' || !ai ? '' : ai[f]); setErr('') }
   const saveEdit = () => {
     const f = editing, v = q.trim()
