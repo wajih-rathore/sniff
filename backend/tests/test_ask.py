@@ -176,6 +176,7 @@ def no_model(*a, **kw):
 
 @pytest.mark.parametrize("question, answer", [
     ("How much did we spend on electricity in 2026?", "5,500.50 in total, from 2 documents."),
+    ("How much were my electricity bills in 2026?", "5,500.50 in total, from 2 documents."),
     ("How many ID cards do I have?", "3 documents."),
     ("What is the newest electricity bill amount?", "2,500.50 (bill_2026-02.pdf), from the newest document (2026-02)."),
     ("When does Sara's ID card expire?", "2026-12-05 (id_sara.jpg)."),
