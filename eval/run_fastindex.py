@@ -239,7 +239,7 @@ def run(split: str, mode: str, name: str, limit: int | None = None) -> None:
     if mode == "today":
         typer.classify = lambda conn, file_id, pages: None
         real = extract.extract
-        extract.extract = lambda doc_type, pages, boxes=None: real(doc_type, pages, boxes, rules_first=False)
+        extract.extract = lambda doc_type, pages, boxes=None, fill_gaps=True: real(doc_type, pages, boxes, rules_first=False)
     ds = docs(split, conn)[:limit] if limit else docs(split, conn)
     per_doc, rows, type_rows, fails = [], [], [], []
     for i, d in enumerate(ds, 1):

@@ -1,6 +1,7 @@
 """Document type without the chat model: a logistic regression on the MiniLM vectors phase 1 already stored, checked
 against keyword rules. It answers only when the two agree and the classifier is sure; otherwise it abstains (None)
-and the caller asks the model, as before.
+and the caller asks the model, as before. When no model can sort the document, guess() gives the classifier's top type
+above a floor, and the caller sends that document's facts to review.
 
 The weights live in type_weights.py, written by `eval/run_fastindex.py train-types` from the synthetic training split
 (never dev or test). Training is plain full-batch gradient descent from zero weights, so the same data gives the same
@@ -27,6 +28,9 @@ CUES = {
     "fee_voucher": r"fee voucher|challan|tuition fee|fee for|payable after due date|bank copy|student copy",
 }
 _CUES = {t: re.compile(p, re.I) for t, p in CUES.items()}
+# guess(): on dev the top guess was right for all 6 abstained documents at 0.30 to 0.50 sure, and wrong once at 0.25;
+# 0.50 stays clear of that zone (eval/run_fastindex.py guess, docs/EVAL.md)
+GUESS_FLOOR = 0.5
 
 try:
     from .type_weights import BIAS, CLASSES, THRESHOLD, WEIGHTS
@@ -76,11 +80,27 @@ def decide(probs: np.ndarray, classes: list[str], text: str, threshold: float) -
     return t if rule == t else None
 
 
-def classify(conn, file_id: int, pages: list[tuple[int, str]]) -> str | None:
-    """The document's type, or None when the caller should ask the model."""
+def _probs(conn, file_id: int) -> np.ndarray | None:
     if _W is None or (vec := doc_vector(conn, file_id)) is None or vec.shape[0] != _W.shape[1]:
         return None
-    return decide(probabilities(vec), CLASSES, "\n".join(t for _, t in pages), THRESHOLD)
+    return probabilities(vec)
+
+
+def classify(conn, file_id: int, pages: list[tuple[int, str]]) -> str | None:
+    """The document's type, or None when the caller should ask the model."""
+    probs = _probs(conn, file_id)
+    return None if probs is None else decide(probs, CLASSES, "\n".join(t for _, t in pages), THRESHOLD)
+
+
+def guess(conn, file_id: int) -> str | None:
+    """For a document classify() abstained on and no model can sort (AI off, a provider off this laptop, a failed
+    call): the classifier's top type if it is at least GUESS_FLOOR sure, whatever the keyword rules say. None below the
+    floor, and for "other" (the document stays unclassified either way)."""
+    probs = _probs(conn, file_id)
+    if probs is None:
+        return None
+    top = int(np.argmax(probs))
+    return CLASSES[top] if probs[top] >= GUESS_FLOOR and CLASSES[top] != "other" else None
 
 
 def train(x: np.ndarray, y: np.ndarray, n_classes: int, l2: float = 1e-3, lr: float = 2.0, steps: int = 1500):

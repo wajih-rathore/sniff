@@ -43,8 +43,9 @@ def conn(tmp_path, monkeypatch):
     monkeypatch.setattr(embed, "embed_query", fake_vector)
     monkeypatch.setattr(embed, "tokens", lambda text: len(text.split()) + 2)  # no embedding server in tests
     monkeypatch.setattr(typer, "classify", lambda conn, file_id, pages: None)  # fake vectors: the fake model decides the type
+    monkeypatch.setattr(typer, "guess", lambda conn, file_id: None)
     monkeypatch.setattr(classify, "classify", lambda pages: "utility_bill" if any("bill" in t.lower() for _, t in pages) else "other")
-    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None: [
+    monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None, fill_gaps=True: [
         {"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "source_text": None}
     ])
     c = db.connect()

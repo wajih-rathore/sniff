@@ -53,14 +53,16 @@ def outbound(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None, s:
     return [{"purpose": f"Fill the fields the rules missed: {', '.join(missing)}", "messages": messages(doc_type, missing, lines)}] if lines else []
 
 
-def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = None, rules_first: bool = True) -> list[dict]:
+def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = None, rules_first: bool = True,
+            fill_gaps: bool = True) -> list[dict]:
     """The document's facts. rules_first=False is the old way, kept for the comparison: the model reads every field
-    from the whole document."""
+    from the whole document. fill_gaps=False: the rules only, no model call (a guessed type: what may be sent depends
+    on a type that may be wrong)."""
     spec = FIELDS[doc_type]
     boxes = boxes or {}
     if rules_first:
         printed = rules.extract(doc_type, pages, boxes)
-        missing = [f for f, s in spec.items() if s.required and f not in printed]
+        missing = [f for f, s in spec.items() if s.required and f not in printed] if fill_gaps else []
         s = ai_settings.current()  # one read: what may be sent and where it goes come from the same settings
         if missing and (lines := lines_to_send(doc_type, pages, boxes, missing, s)):
             try:
