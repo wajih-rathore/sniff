@@ -3,7 +3,12 @@ on: [push, pull_request]
 
 jobs:
   backend:
-    runs-on: ubuntu-latest
+    # the team uses all three systems, so the tests run on each
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: backend
