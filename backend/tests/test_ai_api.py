@@ -29,6 +29,22 @@ def test_preview_of_a_document_is_what_extraction_sends(conn, sent, tmp_path):
     assert preview["calls"][0]["messages"] == sent[0][2]["messages"] == off["calls"][0]["messages"]
 
 
+def test_preview_of_a_guessed_type_sends_nothing(conn, sent, tmp_path):
+    path = tmp_path / "bill.txt"
+    path.write_text(BILL, encoding="utf-8")
+    conn.execute("INSERT INTO files(id, path, doc_type, type_guessed, status) VALUES (1, ?, 'utility_bill', 1, 'indexed')", (str(path),))
+    conn.commit()
+    client = TestClient(api.app)
+    for provider in ("off", "openai"):
+        if provider != "off":
+            use(conn, provider)
+        preview = client.get("/ai/preview", params={"file_id": 1}).json()
+        assert preview["calls"] == [] and "only a guess" in preview["note"]
+    conn.execute("UPDATE files SET type_guessed=0")  # confirmed in review: its type's rules apply again
+    conn.commit()
+    assert client.get("/ai/preview", params={"file_id": 1}).json()["calls"]
+
+
 def test_preview_of_a_question(conn, sent, monkeypatch):
     use(conn, "openai")
     add_chunks(conn, f"Passport {CNIC}", f"Gas bill, consumer {CNIC}")

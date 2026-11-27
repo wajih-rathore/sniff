@@ -635,6 +635,8 @@ def ai_preview(file_id: int | None = None, question: str | None = None, conn=Dep
     remote, note = ai_settings.remote(view), None
     if question:
         calls = ask_mod.outbound(conn, question, view)
+    elif file_id is not None and _canonical(conn, file_id)["type_guessed"]:  # read_facts filled it from the rules only
+        calls, note = [], "Its type is only a guess, so nothing from it is sent. It counts as unclassified until you approve or correct one of its facts in review."
     elif file_id is not None:
         r = _canonical(conn, file_id)
         if not Path(r["path"]).exists():
