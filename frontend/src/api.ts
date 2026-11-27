@@ -95,6 +95,21 @@ export type McpSettings = {
   env_override: boolean // SNIFF_MCP_ALLOW is set, so the app's switches do nothing
   fields: Record<string, string[]> // every type and its fields
 }
+// GET/PUT /ai/settings. AI is off until a provider is picked; the key is write-only and never comes back.
+export type AiProvider = 'off' | 'anthropic' | 'openai' | 'local'
+export type AiSettings = {
+  provider: AiProvider
+  base_url: string // OpenAI-compatible only
+  model: string // empty: default_model
+  allow: string[] // hidden types the user lets go to a provider off this laptop
+  key_saved: boolean // a key for this provider is in the system's password store
+  hidden: string[] // types never sent unless allowed: the ones agent access hides by default
+  local_available: boolean // this laptop's model file is downloaded
+  default_model: string
+}
+export type AiSave = Pick<AiSettings, 'provider' | 'base_url' | 'model' | 'allow'> & { key?: string } // key: "" removes it
+// GET /ai/preview: exactly what each model call would send, masked as sent. While AI is off, what a cloud provider would get.
+export type AiPreview = { provider: AiProvider; leaves_laptop: boolean; calls: { purpose: string; messages: { role: string; content: string }[] }[] }
 export type McpLogEntry = { time: string; tool: string; args: Record<string, unknown>; ids: number[]; refused?: boolean }
 // Exactly what Google Calendar (or the .ics file) would get, and whether a person has looked at the date.
 export type ReminderPreview = { fact_id: number; title: string; date: string; description: string; status: FactStatus; reviewed: boolean }
@@ -175,4 +190,8 @@ export const api = {
   mcpSettings: () => call<McpSettings>('GET', '/mcp/settings'),
   saveMcp: (enabled: boolean, allow: McpSettings['allow']) => call<McpSettings>('PUT', '/mcp/settings', { enabled, allow }),
   mcpLog: () => call<McpLogEntry[]>('GET', '/mcp/log?limit=50'),
+  aiSettings: () => call<AiSettings>('GET', '/ai/settings'),
+  saveAi: (s: AiSave) => call<AiSettings>('PUT', '/ai/settings', s),
+  aiTest: () => call<{ ok: boolean; error?: string }>('POST', '/ai/test'), // one token, nothing from your files
+  aiPreview: (o: { file_id: number } | { question: string }) => call<AiPreview>('GET', `/ai/preview?${new URLSearchParams(Object.entries(o).map(([k, v]) => [k, String(v)]))}`),
 }
