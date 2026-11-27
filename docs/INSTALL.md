@@ -180,7 +180,8 @@ What a provider other than this laptop gets:
   transcripts and unclassified files), unless you allow that type in Settings > AI.
 - ID numbers are masked as for MCP: `35202-1234567-8` goes out as `•••••-•••••67-8`.
 - `GET /ai/preview?file_id=N` or `?question=...` returns exactly what would be sent. While AI is off it shows what a
-  cloud provider would get.
+  cloud provider would get. For a file not sorted into a type yet, it sorts it as the background worker will, and
+  `note` says what that means.
 
 The key is kept in the system's password store (Windows Credential Manager, the macOS Keychain or the Secret Service,
 as `Sniff` / `ai-<provider>`), never in the database, logs or error messages. Without a password store the key is not
