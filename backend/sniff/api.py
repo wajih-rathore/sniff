@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 from . import config, db, gcal, ics, mcp_settings, records, titles, verify, watch
+from .ai import server
 from .ask import ask, ask_stream
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
@@ -301,7 +302,8 @@ def _crop_png(path: str, mtime: float, n: int, value: str | None, value_type: st
         focus = spot or (marks[0] if marks else None)
         band = min(h, w * .5)  # a landscape strip of the page
         top = 0 if focus is None else min(max(0, (focus.y0 + focus.y1) / 2 - band / 2), h - band)
-        return page.get_pixmap(dpi=144, clip=pymupdf.Rect(0, top, w, top + band)).tobytes("png")
+        z = min(2.0, 1200 / w)  # about 1200 px wide: sharp at 150% scaling, and a phone photo does not become a huge PNG
+        return page.get_pixmap(matrix=pymupdf.Matrix(z, z), clip=pymupdf.Rect(0, top, w, top + band)).tobytes("png")
 
 
 @app.get("/documents/{file_id}/crop")
@@ -522,6 +524,14 @@ def open_file(req: OpenReq, conn=Depends(get_conn)):
 def _mcp_payload(settings: dict) -> dict:
     """The settings plus every type's field names, so the UI does not keep its own copy."""
     return {**settings, "fields": {t: list(FIELDS.get(t, {})) for t in DOC_TYPES}}
+
+
+@app.get("/model")
+def model_status():
+    """The chat model: ready, or starting (Sniff started its server and the model is still loading, which takes
+    seconds on a cold start). The launcher shows it while an answer waits for the model."""
+    ready = server.ready()
+    return {"ready": ready, "starting": server.running() and not ready}
 
 
 @app.get("/calendar/status")

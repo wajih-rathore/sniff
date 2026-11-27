@@ -96,3 +96,11 @@ def test_crop_finds_the_value_on_the_page(client, printed):
     top = Image.open(io.BytesIO(client.get(f"/documents/{fid}/crop").content))  # no fact: the top of the page
     assert top.width == img.width and abs(top.height - img.height) <= 1 and top.tobytes() != img.tobytes()
     assert client.get(f"/documents/{fid}/crop", params={"fact_id": 9999}).status_code == 404
+
+
+def test_model_status_says_when_the_model_is_loading(client, monkeypatch):
+    monkeypatch.setattr(api.server, "ready", lambda: False)
+    monkeypatch.setattr(api.server, "running", lambda: True)  # Sniff started the server; the model is still loading
+    assert client.get("/model").json() == {"ready": False, "starting": True}
+    monkeypatch.setattr(api.server, "ready", lambda: True)
+    assert client.get("/model").json() == {"ready": True, "starting": False}

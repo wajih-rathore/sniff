@@ -153,6 +153,7 @@ export const api = {
   pick: (key: string, fact_id: number) => call<Conflict[]>('POST', '/conflicts/pick', { key, fact_id }),
   recent: (n: number) => call<Document[]>('GET', `/documents?recent=${n}`),
   indexStatus: () => call<{ queued: number; running: boolean }>('GET', '/index/status'),
+  model: () => call<{ ready: boolean; starting: boolean }>('GET', '/model'), // starting: the chat model is loading (a cold start)
   // A PNG strip of the page around a fact (or the query's words); the top of the page without either.
   cropUrl: (file_id: number, o: { fact_id?: number; page?: number; q?: string }) =>
     MOCK ? mockPage(o.fact_id != null)

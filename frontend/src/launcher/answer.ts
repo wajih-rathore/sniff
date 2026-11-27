@@ -29,7 +29,7 @@ export function headline(a: Answer): Headline {
   const cur = currency(a)
   const money = (n: string) => (cur ? `${cur}\u00a0${n}` : n) // never wrap "Rs." away from its number
   const one = (text: string, route = a.route): Omit<Headline, 'alts'> => {
-    text = titled(text, a)
+    text = titled(text, a).replace(/\b1 documents\b/g, '1 document')
       .replace(/ Conflict: [\s\S]*$/, '')
       .replace(/ Left out \d+ duplicate cop(?:y|ies) of documents already counted\./, '')
       .replace(/ \d+ of the values used needs? review\./, '')
