@@ -10,8 +10,8 @@ import keyring
 import pytest
 from openai import OpenAI
 
-from sniff import ai_settings, ask
-from sniff.ai import classify, extract, llm
+from sniff import ai_settings, ask, config
+from sniff.ai import classify, extract, llm, server
 from sniff.mcp_settings import mask_ids
 from sniff.schemas import Hit
 from test_xplat import MemoryKeyring
@@ -221,3 +221,40 @@ def test_documents_kept_from_the_provider_are_named_not_reported_missing(conn, s
 def test_an_openai_compatible_provider_without_url_or_model_says_so(conn, store):
     ai_settings.save(conn, "openai")  # saved field by field from the app
     assert llm.check() == {"ok": False, "error": "Set the base URL and the model first."}
+
+
+# ---------- one provider per call chain ----------
+@pytest.fixture
+def local_then_cloud(conn, sent, monkeypatch, tmp_path):
+    """AI is on this laptop's model; switch() moves it to a cloud provider, as a user could at any moment."""
+    monkeypatch.setattr(config, "MODELS_DIR", tmp_path / "models")
+    (tmp_path / "models").mkdir()
+    (tmp_path / "models" / server.MODEL_FILE).touch()
+    ai_settings.save(conn, "local")
+    return lambda: use(conn, "openai")
+
+
+def test_a_retry_never_goes_to_a_provider_the_privacy_check_did_not_see(conn, sent, monkeypatch, local_then_cloud):
+    calls = []
+
+    def local_chat(self, messages, **kw):
+        calls.append(messages)
+        if len(calls) == 1:
+            local_then_cloud()  # the user switches to the cloud while the local model's first reply is read
+            return "{"  # cut off by the token cap: chat_json asks again
+        return '{"id_number": null}'
+    monkeypatch.setattr(llm.Local, "chat", local_chat)
+    REAL_EXTRACT("id_card", [(1, "IDENTITY CARD\nName: Ayesha Fictional\nIdentity Number: see back\nExpiry: 01/01/2030")])
+    assert len(calls) == 2 and sent == []  # the retry went to the same local model; the cloud got nothing
+
+
+def test_a_written_answer_goes_to_the_provider_its_passages_were_chosen_for(conn, sent, monkeypatch, local_then_cloud):
+    add_chunks(conn, "Passport No AB1234567, expires 2031")
+
+    def search_then_switch(conn, q, k):
+        local_then_cloud()  # the user switches while the passages are being chosen
+        return hits("passport")[:k]
+    monkeypatch.setattr(ask, "search", search_then_switch)
+    monkeypatch.setattr(llm.Local, "chat", lambda self, messages, **kw: "It expires in 2031 [1].")
+    ask.answer_from_search(conn, "when does it expire?")
+    assert sent == []  # the passport passage, chosen for the local model, never reached the cloud

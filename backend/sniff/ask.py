@@ -720,8 +720,7 @@ def passage(text: str, q: str, limit: int = PASSAGE_WORDS) -> str:
     return " ".join(units[lo : hi + 1])
 
 
-def _search_prompt(conn, question: str, k: int, s: dict | None = None):
-    s = s or ai_settings.current()
+def _search_prompt(conn, question: str, k: int, s: dict):
     if ai_settings.remote(s):  # only types the user lets leave this laptop; fetch extra, as hidden ones drop out
         hits = [h for h in search(conn, question, k=k * 4) if ai_settings.may_send(s, h.doc_type)][:k]
     else:
@@ -777,19 +776,20 @@ def no_writer(question: str, hits, why: llm.Unavailable) -> Answer:
                   route="none", sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in pages])
 
 
-def nothing_sent(conn, question: str, k: int = TOP) -> Answer:
+def nothing_sent(conn, question: str, s: dict, k: int = TOP) -> Answer:
     """No passage could go to the model: not found, unless search found documents the settings keep from the provider."""
-    if ai_settings.remote(ai_settings.current()) and (held := search(conn, question, k=k)):
+    if ai_settings.remote(s) and (held := search(conn, question, k=k)):
         return no_writer(question, held, llm.Unavailable("Your settings keep these documents from the AI provider."))
     return Answer(question=question, answer=NOT_FOUND, route="none")
 
 
 def answer_from_search(conn, question: str, k: int = TOP) -> Answer:
-    hits, messages = _search_prompt(conn, question, k)
+    s = ai_settings.current()  # one read: the passages chosen and the provider they go to come from the same settings
+    hits, messages = _search_prompt(conn, question, k, s)
     if not hits:
-        return nothing_sent(conn, question, k)
+        return nothing_sent(conn, question, s, k)
     try:
-        text = llm.chat(messages)
+        text = llm.chat(messages, p=llm.provider(s))
     except llm.Unavailable as e:
         return no_writer(question, hits, e)
     return _search_answer(question, hits, text, messages[-1]["content"])
@@ -803,13 +803,14 @@ def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = Non
     if valid(r):
         yield "answer", answer_from_facts(conn, question, r, today).model_copy(update={"parser": how})
         return
-    hits, messages = _search_prompt(conn, question, TOP)
+    s = ai_settings.current()
+    hits, messages = _search_prompt(conn, question, TOP, s)
     if not hits:
-        yield "answer", nothing_sent(conn, question).model_copy(update={"parser": how})
+        yield "answer", nothing_sent(conn, question, s).model_copy(update={"parser": how})
         return
     text, sent = "", 0
     try:
-        for delta in llm.chat_stream(messages):
+        for delta in llm.chat_stream(messages, p=llm.provider(s)):
             text += delta
             if "NOT FOUND".startswith(text.strip()):  # the reply may still turn out to be NOT FOUND: hold it back
                 continue

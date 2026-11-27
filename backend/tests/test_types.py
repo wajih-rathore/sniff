@@ -34,7 +34,7 @@ def test_classifier_and_router_accept_the_new_types(monkeypatch):
     for t in NEW:
         assert f"- {t}:" in classify.PROMPT
     seen = []
-    monkeypatch.setattr(llm, "chat_json", lambda messages, model: seen.append(messages) or model(doc_type="passport"))
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model, **kw: seen.append(messages) or model(doc_type="passport"))
     assert classify.classify([(1, "REPUBLIC OF EASTLAND PASSPORT")]) == "passport"
 
 
@@ -139,7 +139,7 @@ def test_extraction_of_a_new_type(monkeypatch):
             "Period of Insurance: From 01/11/2026 To 31/10/2027\nSum Insured: Rs. 2,500,000\nAnnual Premium: Rs. 18,900")
     printed = dict(insurer="SafeNest Home Insurance", policy_number="SN-HC-2026-118204", insured_name="Ali Raza Khan",
                    premium="Rs. 18,900", start_date="01/11/2026", end_date="31/10/2027")
-    monkeypatch.setattr(llm, "chat_json", lambda messages, model: model(**printed))
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model, **kw: model(**printed))
     facts = {f["field"]: f for f in extract.extract("insurance_policy", [(1, page)])}
     assert facts["premium"]["value"] == "18900.0" and facts["premium"]["value_type"] == "money"
     assert facts["end_date"]["value"] == "2027-10-31" and facts["policy_number"]["value_type"] == "id"

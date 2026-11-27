@@ -28,9 +28,10 @@ class TypeOut(BaseModel):
 def classify(pages: list[tuple[int, str]]) -> str | None:
     """The type the chat model reads, or None (the document stays unclassified): when AI is off, and for a provider off
     this laptop, which never gets a whole document."""
-    if ai_settings.remote(ai_settings.current()):
+    s = ai_settings.current()
+    if ai_settings.remote(s):
         return None
     try:
-        return llm.chat_json(llm.document_message(pages, PROMPT), TypeOut).doc_type
+        return llm.chat_json(llm.document_message(pages, PROMPT), TypeOut, p=llm.provider(s)).doc_type
     except llm.Unavailable:
         return None

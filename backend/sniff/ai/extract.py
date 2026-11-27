@@ -32,9 +32,9 @@ def messages(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) -> 
     return llm.document_message(pages, PROMPT.format(doc_type=doc_type.replace("_", " "), fields=listing))
 
 
-def ask_model(doc_type: str, fields: list[str], pages: list[tuple[int, str]]) -> dict[str, str]:
-    """{field: printed value} from the chat model, for the given fields only."""
-    printed = llm.chat_json(messages(doc_type, fields, pages), _raw_model(doc_type, fields), max_tokens=MAX_TOKENS_PER_FIELD * len(fields) + 20)
+def ask_model(doc_type: str, fields: list[str], pages: list[tuple[int, str]], p=None) -> dict[str, str]:
+    """{field: printed value} from the chat model `p`, for the given fields only."""
+    printed = llm.chat_json(messages(doc_type, fields, pages), _raw_model(doc_type, fields), p=p, max_tokens=MAX_TOKENS_PER_FIELD * len(fields) + 20)
     return {f: v for f, v in printed.model_dump().items() if v and v.strip() and "•" not in v}  # • : a masked ID came back
 
 
@@ -61,9 +61,10 @@ def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = No
     if rules_first:
         printed = rules.extract(doc_type, pages, boxes)
         missing = [f for f, s in spec.items() if s.required and f not in printed]
-        if missing and (lines := lines_to_send(doc_type, pages, boxes, missing, ai_settings.current())):
+        s = ai_settings.current()  # one read: what may be sent and where it goes come from the same settings
+        if missing and (lines := lines_to_send(doc_type, pages, boxes, missing, s)):
             try:
-                printed |= ask_model(doc_type, missing, lines)
+                printed |= ask_model(doc_type, missing, lines, llm.provider(s))
             except (ValidationError, llm.Unavailable):  # an invalid reply, AI off or the provider failed: keep what the rules read
                 pass
     else:
