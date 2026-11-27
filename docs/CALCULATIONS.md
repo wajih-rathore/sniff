@@ -46,6 +46,8 @@ A date filter ("in 2026", "in March 2026", "from July to September 2026") is app
 | insurance_policy, tenancy_agreement | `start_date` |
 | fee_voucher | `due_date` |
 
+One exception: when the question asks for a bill's due date and the month sits next to the word "bill" ("When is the November 2025 gas bill due?"), the month names the bill, so the filter uses `billing_month` (`Filters.of_document`). "Which bills are due in December?" still filters on the due date.
+
 So "How much were Sara's university fees in 2023?" adds the vouchers due in 2023, and "premiums for policies starting in 2026" adds the policies whose cover starts in 2026.
 
 **Newest document** (op `latest`): among the matching documents, the one with the latest date from this table. "What is Hamza's current CGPA?" reads `cgpa` on his newest transcript; "What is the number of Ali's latest passport?" reads `passport_number` on the passport that expires last. If two documents share that date (a conflict, such as a draft and a signed agreement), both values are shown.

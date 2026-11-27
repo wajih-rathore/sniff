@@ -286,3 +286,13 @@ def test_who_questions_read_the_person_field(docs, monkeypatch):
     assert "id_sara.jpg" in a.answer and a.parser == "rules"
     a = ask.ask(docs, "Who is on my newest ID card?", today=TODAY)
     assert a.answer == "Ali Khan (id_ali.jpg), from the newest document (2027-01-10)." and a.parser == "rules"
+
+
+def test_a_month_next_to_bill_names_the_bill_not_its_due_date(conn, add_doc, monkeypatch):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", no_model)
+    for month, due in (("2026-10", "2026-11-15"), ("2026-11", "2026-12-15")):
+        add_doc(f"/x/gas_{month}.pdf", "utility_bill", {"provider": "Metro Gas", "account_number": "MG-1", "billing_month": month,
+                                                        "due_date": due, "current_charges": "100.0", "amount_due": "100.0"})
+    assert ask.ask(conn, "When is the October 2026 gas bill due?", today=TODAY).answer == "2026-11-15 (gas_2026-10.pdf)."
+    assert ask.ask(conn, "Which bills are due in November 2026?", today=TODAY).answer == "2026-11-15 (gas_2026-10.pdf)."

@@ -31,6 +31,7 @@ class Filters(BaseModel):
     date_from: str | None = None  # dates as written in the question; code reads them
     date_to: str | None = None
     period: Period | None = None  # relative periods; code turns them into dates
+    of_document: bool | None = None  # the time names the document ("the November bill"), not the date asked for
 
 
 class Route(BaseModel):
@@ -220,6 +221,7 @@ DOCS = r"documents?|files?|things?|items?"
 GENERIC = {"ltd", "limited", "pvt", "private", "company", "inc", "the", "and", "for", "bank", "insurance", "assurance", "takaful",
            "university", "college", "institute", "school", "academy", "supply", "electric", "electricity", "gas", "internet", "water"}
 MONTHS = r"january|february|march|april|may(?=\s+\d{4})|june|july|august|september|october|november|december"
+BILL_OF = rf"\b(?:{MONTHS})(?:\s+\d{{4}})?\s+(?:[a-z]+\s+){{0,3}}bills?\b|\bbills?\s+(?:for|of)\s+(?:{MONTHS})"
 NOT_NAMES = STOP | {"today", "there", "here", "let", "everyone", "anyone", "somebody"}
 
 
@@ -350,6 +352,8 @@ def rules(conn: sqlite3.Connection, question: str, today: date) -> Route | None:
         op, field = "latest", hint or MAIN_FIELD.get(doc_type)
     else:
         return None
+    if period and field == "due_date" and re.search(BILL_OF, q):
+        period["of_document"] = True  # "the November 2025 gas bill": November is the bill's month, not its due date
     r = Route(route="facts", doc_type=doc_type, field=field, op=op,
               filters=Filters(holder=found.get("holder"), provider=found.get("provider"), **period))
     return r if field and valid(r) else None
@@ -481,7 +485,7 @@ def keep(d: records.Doc, r: Route, today: date, copies: list[records.Doc] = ()) 
         return False
     if rng := date_range(f, today):
         field = asked_field(r, d.doc_type)
-        on = field if field and FIELDS[d.doc_type][field].kind == "date" else PERIOD_FIELD[d.doc_type]
+        on = field if field and FIELDS[d.doc_type][field].kind == "date" and not f.of_document else PERIOD_FIELD[d.doc_type]
         v = d.get(on) or ""
         v = v + "-01" if len(v) == 7 else v  # billing_month YYYY-MM
         if not v or not (rng[0] <= v <= rng[1]):
