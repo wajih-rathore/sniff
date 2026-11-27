@@ -35,3 +35,9 @@ def test_search_answer_prompt_fences_the_passages(conn, monkeypatch):
     assert system["role"] == "system" and llm.DATA_RULE in system["content"]
     assert user["content"].startswith("<<<PASSAGES>>>\n[1] (a.txt, page 1)") and user["content"].endswith("<<<END PASSAGES>>>\n\nQuestion: what does it say?")
     assert user["content"].count("<<<END PASSAGES>>>") == 1
+
+
+def test_clean_drops_thinking_even_without_the_opening_tag():
+    assert llm.clean("<think>hmm</think>\n\n3 eggs [1].") == "3 eggs [1]."
+    assert llm.clean("</think>\n\n3 eggs [1].") == "3 eggs [1]."  # seen from Qwen3 on the dev questions, 27 Nov
+    assert llm.clean("3 eggs [1].") == "3 eggs [1]."

@@ -27,7 +27,8 @@ def chat_stream(messages: list[dict], **kw):
 
 
 def clean(text: str) -> str:
-    return re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    return re.sub(r"^.*?</think>", "", text, flags=re.S).strip()  # Qwen3 sometimes sends only the closing tag
 
 
 DOC_CHARS = 6000
