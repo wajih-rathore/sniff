@@ -84,7 +84,12 @@ def _clean(text: str, doc_type: str, field: str) -> str:
 
 def _generic(text: str) -> bool:
     words = [w.lower() for w in re.findall(r"[A-Z]?[a-z]+(?:-[a-z]+)?|[A-Z]+(?![a-z])", text)]  # OCR runs words together
-    return not words or all(w in GENERIC for w in words)
+    return not words or all(_generic_word(w) for w in words)
+
+
+def _generic_word(w: str) -> bool:
+    """A title word, or title words run together by OCR ("SALESINVOICE")."""
+    return w in GENERIC or any(w[:i] in GENERIC and _generic_word(w[i:]) for i in range(2, len(w) - 1))
 
 
 def _values(kind: str, text: str) -> list[str]:
@@ -109,11 +114,12 @@ def _candidates(doc_type: str, field: str, page_rows):
     for page, rows in page_rows:
         for i, row in enumerate(rows):
             cells = _cells(row)
-            spans = [(s, e, f) for f, label, pat in verify.labels(doc_type) for s, e in verify.label_spans(label, pat, row.text)]
+            within = lambda s, e: _cell_at(cells, s)[1] >= e  # a label never runs across two cells ("Issue | Date of")
+            spans = [(s, e, f) for f, label, pat in verify.labels(doc_type) for s, e in verify.label_spans(label, pat, row.text) if within(s, e)]
             for label, pat in pats:
                 for ls, le in verify.label_spans(label, pat, row.text):
-                    if any(s <= ls and e >= le and e - s > le - ls for s, e, _ in spans):
-                        continue  # part of a longer label: "Program" in "Programme", "Salary" in "Basic Salary"
+                    if not within(ls, le) or any(s <= ls and e >= le and e - s > le - ls or s < le < e for s, e, _ in spans):
+                        continue  # part of a longer label ("Program" in "Programme"), or what follows is still a label
                     cs, ce = _cell_at(cells, ls)
                     pieces = []
                     # a label word after other words ("the position of ...", "Bosic Salary") is not a form label
@@ -125,7 +131,7 @@ def _candidates(doc_type: str, field: str, page_rows):
                             pieces.append(row.text[le:min((s for s, _, f in spans if s >= le and f != field), default=len(row.text))])
                         x0, x1 = row.x_extent(ls, le)
                         pieces += _below(rows, i, x0, x1)  # value under its label
-                    if spec.header or spec.kind == "status" and STATUS.fullmatch(row.text[cs:ce].strip(SEP)):
+                    if spec.header and not re.search(r"\d", row.text[cs:ce]) or spec.kind == "status" and STATUS.fullmatch(row.text[cs:ce].strip(SEP)):
                         pieces.append(row.text[cs:ce])  # the label is part of the value: "Lakeshore University", "PAID"
                     for p in pieces:
                         if spec.kind == "text":
