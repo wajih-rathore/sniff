@@ -2,6 +2,10 @@
 """Synthetic document generator for Sniff: fake personal documents (PDFs and images) plus ground truth.
 
     cd backend && uv run python ../data/synth/generate.py --out ../data/synth/out --seed 7
+    cd backend && uv run python ../data/synth/generate.py --out ../data/synth/out --splits train --seed 11
+
+The second line adds the training split (out/train/, rows with split "train"): dev's records for two other households,
+dates moved back one and two years, its own "other" pages. It is for training the type classifier, never for scores.
 
 Writes out/dev/..., out/test/..., out/labels.jsonl and the draft test sets data/eval/search.jsonl and ask.jsonl.
 Everything is fictional. Deterministic for a given seed. "Today" is fixed at 2026-11-22.
@@ -28,6 +32,7 @@ import calendar
 import io
 import json
 import random
+import re
 import shutil
 import textwrap
 from collections import Counter
@@ -770,7 +775,7 @@ def rec_order(rng, d):
     return p
 
 
-def receipts(rng, cats, fmts, dev):
+def receipts(rng, cats, fmts, dev, year=2025):
     out, bi = [], 0
     for cat, fmt in zip(cats, fmts):
         group, merchants, items, elig = RCATS[cat]
@@ -796,7 +801,7 @@ def receipts(rng, cats, fmts, dev):
         until = None
         if elig and rng.random() < .8:
             if dev:
-                dt = date(2025, 1, 1) + timedelta(days=rng.randint(0, 364))
+                dt = date(year, 1, 1) + timedelta(days=rng.randint(0, 364))
                 until = add_months(dt, rng.choice([6, 12, 12, 24, 36]))
             else:
                 b, bi = BUCKETS[bi % len(BUCKETS)], bi + 1
@@ -806,7 +811,7 @@ def receipts(rng, cats, fmts, dev):
                     if in_bucket(b, until):
                         break
         else:
-            dt = (date(2025, 1, 1) + timedelta(days=rng.randint(0, 364))) if dev else (
+            dt = (date(year, 1, 1) + timedelta(days=rng.randint(0, 364))) if dev else (
                 TODAY - timedelta(days=rng.randint(2, 330 if rng.random() < .8 else 700)))
         d = dict(merchant=merchant, addr=ADDR[merchant], phone=digits(rng, 7), date=dt, items=lines, sub=sub, tax=tax,
                  taxlbl=taxlbl, total=total, until=until, no=digits(rng, 7), pay=rng.choice(["Cash", "Card"]),
@@ -1861,14 +1866,15 @@ def build_a4(split, seed, used):
         s += ids(rng, A4_TEST_IDS, TEST_PEOPLE, alloc(rng, image=3, pdf_scan=2))
         s += others(rng, A4_TEST_OTHER, alloc(rng, pdf_text=3, image=1))
     else:
-        s = passports(rng, DEV_PASSPORTS, DEV_PEOPLE, alloc(rng, image=2, pdf_scan=1, pdf_text=1))
-        s += transcripts(rng, DEV_TRANSCRIPTS, alloc(rng, pdf_text=2, pdf_scan=1, image=1))
-        s += statements(rng, DEV_ACCOUNTS, alloc(rng, pdf_text=2, pdf_scan=1, image=1), hh["addr"])
-        s += warranty_cards(rng, DEV_WARRANTY, alloc(rng, image=2, pdf_scan=1, pdf_text=1))
-        s += offer_letters(rng, DEV_OFFERS, alloc(rng, pdf_text=2, pdf_scan=1, image=1), hh["addr"])
-        s += policies(rng, DEV_POLICIES, alloc(rng, pdf_text=2, pdf_scan=1, image=1), ["Bilal Ahmed"])
-        s += tenancies(rng, DEV_TENANCIES, alloc(rng, pdf_scan=2, image=1, pdf_text=1))
-        s += vouchers(rng, DEV_VOUCHERS, alloc(rng, image=2, pdf_text=1, pdf_scan=1))
+        X, k = dev_or_train(split)
+        s = passports(rng, X(DEV_PASSPORTS), X(DEV_PEOPLE), alloc(rng, image=2 * k, pdf_scan=k, pdf_text=k))
+        s += transcripts(rng, X(DEV_TRANSCRIPTS), alloc(rng, pdf_text=2 * k, pdf_scan=k, image=k))
+        s += statements(rng, X(DEV_ACCOUNTS), alloc(rng, pdf_text=2 * k, pdf_scan=k, image=k), hh["addr"])
+        s += warranty_cards(rng, X(DEV_WARRANTY), alloc(rng, image=2 * k, pdf_scan=k, pdf_text=k))
+        s += offer_letters(rng, X(DEV_OFFERS), alloc(rng, pdf_text=2 * k, pdf_scan=k, image=k), hh["addr"])
+        s += policies(rng, X(DEV_POLICIES), alloc(rng, pdf_text=2 * k, pdf_scan=k, image=k), X(["Bilal Ahmed"]))
+        s += tenancies(rng, X(DEV_TENANCIES), alloc(rng, pdf_scan=2 * k, image=k, pdf_text=k))
+        s += vouchers(rng, X(DEV_VOUCHERS), alloc(rng, image=2 * k, pdf_text=k, pdf_scan=k))
     rng.shuffle(s)
     recs = []
     for i, sp in enumerate(s):
@@ -1993,6 +1999,99 @@ def alloc(rng, **counts):
     return out
 
 
+# ---------------------------------------------------------------- training split
+# For the type classifier and any later fine-tuning, never for evaluation. It reuses the dev records twice, for two
+# other households, with every date and year moved back one and two years, plus its own "other" pages and its own
+# seed. So it shares no person, ID number, date or file with dev or test, and nothing in it comes from a test record.
+TRAIN_NAMES = [
+    {"Bilal Ahmed": "Imran Qureshi", "Zainab Malik": "Hina Butt", "Omar Farooq": "Kamran Iqbal", "Sohail Anjum": "Naveed Akhtar",
+     "Rubina Siddiqui": "Shazia Akram", "Tasneem Bakers": "Crown Bakers",
+     "Flat 3B, Block C, Orchard Heights, Lakeshore City": "House 9, Street 12, Canal View, Lakeshore City"},
+    {"Bilal Ahmed": "Faisal Mehmood", "Zainab Malik": "Mariam Javed", "Omar Farooq": "Tariq Hussain", "Sohail Anjum": "Asif Raza",
+     "Rubina Siddiqui": "Farah Naz", "Tasneem Bakers": "Golden Crust Bakery",
+     "Flat 3B, Block C, Orchard Heights, Lakeshore City": "Flat 21, Lake Tower, Model Colony, Lakeshore City"},
+]
+WOMEN |= {"Hina Butt", "Mariam Javed"}
+OTHER.update({
+    "train_notes_phys": ("lecture_notes", "Physics - Newton's Laws of Motion", [
+        "First law: a body stays at rest or keeps moving in a straight line unless a net force acts on it.",
+        "Second law: F = m a. A larger force gives a larger acceleration; a heavier body accelerates less.",
+        "Third law: every action has an equal and opposite reaction.", "",
+        "Worked example: a 2 kg trolley pushed with 6 N speeds up at 3 m/s2.", "Revise free-body diagrams before the quiz."],
+        dict(topic="newton's laws")),
+    "train_minutes": ("minutes", "Computing Society - Committee Meeting Minutes", [
+        "Present: the president, the secretary, the treasurer and four members.", "",
+        "1. The coding contest will be held in the main lab on a Saturday in March.",
+        "2. The treasurer reported that the society has enough funds for prizes and refreshments.",
+        "3. Volunteers are needed to set up the machines the evening before.", "",
+        "Next meeting: after the mid-term exams."], dict(title="Committee Meeting")),
+    "train_recipe_kheer": ("recipe", "Rice Kheer", [
+        "Ingredients: 1 litre milk, half cup rice, half cup sugar, cardamom, almonds and pistachios.", "",
+        "1. Soak the rice for 30 minutes.", "2. Boil the milk, add the rice and cook on low heat, stirring often.",
+        "3. When it thickens, add sugar and cardamom.", "4. Garnish with sliced nuts and serve chilled."], dict(dish="Rice Kheer")),
+    "train_trip_karachi": ("itinerary", "Karachi Weekend Plan", [
+        "Friday night: train from Lakeshore City, sleeper berths booked.", "Saturday: Clifton beach in the morning, seafood dinner at Do Darya.",
+        "Sunday: visit the Mohatta Palace museum, then the evening flight home.", "", "Carry: sunscreen, chargers, CNIC copies."],
+        dict(dest="Karachi")),
+    "train_todo": ("todo", "Weekend chores", [
+        "- service the car", "- pay the newspaper vendor", "- fix the bathroom light", "- buy school shoes for the kids",
+        "- call the bank about the new cheque book", "- clean the water tank"], dict(person="household")),
+    "train_leave": ("letter", "Application for Leave", [
+        "The Principal", "Brightpath School", "", "Respected Sir,", "",
+        "I request leave for three days as I have to attend my cousin's wedding in another city. I will complete the missed homework when I return.",
+        "", "Thank you.", "", "Yours obediently,", "A student of class 8"], dict(person="student")),
+    "train_flyer": ("advert", "Winter Sale - Up to 30% Off", [
+        "Jackets, sweaters, shawls and boots for the whole family.", "Visit any branch this weekend or shop online.", "",
+        "Free home delivery on orders above Rs. 5,000.", "Terms and conditions apply."], dict(topic="sale")),
+    "train_datesheet": ("timetable", "Date Sheet - Final Examinations", [
+        "Monday     Mathematics        9:00 am - 12:00 pm", "Tuesday    English            9:00 am - 12:00 pm",
+        "Wednesday  Physics            9:00 am - 12:00 pm", "Thursday   Chemistry          9:00 am - 12:00 pm",
+        "Friday     Computer Science   9:00 am - 11:00 am", "", "Students must bring their admit cards to every paper."],
+        dict(topic="exams")),
+})
+TRAIN_OTHER = [k for k in OTHER if k.startswith("train_")]
+
+
+def retarget(x, names, years):
+    """A dev record for the training split: other people and places, and every date and year `years` years earlier."""
+    if isinstance(x, date):
+        return add_months(x, -12 * years)
+    if isinstance(x, int) and not isinstance(x, bool) and 1990 <= x <= 2030:  # a year, like a transcript's first year
+        return x - years
+    if isinstance(x, str):
+        return names.get(x) or re.sub(r"\b(19|20)\d\d\b", lambda m: str(int(m.group()) - years), x)
+    if isinstance(x, dict):
+        return {retarget(k, names, years): retarget(v, names, years) for k, v in x.items()}
+    if isinstance(x, (list, tuple, set)):
+        return type(x)(retarget(v, names, years) for v in x)
+    return x
+
+
+def train_rows(table):
+    """A dev table for the training split: once per training household, joined."""
+    parts = [retarget(table, names, k + 1) for k, names in enumerate(TRAIN_NAMES)]
+    return {k: v for p in parts for k, v in p.items()} if isinstance(table, dict) else [x for p in parts for x in p]
+
+
+def dev_or_train(split):
+    """(how to read a dev table, how many copies of it) for a split built like dev."""
+    return ((lambda t: t), 1) if split == "dev" else (train_rows, len(TRAIN_NAMES))
+
+
+HOUSEHOLDS["train"] = retarget(HOUSEHOLDS["dev"], TRAIN_NAMES[0], 1)
+
+
+def train_check(recs):
+    """No training record belongs to a person of dev or test, and every row has its type's fields. (Shared page text
+    such as "Online transfer to Nusrat Khan" in the bank statement lines is the same in every split.)"""
+    people = set(TEST_PEOPLE) | set(DEV_PEOPLE) | {"Sohail Anjum", "Rubina Siddiqui", "Tasneem Bakers"}
+    for r in recs:
+        assert list(r["fields"]) == FIELDS[r["type"]], r["file"]
+        assert not people & set(r["fields"].values()), r["file"]
+    print("train", len(recs), dict(sorted(Counter(r["type"] for r in recs).items())))
+    print("  train by format", dict(sorted(Counter(r["format"] for r in recs).items())))
+
+
 def build(split, seed):
     rng = random.Random(f"{seed}-{split}")
     if split == "test":
@@ -2005,11 +2104,16 @@ def build(split, seed):
         s += receipts(rng, cats, alloc(rng, image=56, pdf_text=20), dev=False)
         s += others(rng, TEST_OTHER, alloc(rng, pdf_text=14, pdf_scan=2, image=2))
     else:
-        s = ids(rng, DEV_IDS, DEV_PEOPLE, alloc(rng, image=5, pdf_scan=2))
-        s += bills(rng, split, 2025, lambda p: sorted(rng.sample(range(1, 13), 2)), alloc(rng, pdf_text=4, pdf_scan=2))
-        s += certs(rng, cert_rows(rng, DEV_CERTS), alloc(rng, pdf_text=4, pdf_scan=3))
-        s += receipts(rng, DEV_RCATS, alloc(rng, image=11, pdf_text=5), dev=True)
-        s += others(rng, DEV_OTHER, alloc(rng, pdf_text=3, image=1))
+        X, k = dev_or_train(split)
+        year = 2025 if split == "dev" else 2024
+        s = ids(rng, X(DEV_IDS), X(DEV_PEOPLE), alloc(rng, image=5 * k, pdf_scan=2 * k))
+        s += bills(rng, split, year, lambda p: sorted(rng.sample(range(1, 13), 2 * k)), alloc(rng, pdf_text=4 * k, pdf_scan=2 * k))
+        s += certs(rng, cert_rows(rng, X(DEV_CERTS)), alloc(rng, pdf_text=4 * k, pdf_scan=3 * k))
+        s += receipts(rng, DEV_RCATS * k, alloc(rng, image=11 * k, pdf_text=5 * k), dev=True, year=year)
+        if split == "dev":
+            s += others(rng, DEV_OTHER, alloc(rng, pdf_text=3, image=1))
+        else:
+            s += others(rng, TRAIN_OTHER, alloc(rng, pdf_text=5, image=2, pdf_scan=1))
     rng.shuffle(s)
     if split == "test":
         incomplete(s)
@@ -2627,16 +2731,26 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="../data/synth/out")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--splits", nargs="+", default=["dev", "test"], choices=["dev", "test", "train"],
+                    help="train is the classifier's training split: --splits train --seed 11")
     a = ap.parse_args()
     OUT = Path(a.out).resolve()
-    for sub in ("dev", "test"):
+    for sub in a.splits:
         shutil.rmtree(OUT / sub, ignore_errors=True)
     OUT.mkdir(parents=True, exist_ok=True)
-    recs = build("dev", a.seed) + build("test", a.seed)
+    recs = [r for sp in a.splits for r in build(sp, a.seed)]
+    old = OUT / "labels.jsonl"  # rows of the splits not built now stay as they were
+    keep = [x for x in (old.read_text(encoding="utf-8").splitlines() if old.exists() else [])
+            if x.strip() and json.loads(x)["split"] not in a.splits]
     with open(OUT / "labels.jsonl", "w", encoding="utf-8", newline="\n") as fh:
+        fh.writelines(x + "\n" for x in keep)
         for r in recs:
             fh.write(json.dumps({k: r[k] for k in ("file", "split", "type", "format", "fields", "text", "duplicate_of", "duplicate_kind")},
                                 ensure_ascii=False) + "\n")
+    if "test" not in a.splits:  # the draft test sets and their checks need the test split
+        train_check([r for r in recs if r["split"] == "train"])
+        print("ok", len(recs), "files")
+        return
     search, ask = draft_eval([r for r in recs if r["split"] == "test"], a.seed)
     ev = Path(__file__).resolve().parent.parent / "eval"
     ev.mkdir(parents=True, exist_ok=True)
