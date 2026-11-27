@@ -12,9 +12,9 @@ terminal or a manual model download.
 | Debian, Ubuntu 22.04 or newer | `Sniff_0.1.0_amd64.deb` | Built by CI, not run yet |
 
 The macOS and Linux files come from `.github/workflows/release.yml`, which builds every installer on GitHub's
-machines. It has not run yet, because the repository is pushed only after review. Until then, Linux and macOS
-teammates can run Sniff from source (below). The file names are what Tauri normally produces; check them on the
-first CI run.
+machines and starts each one's back end once as a smoke test (the file names above are the ones it produced).
+Nobody has installed the macOS or Linux ones yet; until then, Linux and macOS teammates can run Sniff from source
+(below).
 
 ## Windows
 
@@ -96,7 +96,9 @@ them too (`data`, `models`, `logs`, `secrets` and the WebView2 cache). From a te
 
 ## macOS
 
-Not run on a Mac yet: everything in this section is what the build is set up to do.
+Not run on a Mac yet: everything in this section is what the build is set up to do. CI builds both installers and
+starts their back end once. It needs macOS 15 or later: the OpenCV wheel the text reader uses is built for 15, and
+running from source needs it too.
 
 1. Download the `.dmg` for your Mac: `aarch64` for Apple Silicon (M1 and later), `x64` for Intel. Apple menu >
    About This Mac shows which one you have.
@@ -159,7 +161,8 @@ deleting `~/.config/autostart/Sniff.desktop` turns off start at sign-in.
 
 ## Known limitations
 
-- Only the Windows build has been run. The macOS and Linux installers come from CI, which has not run yet.
+- Only the Windows build has been run. CI builds the macOS and Linux installers and smoke-tests their back end,
+  but nobody has installed them yet.
 - macOS: not notarised, so the first start needs the steps above.
 - Linux on Wayland: no global shortcut; use `sniff --toggle`.
 - Opening a PDF at the matching page works on Windows only (through Edge). Elsewhere the file opens on page 1.
@@ -180,8 +183,10 @@ sudo apt install libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
 From the repo root:
 
 ```bash
-# 1. the back end's packages
-(cd backend && uv sync)
+# 1. the back end's packages, on a Python that uv installs. Some Pythons cannot load SQLite extensions (the one on
+#    GitHub's Macs cannot), and Sniff's vector search is one: the back end then stops with "cannot load SQLite
+#    extensions". If an earlier `uv sync` made backend/.venv with such a Python, delete backend/.venv first.
+(cd backend && uv sync --python-preference only-managed)
 
 # 2. llama-server, the same build as on Windows (b12628). Pick your file:
 #    Apple Silicon: llama-b12628-bin-macos-arm64.tar.gz, Intel Mac: llama-b12628-bin-macos-x64.tar.gz,
@@ -257,12 +262,14 @@ The same script builds the installer for the system it runs on, and CI (`.github
 `macos-13` in December 2025). The script needs uv, Node and npm, and Rust;
 Linux also needs the libraries listed under "Run from source". It downloads llama.cpp build b12628 for the system
 into `models/llama` and checks its sha256, freezes the back end with PyInstaller, builds the front end and runs
-`tauri build`. Builds run at below-normal priority with 2 cargo jobs, and all caches go to `.cache/` in the repo.
+`tauri build`. On macOS it freezes the back end with a Python that uv installs (see "Run from source", step 1;
+delete `backend/.venv` first if it was made with another Python). Builds run at below-normal priority with 2 cargo
+jobs, and all caches go to `.cache/` in the repo.
 The bundles land in `.cache/cargo-target/release/bundle/` (`nsis/`, `dmg/`, `appimage/`, `deb/`).
 
 Pushing a tag such as `v0.1.0` makes CI attach all five files to a draft GitHub release. Running the workflow by
-hand (Actions > Release > Run workflow) keeps them as downloadable artifacts only. So far only the Windows build has
-been run, on our laptop, with the version of this script from before it handled macOS and Linux.
+hand (Actions > Release > Run workflow) keeps them as downloadable artifacts only. Only the Windows installer has
+been installed and run, on our laptop; CI only starts each installer's back end with `--check`.
 
 On our laptop Rust uses the GNU toolchain (`x86_64-pc-windows-gnu`) with MSYS2's MinGW on the PATH, because
 Visual Studio Build Tools do not fit on drive C:. CI uses the MSVC toolchain that GitHub's Windows machines have.
