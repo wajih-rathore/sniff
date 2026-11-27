@@ -12,7 +12,7 @@ from datetime import date
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from . import ai_settings, records, verify
 from .ai import llm
@@ -379,7 +379,7 @@ def understand(conn: sqlite3.Connection, question: str, today: date) -> tuple[Ro
         return r, "rules"
     try:
         r = route(question)
-    except llm.Unavailable:
+    except (llm.Unavailable, ValidationError):  # no model, or no valid reply after the retries
         return Route(route="search"), "rules"
     if r.route == "facts" and (found := names(conn, question)):
         f = r.filters
