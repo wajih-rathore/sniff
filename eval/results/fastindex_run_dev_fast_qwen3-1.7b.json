@@ -1,0 +1,752 @@
+{
+ "split": "dev",
+ "mode": "fast",
+ "model": "qwen3-1.7b",
+ "docs": 72,
+ "type_accuracy": 1.0,
+ "fields_n": 429,
+ "fields_accuracy": 0.963,
+ "fields_filled": 0.876,
+ "fields_precision": 0.992,
+ "seconds_per_doc": {
+  "mean": 5.46,
+  "p50": 0.1,
+  "p95": 28.07
+ },
+ "model_calls_per_doc": 0.26,
+ "docs_without_model": 0.778,
+ "tokens_per_doc": {
+  "prompt": 102,
+  "prompt_new": 77,
+  "out": 6
+ },
+ "model_ms_per_doc": {
+  "prompt_ms": 3066,
+  "gen_ms": 1762
+ },
+ "server_starts": 1,
+ "server_start_s": 13.0,
+ "first_answer_s": 37.82,
+ "per_doc": [
+  {
+   "file": "dev/Desktop/IMG_3063.jpg",
+   "ms": 74,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+   "ms": 57,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/ece95bbc.pdf",
+   "ms": 315,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/Document (8).pdf",
+   "ms": 55,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/9f5d83e4.pdf",
+   "ms": 397,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/download (27).pdf",
+   "ms": 66,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/PXL_20190101_186672.jpg",
+   "ms": 61,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/IMG_7333.jpg",
+   "ms": 89,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/file_1814.pdf",
+   "ms": 6,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Print_2020-06-19.pdf",
+   "ms": 51,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Print_2023-06-18.pdf",
+   "ms": 39,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/Screenshot 2019-01-01 at 8.24.34.png",
+   "ms": 52,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/photo_14.png",
+   "ms": 49678,
+   "calls": 2,
+   "prompt": 722,
+   "prompt_new": 513,
+   "out": 34,
+   "prompt_ms": 22279,
+   "gen_ms": 9557
+  },
+  {
+   "file": "dev/Downloads/scan_6405.pdf",
+   "ms": 28715,
+   "calls": 1,
+   "prompt": 270,
+   "prompt_new": 202,
+   "out": 43,
+   "prompt_ms": 7908,
+   "gen_ms": 19534
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250109-WA0055.jpg",
+   "ms": 14127,
+   "calls": 1,
+   "prompt": 373,
+   "prompt_new": 305,
+   "out": 12,
+   "prompt_ms": 10681,
+   "gen_ms": 2367
+  },
+  {
+   "file": "dev/Downloads/download (14).pdf",
+   "ms": 781,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/CamScanner 09-01-2023 17.56.pdf",
+   "ms": 103,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/IMG_4953.jpg",
+   "ms": 96,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/scan_9174.pdf",
+   "ms": 43,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/90c2b896.pdf",
+   "ms": 332,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/download (14).pdf",
+   "ms": 5,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/file_2221.pdf",
+   "ms": 7658,
+   "calls": 1,
+   "prompt": 180,
+   "prompt_new": 112,
+   "out": 16,
+   "prompt_ms": 3979,
+   "gen_ms": 2710
+  },
+  {
+   "file": "dev/Desktop/CamScanner 02-27-2019 18.24.pdf",
+   "ms": 56,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20261101-WA0274.jpg",
+   "ms": 15620,
+   "calls": 1,
+   "prompt": 383,
+   "prompt_new": 315,
+   "out": 11,
+   "prompt_ms": 11701,
+   "gen_ms": 2754
+  },
+  {
+   "file": "dev/Desktop/download (6).pdf",
+   "ms": 4,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Document (30).pdf",
+   "ms": 60,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Scan 27.pdf",
+   "ms": 359,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Scan 13.pdf",
+   "ms": 33327,
+   "calls": 2,
+   "prompt": 547,
+   "prompt_new": 411,
+   "out": 36,
+   "prompt_ms": 19223,
+   "gen_ms": 10917
+  },
+  {
+   "file": "dev/Downloads/Print_2025-03-16.pdf",
+   "ms": 130,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/scan_3591.pdf",
+   "ms": 426,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Screenshot 2025-07-28 at 22.45.24.png",
+   "ms": 69,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/photo_17.png",
+   "ms": 57,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250603-WA0111.jpg",
+   "ms": 65,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/photo_6.png",
+   "ms": 54,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20251107-WA0936.jpg",
+   "ms": 59,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/PXL_20251115_134335.jpg",
+   "ms": 109,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Screenshot 2022-04-11 at 15.24.22.png",
+   "ms": 58,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250625-WA0678.jpg",
+   "ms": 104,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Document (28).pdf",
+   "ms": 67,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/3d552e5c.pdf",
+   "ms": 60,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/CamScanner 08-05-2024 9.22.pdf",
+   "ms": 219,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Document (17).pdf",
+   "ms": 20691,
+   "calls": 1,
+   "prompt": 381,
+   "prompt_new": 313,
+   "out": 20,
+   "prompt_ms": 11670,
+   "gen_ms": 7733
+  },
+  {
+   "file": "dev/Downloads/Document (19).pdf",
+   "ms": 170,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/PXL_20250201_151805.jpg",
+   "ms": 20840,
+   "calls": 1,
+   "prompt": 395,
+   "prompt_new": 327,
+   "out": 23,
+   "prompt_ms": 12811,
+   "gen_ms": 6584
+  },
+  {
+   "file": "dev/Desktop/CamScanner 08-30-2025 15.14.pdf",
+   "ms": 18904,
+   "calls": 1,
+   "prompt": 416,
+   "prompt_new": 348,
+   "out": 13,
+   "prompt_ms": 14598,
+   "gen_ms": 3082
+  },
+  {
+   "file": "dev/Desktop/download (7).pdf",
+   "ms": 88,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250424-WA0861.jpg",
+   "ms": 19344,
+   "calls": 1,
+   "prompt": 424,
+   "prompt_new": 356,
+   "out": 13,
+   "prompt_ms": 13153,
+   "gen_ms": 5100
+  },
+  {
+   "file": "dev/Documents/old/Scan 4.pdf",
+   "ms": 111,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Document (4).pdf",
+   "ms": 16620,
+   "calls": 1,
+   "prompt": 221,
+   "prompt_new": 153,
+   "out": 39,
+   "prompt_ms": 6702,
+   "gen_ms": 8286
+  },
+  {
+   "file": "dev/Desktop/photo_12.png",
+   "ms": 81,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Print_2025-01-06.pdf",
+   "ms": 185,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/IMG_1222.jpg",
+   "ms": 67,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/af6e1597.pdf",
+   "ms": 85,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Document (19).pdf",
+   "ms": 141,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/IMG_9204.jpg",
+   "ms": 14113,
+   "calls": 1,
+   "prompt": 245,
+   "prompt_new": 177,
+   "out": 31,
+   "prompt_ms": 6077,
+   "gen_ms": 6799
+  },
+  {
+   "file": "dev/Downloads/CamScanner 03-31-2025 14.40.pdf",
+   "ms": 142,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/CamScanner 03-01-2024 17.45.pdf",
+   "ms": 142,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250903-WA0341.jpg",
+   "ms": 22438,
+   "calls": 1,
+   "prompt": 481,
+   "prompt_new": 413,
+   "out": 20,
+   "prompt_ms": 16800,
+   "gen_ms": 4086
+  },
+  {
+   "file": "dev/Desktop/IMG_4356.jpg",
+   "ms": 112,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/IMG_4574.jpg",
+   "ms": 28066,
+   "calls": 1,
+   "prompt": 698,
+   "prompt_new": 630,
+   "out": 25,
+   "prompt_ms": 23645,
+   "gen_ms": 3242
+  },
+  {
+   "file": "dev/Downloads/Document (14).pdf",
+   "ms": 71,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/scan_9417.pdf",
+   "ms": 60,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+   "ms": 43,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/download (5).pdf",
+   "ms": 57,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/7fac459b.pdf",
+   "ms": 67,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Print_2025-06-14.pdf",
+   "ms": 26,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/download (21).pdf",
+   "ms": 94,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/Print_2025-03-01.pdf",
+   "ms": 108,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Downloads/Document (29).pdf",
+   "ms": 55,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/Documents/old/photo_9.png",
+   "ms": 11358,
+   "calls": 1,
+   "prompt": 237,
+   "prompt_new": 169,
+   "out": 46,
+   "prompt_ms": 5337,
+   "gen_ms": 5054
+  },
+  {
+   "file": "dev/Desktop/Document (6).pdf",
+   "ms": 72,
+   "calls": 0,
+   "prompt": 0,
+   "prompt_new": 0,
+   "out": 0,
+   "prompt_ms": 0,
+   "gen_ms": 0
+  },
+  {
+   "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+   "ms": 65335,
+   "calls": 2,
+   "prompt": 1391,
+   "prompt_new": 794,
+   "out": 75,
+   "prompt_ms": 34188,
+   "gen_ms": 29032
+  }
+ ]
+}

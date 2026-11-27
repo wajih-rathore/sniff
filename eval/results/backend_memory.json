@@ -1,0 +1,47 @@
+{
+ "measured": "2026-11-27, Windows 11, i5-8250U; private = commit (private bytes), ws = working set, MB",
+ "import_sniff_api": {
+  "before_353f647": {
+   "private_mb": 323,
+   "working_set_mb": 105
+  },
+  "after": {
+   "private_mb": 58,
+   "working_set_mb": 71
+  }
+ },
+ "running_backend_before_353f647": {
+  "idle": {
+   "private_mb": 327,
+   "working_set_mb": 110
+  }
+ },
+ "running_backend_after": {
+  "idle": {
+   "private_mb": 62,
+   "working_set_mb": 75
+  },
+  "indexing_peak": {
+   "private_mb": 645,
+   "working_set_mb": 672
+  },
+  "chat_server_peak": {
+   "private_mb": 1758,
+   "working_set_mb": 2814
+  },
+  "indexing_s": 199,
+  "idle_150s_after_indexing": {
+   "private_mb": 177,
+   "working_set_mb": 203
+  },
+  "chat_servers_left": 0,
+  "folder": "10 dev documents, one per type (6 scans or photos)",
+  "power": "battery during this run"
+ },
+ "ocr_engine": {
+  "load_and_first_page_s": 5.88,
+  "second_page_s": 1.78,
+  "private_mb_added": 55,
+  "private_mb_freed_by_release": 27
+ }
+}

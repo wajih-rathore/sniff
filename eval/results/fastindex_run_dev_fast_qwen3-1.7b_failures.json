@@ -1,0 +1,114 @@
+[
+ {
+  "file": "dev/Documents/old/IMG_7333.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 5219.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_14.png",
+  "format": "image",
+  "field": "receipt.date",
+  "gold": "2025-06-11",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.date_of_birth",
+  "gold": "1985-02-11",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/scan_6405.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.issue_date",
+  "gold": "2019-05-06",
+  "pred": null
+ },
+ {
+  "file": "dev/Downloads/download (14).pdf",
+  "format": "pdf_text",
+  "field": "utility_bill.payment_status",
+  "gold": "paid",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/IMG_4953.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 21845.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/scan_9174.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.institution",
+  "gold": "Metro Institute of Technology",
+  "pred": "METROINSTITUTEOF"
+ },
+ {
+  "file": "dev/Desktop/Scan 13.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2007-08-02",
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250625-WA0678.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 3451.0,
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/Document (4).pdf",
+  "format": "pdf_scan",
+  "field": "tenancy_agreement.start_date",
+  "gold": "2025-01-01",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/Document (4).pdf",
+  "format": "pdf_scan",
+  "field": "tenancy_agreement.end_date",
+  "gold": "2025-12-31",
+  "pred": null
+ },
+ {
+  "file": "dev/Desktop/IMG_9204.jpg",
+  "format": "image",
+  "field": "offer_letter.monthly_salary",
+  "gold": 230000.0,
+  "pred": "138000.0"
+ },
+ {
+  "file": "dev/Desktop/scan_9417.pdf",
+  "format": "pdf_scan",
+  "field": "passport.date_of_birth",
+  "gold": "1970-07-30",
+  "pred": null
+ },
+ {
+  "file": "dev/Documents/old/photo_9.png",
+  "format": "image",
+  "field": "transcript.program",
+  "gold": "Master of Fine Arts",
+  "pred": "Master ot Fine Arts"
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.opening_balance",
+  "gold": 410701.3,
+  "pred": null
+ },
+ {
+  "file": "dev/WhatsApp Images/IMG-20250503-WA0574.jpg",
+  "format": "image",
+  "field": "bank_statement.total_credits",
+  "gold": 160000.0,
+  "pred": null
+ }
+]

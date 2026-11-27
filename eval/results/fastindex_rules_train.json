@@ -1,0 +1,549 @@
+{
+ "split": "train",
+ "docs": 136,
+ "all": {
+  "n": 858,
+  "accuracy": 0.86,
+  "filled": 0.816,
+  "precision": 0.951
+ },
+ "per_type": {
+  "bank_statement": {
+   "n": 64,
+   "accuracy": 0.922,
+   "filled": 1.0,
+   "precision": 0.922
+  },
+  "certificate": {
+   "n": 56,
+   "accuracy": 0.875,
+   "filled": 0.893,
+   "precision": 0.98
+  },
+  "fee_voucher": {
+   "n": 56,
+   "accuracy": 0.893,
+   "filled": 1.0,
+   "precision": 0.893
+  },
+  "id_card": {
+   "n": 70,
+   "accuracy": 0.671,
+   "filled": 0.686,
+   "precision": 0.979
+  },
+  "insurance_policy": {
+   "n": 48,
+   "accuracy": 0.5,
+   "filled": 0.5,
+   "precision": 1.0
+  },
+  "offer_letter": {
+   "n": 48,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "passport": {
+   "n": 48,
+   "accuracy": 0.688,
+   "filled": 0.812,
+   "precision": 0.846
+  },
+  "receipt": {
+   "n": 192,
+   "accuracy": 0.948,
+   "filled": 0.641,
+   "precision": 0.976
+  },
+  "tenancy_agreement": {
+   "n": 56,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "transcript": {
+   "n": 48,
+   "accuracy": 0.646,
+   "filled": 0.729,
+   "precision": 0.886
+  },
+  "utility_bill": {
+   "n": 132,
+   "accuracy": 0.962,
+   "filled": 0.886,
+   "precision": 1.0
+  },
+  "warranty_card": {
+   "n": 40,
+   "accuracy": 0.8,
+   "filled": 1.0,
+   "precision": 0.8
+  }
+ },
+ "per_field": {
+  "bank_statement.account_number": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.bank": {
+   "n": 8,
+   "accuracy": 0.375,
+   "filled": 1.0,
+   "precision": 0.375
+  },
+  "bank_statement.closing_balance": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.opening_balance": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.period_end": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.period_start": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.total_credits": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "bank_statement.total_debits": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "certificate.holder_name": {
+   "n": 14,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "certificate.institution": {
+   "n": 14,
+   "accuracy": 0.929,
+   "filled": 1.0,
+   "precision": 0.929
+  },
+  "certificate.issue_date": {
+   "n": 14,
+   "accuracy": 0.714,
+   "filled": 0.714,
+   "precision": 1.0
+  },
+  "certificate.title": {
+   "n": 14,
+   "accuracy": 0.857,
+   "filled": 0.857,
+   "precision": 1.0
+  },
+  "fee_voucher.amount": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "fee_voucher.due_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "fee_voucher.institution": {
+   "n": 8,
+   "accuracy": 0.25,
+   "filled": 1.0,
+   "precision": 0.25
+  },
+  "fee_voucher.issue_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "fee_voucher.registration_number": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "fee_voucher.semester": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "fee_voucher.student_name": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "id_card.date_of_birth": {
+   "n": 14,
+   "accuracy": 0.643,
+   "filled": 0.643,
+   "precision": 1.0
+  },
+  "id_card.expiry_date": {
+   "n": 14,
+   "accuracy": 0.857,
+   "filled": 0.857,
+   "precision": 1.0
+  },
+  "id_card.id_number": {
+   "n": 14,
+   "accuracy": 0.571,
+   "filled": 0.571,
+   "precision": 1.0
+  },
+  "id_card.issue_date": {
+   "n": 14,
+   "accuracy": 0.643,
+   "filled": 0.643,
+   "precision": 1.0
+  },
+  "id_card.name": {
+   "n": 14,
+   "accuracy": 0.643,
+   "filled": 0.714,
+   "precision": 0.9
+  },
+  "insurance_policy.end_date": {
+   "n": 8,
+   "accuracy": 0.125,
+   "filled": 0.125,
+   "precision": 1.0
+  },
+  "insurance_policy.insured_name": {
+   "n": 8,
+   "accuracy": 0.125,
+   "filled": 0.125,
+   "precision": 1.0
+  },
+  "insurance_policy.insurer": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "insurance_policy.policy_number": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 0.625,
+   "precision": 1.0
+  },
+  "insurance_policy.premium": {
+   "n": 8,
+   "accuracy": 0.125,
+   "filled": 0.125,
+   "precision": 1.0
+  },
+  "insurance_policy.start_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.candidate_name": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.employer": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.monthly_salary": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.offer_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.position": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "offer_letter.start_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "passport.date_of_birth": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 0.625,
+   "precision": 1.0
+  },
+  "passport.expiry_date": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 1.0,
+   "precision": 0.625
+  },
+  "passport.issue_date": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 0.625,
+   "precision": 1.0
+  },
+  "passport.name": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "passport.nationality": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 1.0,
+   "precision": 0.625
+  },
+  "passport.passport_number": {
+   "n": 8,
+   "accuracy": 0.625,
+   "filled": 0.625,
+   "precision": 1.0
+  },
+  "receipt.date": {
+   "n": 32,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "receipt.merchant": {
+   "n": 32,
+   "accuracy": 0.906,
+   "filled": 1.0,
+   "precision": 0.906
+  },
+  "receipt.subtotal": {
+   "n": 32,
+   "accuracy": 1.0,
+   "filled": 0.375,
+   "precision": 1.0
+  },
+  "receipt.tax": {
+   "n": 32,
+   "accuracy": 0.781,
+   "filled": 0.156,
+   "precision": 1.0
+  },
+  "receipt.total_amount": {
+   "n": 32,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "receipt.warranty_until": {
+   "n": 32,
+   "accuracy": 1.0,
+   "filled": 0.312,
+   "precision": 1.0
+  },
+  "tenancy_agreement.end_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.landlord": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.monthly_rent": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.property_address": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.security_deposit": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.start_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "tenancy_agreement.tenant": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "transcript.cgpa": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "transcript.institution": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "transcript.issue_date": {
+   "n": 8,
+   "accuracy": 0.5,
+   "filled": 0.5,
+   "precision": 1.0
+  },
+  "transcript.program": {
+   "n": 8,
+   "accuracy": 0.5,
+   "filled": 0.5,
+   "precision": 1.0
+  },
+  "transcript.registration_number": {
+   "n": 8,
+   "accuracy": 0.375,
+   "filled": 0.375,
+   "precision": 1.0
+  },
+  "transcript.student_name": {
+   "n": 8,
+   "accuracy": 0.5,
+   "filled": 1.0,
+   "precision": 0.5
+  },
+  "utility_bill.account_number": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.amount_due": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.bill_date": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.billing_month": {
+   "n": 12,
+   "accuracy": 0.833,
+   "filled": 0.833,
+   "precision": 1.0
+  },
+  "utility_bill.current_charges": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.due_date": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.payment_date": {
+   "n": 12,
+   "accuracy": 0.917,
+   "filled": 0.667,
+   "precision": 1.0
+  },
+  "utility_bill.payment_status": {
+   "n": 12,
+   "accuracy": 0.833,
+   "filled": 0.583,
+   "precision": 1.0
+  },
+  "utility_bill.previous_balance": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 0.667,
+   "precision": 1.0
+  },
+  "utility_bill.provider": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "utility_bill.tax": {
+   "n": 12,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "warranty_card.brand": {
+   "n": 8,
+   "accuracy": 0.875,
+   "filled": 1.0,
+   "precision": 0.875
+  },
+  "warranty_card.product": {
+   "n": 8,
+   "accuracy": 0.125,
+   "filled": 1.0,
+   "precision": 0.125
+  },
+  "warranty_card.purchase_date": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "warranty_card.serial_number": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  },
+  "warranty_card.warranty_until": {
+   "n": 8,
+   "accuracy": 1.0,
+   "filled": 1.0,
+   "precision": 1.0
+  }
+ },
+ "ms_per_doc_p50": 129
+}

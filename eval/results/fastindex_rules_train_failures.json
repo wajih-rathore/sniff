@@ -1,0 +1,842 @@
+[
+ {
+  "file": "train/Documents/old/PXL_20230106_179595.jpg",
+  "format": "image",
+  "field": "id_card.date_of_birth",
+  "gold": "1968-07-30",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/PXL_20241017_117273.jpg",
+  "format": "image",
+  "field": "receipt.merchant",
+  "gold": "Urban Threads",
+  "pred": "Goods once sold willnot be ex"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0148.jpg",
+  "format": "image",
+  "field": "id_card.name",
+  "gold": "Imran Qureshi",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0148.jpg",
+  "format": "image",
+  "field": "id_card.id_number",
+  "gold": "75543-1208607-7",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0148.jpg",
+  "format": "image",
+  "field": "id_card.date_of_birth",
+  "gold": "1984-02-11",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Document (11).pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2019-01-02",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Scan 27.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.institution",
+  "gold": "Lifeline Training Center",
+  "pred": "Training Center"
+ },
+ {
+  "file": "train/Documents/old/photo_11.png",
+  "format": "image",
+  "field": "id_card.id_number",
+  "gold": "21L-5622",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/photo_11.png",
+  "format": "image",
+  "field": "id_card.date_of_birth",
+  "gold": "1997-12-09",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Document (6).pdf",
+  "format": "pdf_scan",
+  "field": "id_card.id_number",
+  "gold": "47693-7302617-3",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Document (6).pdf",
+  "format": "pdf_scan",
+  "field": "id_card.issue_date",
+  "gold": "2016-03-03",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Scan 14.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2006-08-02",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Document (11).pdf",
+  "format": "pdf_scan",
+  "field": "id_card.issue_date",
+  "gold": "2019-09-14",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Document (11).pdf",
+  "format": "pdf_scan",
+  "field": "id_card.expiry_date",
+  "gold": "2024-12-14",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20240305-WA0647.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 4233.0,
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20240217-WA0656.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 25228.0,
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/photo_3.png",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 1139.0,
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/CamScanner 06-04-2024 16.27.pdf",
+  "format": "pdf_scan",
+  "field": "utility_bill.billing_month",
+  "gold": "2024-05",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/CamScanner 05-05-2024 21.58.pdf",
+  "format": "pdf_scan",
+  "field": "utility_bill.billing_month",
+  "gold": "2024-04",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20240918-WA0497.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 15317.0,
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/scan_9098.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2024-07-04",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/CamScanner 01-01-2019 21.48.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.id_number",
+  "gold": "47556-7851204-4",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/CamScanner 01-01-2019 21.48.pdf",
+  "format": "pdf_scan",
+  "field": "id_card.issue_date",
+  "gold": "2017-05-06",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20241202-WA0027.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 1173.0,
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/photo_2.png",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 22361.8,
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/file_5967.pdf",
+  "format": "pdf_text",
+  "field": "utility_bill.payment_status",
+  "gold": "paid",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/photo_25.png",
+  "format": "image",
+  "field": "receipt.merchant",
+  "gold": "Urban Threads",
+  "pred": "Goods once sold willnot be ex"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20200411-WA0112.jpg",
+  "format": "image",
+  "field": "id_card.name",
+  "gold": "Tariq Hussain",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/CamScanner 09-01-2024 10.18.pdf",
+  "format": "pdf_scan",
+  "field": "utility_bill.payment_date",
+  "gold": "2024-09-08",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/photo_24.png",
+  "format": "image",
+  "field": "receipt.merchant",
+  "gold": "BookNook",
+  "pred": "Goods ance sold wilnot be ex"
+ },
+ {
+  "file": "train/Downloads/file_5476.pdf",
+  "format": "pdf_text",
+  "field": "certificate.title",
+  "gold": "Diploma in Electrical Engineering",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0828.jpg",
+  "format": "image",
+  "field": "id_card.date_of_birth",
+  "gold": "1998-12-09",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20240116-WA0325.jpg",
+  "format": "image",
+  "field": "receipt.tax",
+  "gold": 14570.7,
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20220903-WA0224.jpg",
+  "format": "image",
+  "field": "id_card.issue_date",
+  "gold": "2022-09-01",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Scan 6.pdf",
+  "format": "pdf_scan",
+  "field": "certificate.issue_date",
+  "gold": "2020-07-21",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190104-WA0167.jpg",
+  "format": "image",
+  "field": "id_card.name",
+  "gold": "Tariq Hussain",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190104-WA0167.jpg",
+  "format": "image",
+  "field": "id_card.id_number",
+  "gold": "37952-7934225-6",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190104-WA0167.jpg",
+  "format": "image",
+  "field": "id_card.date_of_birth",
+  "gold": "1968-07-30",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/IMG_8972.jpg",
+  "format": "image",
+  "field": "id_card.name",
+  "gold": "Kamran Iqbal",
+  "pred": "Kamran lqbal"
+ },
+ {
+  "file": "train/Desktop/Print_2025-01-02.pdf",
+  "format": "pdf_text",
+  "field": "utility_bill.payment_status",
+  "gold": "paid",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/d91fdae3.pdf",
+  "format": "pdf_text",
+  "field": "certificate.title",
+  "gold": "Diploma in Electrical Engineering",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20210412-WA0579.jpg",
+  "format": "image",
+  "field": "id_card.name",
+  "gold": "Kamran Iqbal",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20210412-WA0579.jpg",
+  "format": "image",
+  "field": "id_card.id_number",
+  "gold": "KHI-21-501598",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20210412-WA0579.jpg",
+  "format": "image",
+  "field": "id_card.issue_date",
+  "gold": "2021-04-11",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20210412-WA0579.jpg",
+  "format": "image",
+  "field": "id_card.expiry_date",
+  "gold": "2026-04-11",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/photo_30.png",
+  "format": "image",
+  "field": "transcript.registration_number",
+  "gold": "2023-LU-FA-031",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Print_2022-08-05.pdf",
+  "format": "pdf_text",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Desktop/PXL_20240331_155233.jpg",
+  "format": "image",
+  "field": "bank_statement.bank",
+  "gold": "Orchard Bank Ltd",
+  "pred": "ORCHARD BANK LTD e-Statement"
+ },
+ {
+  "file": "train/Downloads/CamScanner 05-10-2024 12.15.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.insured_name",
+  "gold": "Imran Qureshi",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/CamScanner 05-10-2024 12.15.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.premium",
+  "gold": 47000.0,
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/CamScanner 05-10-2024 12.15.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.end_date",
+  "gold": "2025-05-09",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/4c172b05.pdf",
+  "format": "pdf_text",
+  "field": "passport.passport_number",
+  "gold": "BS2211498",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/4c172b05.pdf",
+  "format": "pdf_text",
+  "field": "passport.nationality",
+  "gold": "Eastlander",
+  "pred": "EASTLANDER M"
+ },
+ {
+  "file": "train/Documents/old/4c172b05.pdf",
+  "format": "pdf_text",
+  "field": "passport.date_of_birth",
+  "gold": "1969-07-30",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/4c172b05.pdf",
+  "format": "pdf_text",
+  "field": "passport.issue_date",
+  "gold": "2014-01-12",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/4c172b05.pdf",
+  "format": "pdf_text",
+  "field": "passport.expiry_date",
+  "gold": "2024-01-12",
+  "pred": "2014-01-12"
+ },
+ {
+  "file": "train/Downloads/Scan 1.pdf",
+  "format": "pdf_scan",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Downloads/download (1).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.insured_name",
+  "gold": "Kamran Iqbal",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/download (1).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.premium",
+  "gold": 54000.0,
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/download (1).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.end_date",
+  "gold": "2029-02-28",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Print_2023-05-10.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.policy_number",
+  "gold": "HM-MTR-2023-855126",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Print_2023-05-10.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.insured_name",
+  "gold": "Faisal Mehmood",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Print_2023-05-10.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.premium",
+  "gold": 47000.0,
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Print_2023-05-10.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.end_date",
+  "gold": "2024-05-09",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/15929f84.pdf",
+  "format": "pdf_text",
+  "field": "bank_statement.bank",
+  "gold": "Orchard Bank Ltd",
+  "pred": "ORCHARD BANK LTD e-Statement"
+ },
+ {
+  "file": "train/Documents/old/Document (1).pdf",
+  "format": "pdf_text",
+  "field": "transcript.student_name",
+  "gold": "Faisal Mehmood",
+  "pred": "Faisal Mehmood 2022-LU-MBA-077 Master of Business Administration 2023-07-11"
+ },
+ {
+  "file": "train/Documents/old/Document (1).pdf",
+  "format": "pdf_text",
+  "field": "transcript.registration_number",
+  "gold": "2022-LU-MBA-077",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Document (1).pdf",
+  "format": "pdf_text",
+  "field": "transcript.program",
+  "gold": "Master of Business Administration",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/Document (1).pdf",
+  "format": "pdf_text",
+  "field": "transcript.issue_date",
+  "gold": "2023-07-11",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/PXL_20240830_215947.jpg",
+  "format": "image",
+  "field": "warranty_card.product",
+  "gold": "UPS 1500VA",
+  "pred": "UPS 1500VA VX-1500"
+ },
+ {
+  "file": "train/Desktop/scan_2152.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.insured_name",
+  "gold": "Hina Butt",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/scan_2152.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.premium",
+  "gold": 4900.0,
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/scan_2152.pdf",
+  "format": "pdf_scan",
+  "field": "insurance_policy.end_date",
+  "gold": "2024-07-20",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230425-WA0930.jpg",
+  "format": "image",
+  "field": "warranty_card.product",
+  "gold": "Refrigerator 12cft",
+  "pred": "Refrigerator 12cft SW-R12"
+ },
+ {
+  "file": "train/Documents/old/photo_6.png",
+  "format": "image",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Desktop/Scan 12.pdf",
+  "format": "pdf_scan",
+  "field": "warranty_card.product",
+  "gold": "Microwave Oven 25L",
+  "pred": "Microwave Oven 25L KV-25MG"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230614-WA0533.jpg",
+  "format": "image",
+  "field": "warranty_card.product",
+  "gold": "Tablet 8in",
+  "pred": "Tablet 8in LM-T8"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230108-WA0000.jpg",
+  "format": "image",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Downloads/Screenshot 2024-01-06 at 18.14.29.png",
+  "format": "image",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Documents/old/Document (14).pdf",
+  "format": "pdf_scan",
+  "field": "bank_statement.bank",
+  "gold": "Orchard Bank Ltd",
+  "pred": "ORCHARD BANK LTD e-Statement"
+ },
+ {
+  "file": "train/Downloads/PXL_20240106_147069.jpg",
+  "format": "image",
+  "field": "fee_voucher.institution",
+  "gold": "Lakeshore University",
+  "pred": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY"
+ },
+ {
+  "file": "train/Desktop/Document (2).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.insured_name",
+  "gold": "Imran Qureshi",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Document (2).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.premium",
+  "gold": 58000.0,
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Document (2).pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.end_date",
+  "gold": "2025-01-31",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Screenshot 2024-06-14 at 11.57.38.png",
+  "format": "image",
+  "field": "warranty_card.product",
+  "gold": "Tablet 8in",
+  "pred": "Tablet 8in LM-T8"
+ },
+ {
+  "file": "train/Downloads/Scan 2.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.student_name",
+  "gold": "Mariam Javed",
+  "pred": "Mariam Javed 2022-LU-FA-031 Master of Fine Arts 22 Feb 2023"
+ },
+ {
+  "file": "train/Downloads/Scan 2.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.registration_number",
+  "gold": "2022-LU-FA-031",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Scan 2.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.program",
+  "gold": "Master of Fine Arts",
+  "pred": null
+ },
+ {
+  "file": "train/Downloads/Scan 2.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.issue_date",
+  "gold": "2023-02-22",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230702-WA0579.jpg",
+  "format": "image",
+  "field": "insurance_policy.policy_number",
+  "gold": "GG-TR-2023-848037",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230702-WA0579.jpg",
+  "format": "image",
+  "field": "insurance_policy.insured_name",
+  "gold": "Mariam Javed",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230702-WA0579.jpg",
+  "format": "image",
+  "field": "insurance_policy.premium",
+  "gold": 4900.0,
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20230702-WA0579.jpg",
+  "format": "image",
+  "field": "insurance_policy.end_date",
+  "gold": "2023-07-20",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 25.pdf",
+  "format": "pdf_scan",
+  "field": "warranty_card.brand",
+  "gold": "Sunwave",
+  "pred": "SUNWAVE WARRANTY CARD"
+ },
+ {
+  "file": "train/Desktop/Scan 4.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.student_name",
+  "gold": "Hina Butt",
+  "pred": "Hina Butt 2023-LU-FA-031 Master of Fine Arts 2024-07-12"
+ },
+ {
+  "file": "train/Desktop/Scan 4.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.registration_number",
+  "gold": "2023-LU-FA-031",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 4.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.program",
+  "gold": "Master of Fine Arts",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 4.pdf",
+  "format": "pdf_scan",
+  "field": "transcript.issue_date",
+  "gold": "2024-07-12",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/f4acaee7.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.policy_number",
+  "gold": "EL-LF-2008-586620",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/f4acaee7.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.insured_name",
+  "gold": "Tariq Hussain",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/f4acaee7.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.premium",
+  "gold": 54000.0,
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/f4acaee7.pdf",
+  "format": "pdf_text",
+  "field": "insurance_policy.end_date",
+  "gold": "2028-02-28",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/file_3990.pdf",
+  "format": "pdf_text",
+  "field": "transcript.student_name",
+  "gold": "Imran Qureshi",
+  "pred": "Imran Qureshi 2023-LU-MBA-077 Master of Business Administration 06 Jul 2024"
+ },
+ {
+  "file": "train/Documents/old/file_3990.pdf",
+  "format": "pdf_text",
+  "field": "transcript.registration_number",
+  "gold": "2023-LU-MBA-077",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/file_3990.pdf",
+  "format": "pdf_text",
+  "field": "transcript.program",
+  "gold": "Master of Business Administration",
+  "pred": null
+ },
+ {
+  "file": "train/Documents/old/file_3990.pdf",
+  "format": "pdf_text",
+  "field": "transcript.issue_date",
+  "gold": "2024-07-06",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 21.pdf",
+  "format": "pdf_scan",
+  "field": "passport.passport_number",
+  "gold": "FF5197397",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 21.pdf",
+  "format": "pdf_scan",
+  "field": "passport.nationality",
+  "gold": "Eastlander",
+  "pred": "EASTLANDER M"
+ },
+ {
+  "file": "train/Desktop/Scan 21.pdf",
+  "format": "pdf_scan",
+  "field": "passport.date_of_birth",
+  "gold": "1984-02-11",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 21.pdf",
+  "format": "pdf_scan",
+  "field": "passport.issue_date",
+  "gold": "2018-03-04",
+  "pred": null
+ },
+ {
+  "file": "train/Desktop/Scan 21.pdf",
+  "format": "pdf_scan",
+  "field": "passport.expiry_date",
+  "gold": "2028-03-04",
+  "pred": "2018-03-04"
+ },
+ {
+  "file": "train/Desktop/file_4051.pdf",
+  "format": "pdf_text",
+  "field": "bank_statement.bank",
+  "gold": "Orchard Bank Ltd",
+  "pred": "ORCHARD BANK LTD e-Statement"
+ },
+ {
+  "file": "train/Documents/old/0bac0b7d.pdf",
+  "format": "pdf_text",
+  "field": "warranty_card.product",
+  "gold": "Microwave Oven 25L",
+  "pred": "Microwave Oven 25L KV-25MG"
+ },
+ {
+  "file": "train/Downloads/Print_2023-08-30.pdf",
+  "format": "pdf_text",
+  "field": "warranty_card.product",
+  "gold": "UPS 1500VA",
+  "pred": "UPS 1500VA VX-1500"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0425.jpg",
+  "format": "image",
+  "field": "passport.passport_number",
+  "gold": "VW2214185",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0425.jpg",
+  "format": "image",
+  "field": "passport.nationality",
+  "gold": "Eastlander",
+  "pred": "EASTLANDER M"
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0425.jpg",
+  "format": "image",
+  "field": "passport.date_of_birth",
+  "gold": "1983-02-11",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0425.jpg",
+  "format": "image",
+  "field": "passport.issue_date",
+  "gold": "2017-03-04",
+  "pred": null
+ },
+ {
+  "file": "train/WhatsApp Images/IMG-20190102-WA0425.jpg",
+  "format": "image",
+  "field": "passport.expiry_date",
+  "gold": "2027-03-04",
+  "pred": "2017-03-04"
+ },
+ {
+  "file": "train/Downloads/download (19).pdf",
+  "format": "pdf_text",
+  "field": "bank_statement.bank",
+  "gold": "Orchard Bank Ltd",
+  "pred": "ORCHARD BANK LTD e-Statement"
+ }
+]
