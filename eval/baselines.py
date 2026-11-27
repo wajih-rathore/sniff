@@ -80,7 +80,7 @@ def extract_regex(doc_type: str, text: str) -> dict:
             "warranty_until": _date(r"(warranty)", text),
         }
     if doc_type == "passport":
-        return {"passport_number": (m.group(0) if (m := re.search(r"[A-Z]{2}\d{7}", text)) else None),
+        return {"passport_number": (m.group(0) if (m := re.search(r"\b[A-Z]{2}\d{7}\b", text)) else None),
                 "date_of_birth": _date(r"(date of birth|dob)", text), "expiry_date": _date(r"(expiry|valid until)", text)}
     if doc_type == "transcript":
         v = after(r"(cgpa|cumulative gpa)", r"(\d\.\d{1,2})", text)
