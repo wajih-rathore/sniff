@@ -27,7 +27,7 @@ FLAGS = ["--jinja", "--reasoning-budget", "0", "-c", "8192", "--cache-ram", "512
 START_TIMEOUT = 120.0  # loading the model from a cold disk can take a while
 NO_WINDOW = 0x08000000
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _proc: subprocess.Popen | None = None
 _last = 0.0
 _busy = 0
@@ -94,10 +94,10 @@ def ensure() -> None:
 def using():
     """Wrap every model call: starts the server if needed, and keeps it up while the call (or a stream) runs."""
     global _busy, _last
-    ensure()
     with _lock:
-        _busy += 1
+        _busy += 1  # first, so the idle stopper leaves the server alone from here on
     try:
+        ensure()
         yield
     finally:
         with _lock:
@@ -123,8 +123,9 @@ def _stopper() -> None:
     me = _proc
     while _proc is me and running():
         time.sleep(min(5.0, IDLE / 4))
-        if _busy == 0 and time.monotonic() - _last > IDLE:
-            stop()
+        with _lock:  # checked and stopped under the lock, so no call can start in between
+            if _busy == 0 and time.monotonic() - _last > IDLE:
+                stop()
 
 
 atexit.register(stop)
