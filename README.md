@@ -43,17 +43,19 @@ uv run python ../eval/fetch_models.py qwen3-1.7b all-minilm
 cd ../frontend
 npm install
 
-# 4. start everything from the repo root: chat model on 8080, embeddings on 8081, API on 8000, UI on 5173
+# 4. start everything from the repo root: embeddings on 8081, API on 8000, UI on 5173
+#    (the API starts the chat model on 8080 when it needs it, and stops it after 120 s idle)
 cd ..
 powershell -ExecutionPolicy Bypass -File scripts\dev.ps1
 ```
 
 Open http://localhost:5173, type `/watch`, press Enter, then type a folder path and press Enter. Sniff indexes it and keeps it up to date. Type `/` to see the other commands. The index is `.sniff/sniff.db`; set `SNIFF_DB` to use another file. `VITE_MOCK=1 npm run dev` runs the UI on fixture data, without the back end.
 
-To start the parts by hand (for example on another OS), these are the commands `dev.ps1` runs:
+To start the parts by hand (for example on another OS), these are the commands `dev.ps1` runs. If a chat server
+already answers on 8080 (the first line), the API uses it and never stops it:
 
 ```bash
-models/llama/llama-server -m models/qwen3-1.7b-q4_k_m.gguf --port 8080 --jinja --reasoning-budget 0 -c 8192
+models/llama/llama-server -m models/qwen3-1.7b-q4_k_m.gguf --port 8080 --jinja --reasoning-budget 0 -c 8192   # optional
 models/llama/llama-server -m models/all-minilm-l6-v2.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
 cd backend && uv run uvicorn sniff.api:app --port 8000
 cd frontend && npm run dev

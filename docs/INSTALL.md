@@ -55,10 +55,11 @@ gets its final name only after its sha256 matches; a file that does not match is
   Sniff then starts in the tray, without the window. The uninstaller removes the value.
 - Once an hour Sniff checks the expiry and due dates it found. For a date in the next 7 days it shows a Windows
   notification, at most once a day per document.
-- On start, Sniff starts its back end on `127.0.0.1:8765`. It checks ports 8080 (chat) and 8081 (embeddings): if a
-  model server already answers there it is reused, otherwise Sniff starts its own `llama-server` with the same
-  flags as `scripts/dev.ps1`. Quit stops every process Sniff started. They are in a Windows job object, so they
-  also end if Sniff crashes. Model servers it only reuses are left alone.
+- On start, Sniff starts its back end on `127.0.0.1:8765` and the embedding server on 8081 (reused if one already
+  answers there). The chat model is not loaded at start: the back end starts `llama-server` on 8080 the first time
+  a document or a question needs it, and stops it after 120 s without a call (`SNIFF_LLM_IDLE`). Most documents
+  never need it. Quit stops every process Sniff started. They are in a Windows job object (the chat server joins it
+  through the back end), so they also end if Sniff crashes. Model servers it only reuses are left alone.
 - Enter on a result opens the file. A PDF hit on page 2 or later opens in Microsoft Edge at that page, because the
   default PDF reader may ignore page numbers. Ctrl+Enter shows the file in Explorer. A calendar reminder is saved
   as an `.ics` file in `%TEMP%` and opened in the default calendar app.
@@ -132,12 +133,13 @@ Not done yet. Things the sandbox run does not cover. On a fresh Windows 11 VM wi
 4. Stop the network in the middle of the download, start it again, and check that it resumes rather than restarts.
 5. Close and reopen Sniff in the middle of the download. Press Resume and check that it continues.
 6. After the download, check `models\` holds the two files and no `.part` file is left.
-7. Check that `logs\chat-server.log` and `logs\embed-server.log` show both servers loaded.
+7. Check that `logs\embed-server.log` shows the embedding server loaded, and that no chat `llama-server.exe` runs yet.
 8. Index a folder of 10 test documents in Settings. Note the time per document.
 9. Run a search and ask a question. Note the answer time.
 10. Press Alt+Shift+Space from another app: the window shows. Press it again: it hides.
 11. Close the window with Alt+F4: it hides to the tray. Open it from the tray. Try Settings in the tray menu.
-12. Record peak memory of `sniff.exe`, `sniff-backend.exe` and both `llama-server.exe` in Task Manager.
+12. Record peak memory of `sniff.exe`, `sniff-backend.exe` and both `llama-server.exe` in Task Manager. Wait 2 minutes
+    without asking anything: the chat `llama-server.exe` should be gone (`logs\chat-server.log` shows it started).
 13. Quit from the tray. Check in Task Manager that no `sniff-backend.exe` or `llama-server.exe` is left.
 14. Uninstall with "Delete the application data" ticked. Check `%LOCALAPPDATA%\Sniff`, `%LOCALAPPDATA%\pk.edu.nu.sniff`,
     the Start menu entry and `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall` are all gone.
