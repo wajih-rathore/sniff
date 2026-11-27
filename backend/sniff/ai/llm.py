@@ -93,6 +93,8 @@ class Claude:
 @lru_cache(4)
 def _build(provider: str, base_url: str, model: str, key: str | None):
     if provider == "openai":
+        if not (base_url and model):  # the app saves each field as it is typed, so one can still be missing
+            raise Unavailable("Set the base URL and the model first.")
         return OpenAICompatible(base_url, model, key)
     if not key:
         raise Unavailable("No API key is saved.")
