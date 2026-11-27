@@ -170,10 +170,10 @@ def extract(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = No
 
 
 def window(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = None, fields=None, before: int = 0,
-           after: int = 1) -> list[tuple[int, str]]:
+           after: int = 1, whole: bool = True) -> list[tuple[int, str]]:
     """The candidate lines for `fields` (default: all of the type's): each row with one of their labels, `before`
     rows above it and `after` rows below, plus the letterhead when a field may stand there. Pages keep their numbers;
-    rows keep their order. A document with none of the labels comes back whole."""
+    rows keep their order. A document with none of the labels comes back whole, or as [] with whole=False."""
     fields = set(fields or FIELDS[doc_type])
     pats = [(label, pat) for f, label, pat in verify.labels(doc_type) if f in fields]
     header = any(FIELDS[doc_type][f].header for f in fields)
@@ -185,4 +185,4 @@ def window(doc_type: str, pages: list[tuple[int, str]], boxes: dict | None = Non
                 keep |= set(range(max(0, i - before), min(len(rows), i + after + 1)))
         if keep:
             out.append((page, "\n".join(rows[i].text for i in sorted(keep))))
-    return out if any(t for _, t in out) else pages
+    return out if any(t for _, t in out) else pages if whole else []
