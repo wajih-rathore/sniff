@@ -102,6 +102,7 @@ export default function Launcher() {
   const [busy, setBusy] = useState(false)
   const [more, setMore] = useState(false)
   const [preview, setPreview] = useState(false)
+  const [paneAr, setPaneAr] = useState<number | null>(null) // the preview pane's free height over its width, for the page crop
   const [pvSel, setPvSel] = useState(0) // the row shown in the preview: follows the selection after a 120 ms dwell
   const [recent, setRecent] = useState<Document[] | null>(null)
   const [panel, setPanel] = useState(false)
@@ -445,6 +446,8 @@ export default function Launcher() {
     if (!panel) { s.style.minHeight = ''; s.querySelectorAll<HTMLElement>('[data-scroll]').forEach((l) => { l.style.paddingBottom = '' }) }
     fitWin(w)
     keepInView(s.querySelector<HTMLElement>('[data-scroll] [aria-selected=true]'))
+    const pane = s.querySelector<HTMLElement>('.pane') // the crop fills the pane: 16 px padding, 12 px gap, then the field line
+    if (pane) { const ar = Math.floor((pane.clientHeight - 44 - (pane.querySelector<HTMLElement>('.pv-field')?.offsetHeight ?? 20)) / (pane.clientWidth - 32) * 100) / 100; if (ar > 0 && ar !== paneAr) setPaneAr(ar) }
     if (panel && panelEl.current) placePanel(s, panelEl.current)
     // offsetHeight is a frame of a running height animation: note it, stop the animation, then measure what the content needs
     const from = w.offsetHeight
@@ -592,8 +595,8 @@ export default function Launcher() {
           <div className="pane fade">{/* kept mounted while arrowing: the old page stays up until the next one loads, no blank flash */}
             {pv.kind === 'fold' ? <p className="pv-note">Press Enter to show the {plural(weak.length, 'weaker match', 'weaker matches')}.</p> : pv.src && (
               <>
-                <img className="crop" alt={`Page ${pv.hit?.fact?.page ?? pv.src.page} of ${pv.src.name}`}
-                  src={api.cropUrl(pv.src.file_id, pv.hit?.fact ? { fact_id: pv.hit.fact.id } : { page: pv.src.page, q: pv.hit ? query : '' })} />
+                {paneAr && <img className="crop" alt={`Page ${pv.hit?.fact?.page ?? pv.src.page} of ${pv.src.name}`} style={{ aspectRatio: `auto 1 / ${paneAr}` }}
+                  src={api.cropUrl(pv.src.file_id, { ...(pv.hit?.fact ? { fact_id: pv.hit.fact.id } : { page: pv.src.page, q: pv.hit ? query : '' }), ar: paneAr })} />}
                 <div className="pv-field">
                   <span className="l">{pv.hit?.fact ? label(pv.hit.fact.field) : pv.hit ? 'Text' : label(typeName(pv.type))}</span>
                   <span className="v">{pv.hit?.fact ? show(pv.hit.fact) : pv.hit ? around(pv.hit.snippet, query) : (pv.title as string)}</span>
@@ -619,11 +622,13 @@ export default function Launcher() {
   if (screen === 'answer') {
     const streaming = !ans && !!stream
     const sources = ans?.sources ?? []
+    const failed = !asking && !ans && !stream && !!err // no answer came, e.g. the chat model is not running
     body = (
       <div className="main">
         {!details ? (
           <div className="ans" data-scroll style={{ flex: 1 }}>
             {starting && !stream && <p className="sent lead">Starting the model…</p>}
+            {failed && <p className="sent lead">{err}</p>}
             {(h?.value || h?.alts || (asking && !stream && !ans && !starting)) && (
               <div className="fig">
                 {h?.alts ? <span className="two">{h.alts.map((v, i) => <Fragment key={i}>{i > 0 && ' or '}<b>{v}</b></Fragment>)}: two files disagree on {shortTitle(alts[0].source)}.</span>
@@ -695,7 +700,9 @@ export default function Launcher() {
     )
     const n = ans?.counted.length || ans?.sources.length || 0
     live = !ans ? '' : h?.alts ? `Not final: ${h.alts.join(' or ')}. Two files disagree.` : `${h?.value ? h.value + '. ' : ''}${h?.sentence ?? ''}`
-    foot = errFoot(
+    // the reason is in the body, so the footer only says how to go back
+    if (failed) foot = <Foot ctx="Esc goes back to your search" toast={toast}>{actK}</Foot>
+    else foot = errFoot(
       asking ? (stream ? 'Writing the answer' : starting ? 'The model loads only when an answer needs it. The first one can take about 40 seconds' : 'Reading your documents')
       : details ? 'Esc returns to the answer'
       : !ans ? ''

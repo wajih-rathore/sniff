@@ -23,5 +23,8 @@ const long = 'The warranty covers parts and labour for two years from the date o
 assert.equal(headline(A(long, { route: 'search' })).value, null)
 h = headline(A('Copies of one record disagree, so Sniff has not picked one. If a.pdf is right: 16,798 in total, from 2 documents. If b.pdf is right: 16,762 in total, from 2 documents. Pick the right copy to settle it.', {
   alternatives: [{ source: ne, answer: '16,798 in total, from 2 documents.', key: 'k', fact_id: 1 }, { source: { ...ne, name: 'NE bill Nov.pdf' }, answer: '16,762 in total, from 2 documents.', key: 'k', fact_id: 2 }] }))
-assert.deepEqual(h.alts, ['Rs.\u00a016,798', 'Rs.\u00a016,762']); assert.equal(h.value, null)
+assert.deepEqual(h.alts, ['Rs.\u00a016,798', 'Rs.\u00a016,762']); assert.equal(h.value, null); assert.equal(h.sentence, 'In total, from 2 documents.')
+// the chips list both disagreeing copies: the sentence counts records and files, so the numbers on screen match
+h = headline(A('x', { sources: [gas, ne, { ...ne, name: 'NE bill Nov.pdf' }], alternatives: [{ source: ne, answer: '16,798 in total, from 2 documents.', key: 'k', fact_id: 1 }, { source: ne, answer: '16,762 in total, from 2 documents.', key: 'k', fact_id: 2 }] }))
+assert.equal(h.sentence, 'In total, from 2 records (3 files).')
 console.log('answer-check: all passed')

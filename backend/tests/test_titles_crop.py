@@ -94,8 +94,16 @@ def test_crop_finds_the_value_on_the_page(client, printed):
     img = Image.open(io.BytesIO(r.content))
     assert img.width == round(595 * 2) and img.height < img.width  # a strip at 144 dpi, not the whole page
     top = Image.open(io.BytesIO(client.get(f"/documents/{fid}/crop").content))  # no fact: the top of the page
-    assert top.width == img.width and abs(top.height - img.height) <= 1 and top.tobytes() != img.tobytes()
+    assert top.width == img.width and top.tobytes() != img.tobytes()
+    tall = Image.open(io.BytesIO(client.get(f"/documents/{fid}/crop", params={"fact_id": fact, "ar": 1}).content))
+    assert img.height < tall.height <= img.width  # ar asks for a strip as tall as the pane that shows it
     assert client.get(f"/documents/{fid}/crop", params={"fact_id": 9999}).status_code == 404
+
+
+def test_crop_never_cuts_a_line_of_text():
+    lines = [pymupdf.Rect(0, y, 100, y + 12) for y in range(0, 300, 20)]  # text lines at 0-12, 20-32, ... 280-292
+    assert api._snap(5, 125, lines) == (12, 120)  # both edges fell inside a line: each moved inwards, past it
+    assert api._snap(15, 135, lines) == (15, 135)  # both edges between lines: kept
 
 
 def test_model_status_says_when_the_model_is_loading(client, monkeypatch):
