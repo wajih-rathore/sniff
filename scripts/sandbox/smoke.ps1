@@ -78,7 +78,7 @@ try {
     Start-Sleep 3
     Shot "1-first-start"
 
-    # 3. first-run model download (the same call the Download button makes), then wait for both model servers
+    # 3. first-run model download (the same call the Download button makes), then wait for the embedding server (the chat model is not downloaded: AI is off)
     $t = [Diagnostics.Stopwatch]::StartNew()
     if (-not $setup.ready -and -not $setup.servers) {  # model servers that already answer are reused, as the app does
         Invoke-RestMethod "$api/setup/download" -Method Post | Out-Null
@@ -95,8 +95,7 @@ try {
     }
     $downloaded = $t.Elapsed.TotalSeconds
     Wait-Until { (Invoke-RestMethod "$api/setup" -TimeoutSec 10).servers } 600 | Out-Null
-    Wait-Until { (Invoke-WebRequest "http://127.0.0.1:8080/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 -and
-                 (Invoke-WebRequest "http://127.0.0.1:8081/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } 600 | Out-Null
+    Wait-Until { (Invoke-WebRequest "http://127.0.0.1:8081/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } 600 | Out-Null
     Note "3_models" @{ download_s = [math]::Round($downloaded, 1); models_ready_s = [math]::Round($t.Elapsed.TotalSeconds, 1)
                        model_mb = [math]::Round(((Invoke-RestMethod "$api/setup").models | Measure-Object size -Sum).Sum / 1MB); free_mb = Free-MB }
     Shot "3-models-ready"

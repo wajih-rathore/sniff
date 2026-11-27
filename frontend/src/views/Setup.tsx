@@ -2,17 +2,17 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { BASE, DESKTOP, MOCK } from '../api'
 
 type Setup = {
-  servers: boolean // both model servers answer
-  ready: boolean // both model files are on disk
+  servers: boolean // the embedding server answers (the chat model is optional, in Settings > AI)
+  ready: boolean // the embedding model is on disk
   folder: string
   models: { name: string; size: number; have: number }[]
   running: boolean
   error: string | null
 }
 
-const gb = (n: number) => (n / 1e9).toFixed(2)
+const mb = (n: number) => Math.round(n / 1e6)
 
-// Desktop app only: on first run, download the models; on every start, wait until the model servers answer.
+// Desktop app only: on first run, download the search model; on every start, wait until its server answers.
 // The dev back end has no /setup route, so in the browser this shows the app straight away.
 export default function SetupGate({ children }: { children: ReactNode }) {
   const [s, setS] = useState<Setup | null>(null)
@@ -45,19 +45,19 @@ export default function SetupGate({ children }: { children: ReactNode }) {
     <div className="mx-auto max-w-[520px] px-6 pt-[18vh]">
       <h1 className="mb-2 text-[15px] font-semibold">Sniff</h1>
       {!s && <p className="text-[13px] text-muted">Starting…</p>}
-      {s?.ready && <p className="text-[13px] text-muted">Starting the AI models. This takes a few seconds.</p>}
+      {s?.ready && <p className="text-[13px] text-muted">Starting the search model. This takes a few seconds.</p>}
       {s && !s.ready && (
         <>
           <p className="text-[13px] text-muted">
-            The first time, Sniff downloads two AI models ({gb(total)} GB). They run on this laptop, and your documents never leave
-            it. The models are saved in <span className="break-all">{s.folder}</span>.
+            The first time, Sniff downloads its search model ({mb(total)} MB). It runs on this laptop, and your documents never leave
+            it. The model is saved in <span className="break-all">{s.folder}</span>.
           </p>
           {s.running || have > 0 ? (
             <div className="mt-5">
               <div className="h-1.5 overflow-hidden rounded bg-line">
                 <div className="h-full bg-accent transition-[width]" style={{ width: `${Math.round((have / total) * 100)}%` }} />
               </div>
-              <div className="mt-2 text-[12px] text-muted">{gb(have)} of {gb(total)} GB{s.running ? '' : ', paused'}</div>
+              <div className="mt-2 text-[12px] text-muted">{mb(have)} of {mb(total)} MB{s.running ? '' : ', paused'}</div>
             </div>
           ) : null}
           {!s.running && (
