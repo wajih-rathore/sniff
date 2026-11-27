@@ -7,11 +7,9 @@ use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
-use std::os::windows::io::AsRawHandle;
-use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::sync::{Mutex, OnceLock};
+use std::sync::Mutex;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
@@ -20,18 +18,15 @@ use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager, PhysicalPosition, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
-use windows_sys::Win32::System::JobObjects::{
-    AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-};
+
+mod platform;
+use platform::home;
 
 // Alt+Space opens the window menu in Windows and is PowerToys Run's default, so Sniff uses Alt+Shift+Space.
 // set_hotkey changes it and saves the new one in data/hotkey.txt.
 const SHORTCUT: &str = "Alt+Shift+Space";
 // Same port as backend/sniff/desktop.py and frontend/src/api.ts. Not 8000, so a dev back end can run alongside.
 const API_PORT: u16 = 8765;
-const NO_WINDOW: u32 = 0x0800_0000; // CREATE_NO_WINDOW: no console windows for the child processes
-const RUN_KEY: &str = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run"; // the uninstaller deletes our "Sniff" value
 const NOTIFY_DAYS: i64 = 7; // dates this close get a notification, at most once a day per document
 
 #[derive(Default)]
@@ -43,14 +38,6 @@ struct Hotkey(Mutex<String>); // the shortcut registered now
 // click, for example when a second launch asks the first one to show), the window reports a focus loss right after
 // it appears. Focus losses this soon after showing are not clicks elsewhere, so they do not hide it.
 static SHOWN_AT: Mutex<Option<Instant>> = Mutex::new(None);
-
-/// Data, models and logs: %LOCALAPPDATA%\Sniff, or SNIFF_HOME if set.
-fn home() -> PathBuf {
-    match std::env::var_os("SNIFF_HOME") {
-        Some(h) => h.into(),
-        None => PathBuf::from(std::env::var_os("LOCALAPPDATA").expect("LOCALAPPDATA is not set")).join("Sniff"),
-    }
-}
 
 fn log(msg: &str) {
     let dir = home().join("logs");
@@ -75,26 +62,11 @@ fn get(path: &str) -> Option<String> {
     (head.split(' ').nth(1) == Some("200")).then(|| body.to_string())
 }
 
-/// A Windows job object that kills its processes when its last handle closes. Sniff holds the only handle, so when
-/// Sniff exits in any way, a crash included, the back end and the model servers it started end with it.
-fn job() -> usize {
-    static JOB: OnceLock<usize> = OnceLock::new();
-    *JOB.get_or_init(|| unsafe {
-        let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
-        let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
-        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        let size = std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32;
-        if job.is_null() || SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info as *const _ as _, size) == 0 {
-            log("could not set up the job object: child processes will outlive a crash");
-        }
-        job as usize
-    })
-}
-
 /// Start `exe` with its output in logs/<name>.log, and keep the handle so Quit can stop it.
 fn spawn(app: &AppHandle, name: &str, exe: &Path, args: &[&str]) {
     let mut cmd = Command::new(exe);
-    cmd.args(args).env("SNIFF_HOME", home()).stdin(Stdio::null()).creation_flags(NO_WINDOW);
+    cmd.args(args).env("SNIFF_HOME", home()).stdin(Stdio::null());
+    platform::prepare(&mut cmd);
     if let Ok(out) = File::create(home().join("logs").join(format!("{name}.log"))) {
         if let Ok(err) = out.try_clone() {
             cmd.stderr(err);
@@ -103,8 +75,8 @@ fn spawn(app: &AppHandle, name: &str, exe: &Path, args: &[&str]) {
     }
     match cmd.spawn() {
         Ok(child) => {
-            let in_job = unsafe { AssignProcessToJobObject(job() as _, child.as_raw_handle() as _) } != 0;
-            log(&format!("started {name} (pid {}, in job: {in_job})", child.id()));
+            let adopted = platform::adopt(&child);
+            log(&format!("started {name} (pid {}, ends with Sniff: {adopted})", child.id()));
             app.state::<Children>().0.lock().unwrap().push(child);
         }
         Err(e) => log(&format!("could not start {name}: {e}")),
@@ -223,37 +195,20 @@ fn toggle(app: &AppHandle) {
     }
 }
 
-/// Open a file in its default app. A PDF with a page above 1 opens in Microsoft Edge at that page, because the
-/// default PDF reader may ignore page numbers (Edge comes with Windows 11 and reads #page=N).
+/// Open a file in its default app, at the page where the platform allows it (platform::open).
 #[tauri::command]
 fn open_file(path: String, page: Option<u32>) -> Result<(), String> {
     let file = Path::new(&path);
     if !file.is_file() {
         return Err(format!("File not found: {path}"));
     }
-    let edge = PathBuf::from(std::env::var_os("ProgramFiles(x86)").unwrap_or_default()).join(r"Microsoft\Edge\Application\msedge.exe");
-    let pdf = file.extension().is_some_and(|e| e.eq_ignore_ascii_case("pdf"));
-    let mut cmd = match page {
-        Some(n) if n > 1 && pdf && edge.exists() => {
-            let mut url = tauri::Url::from_file_path(file).map_err(|_| format!("Not a full path: {path}"))?;
-            url.set_fragment(Some(&format!("page={n}")));
-            let mut c = Command::new(edge);
-            c.arg(url.as_str());
-            c
-        }
-        _ => {
-            let mut c = Command::new("explorer");
-            c.arg(file);
-            c
-        }
-    };
-    cmd.spawn().map(|_| ()).map_err(|e| e.to_string())
+    platform::open(file, page)
 }
 
-/// Show the file selected in an Explorer window.
+/// Show the file selected in the file manager.
 #[tauri::command]
 fn reveal(path: String) -> Result<(), String> {
-    Command::new("explorer").args(["/select,", &path]).spawn().map(|_| ()).map_err(|e| e.to_string())
+    platform::reveal(Path::new(&path))
 }
 
 /// Use another global shortcut, such as "Ctrl+Alt+K". If it cannot be registered, the old one stays.
@@ -284,7 +239,7 @@ fn open_ics(url: String) -> Result<(), String> {
     let millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
     let file = std::env::temp_dir().join(format!("sniff-reminder-{millis}.ics"));
     fs::write(&file, ics).map_err(|e| e.to_string())?;
-    Command::new("explorer").arg(&file).spawn().map(|_| ()).map_err(|e| e.to_string())
+    platform::open(&file, None)
 }
 
 /// The shortcut in use, so the settings show the saved one after a restart.
@@ -298,32 +253,31 @@ fn hide_window(window: WebviewWindow) {
     let _ = window.hide();
 }
 
-/// "Start with Windows": a value named Sniff in the HKCU Run key. The app then starts in the tray (--hidden).
+/// Start at sign-in, in the tray (--hidden).
 #[tauri::command]
-fn set_autostart(enabled: bool) -> Result<(), String> {
-    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-    let value = format!("\"{}\" --hidden", exe.display());
-    let mut cmd = Command::new("reg");
-    if enabled {
-        cmd.args(["add", RUN_KEY, "/v", "Sniff", "/t", "REG_SZ", "/d", &value, "/f"]);
-    } else {
-        cmd.args(["delete", RUN_KEY, "/v", "Sniff", "/f"]);
-    }
-    let out = cmd.creation_flags(NO_WINDOW).output().map_err(|e| e.to_string())?;
-    // deleting a value that is not there fails, and that is fine
-    if out.status.success() || !enabled { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+fn set_autostart(app: AppHandle, enabled: bool) -> Result<(), String> {
+    platform::set_autostart(&app, enabled)
 }
 
 #[tauri::command]
-fn autostart_enabled() -> bool {
-    Command::new("reg").args(["query", RUN_KEY, "/v", "Sniff"]).creation_flags(NO_WINDOW).output().is_ok_and(|o| o.status.success())
+fn autostart_enabled(app: AppHandle) -> bool {
+    platform::autostart_enabled(&app)
+}
+
+/// Why the global shortcut may not work here (a Wayland session), for Settings; None when it should.
+#[tauri::command]
+fn hotkey_note() -> Option<String> {
+    platform::hotkey_note()
 }
 
 fn main() {
-    tauri::Builder::default()
+    platform::plugins(tauri::Builder::default())
         // Opening Sniff again (say from the Start menu while it sits in the tray) shows the running one instead.
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
-            if let Some(w) = app.get_webview_window("main") {
+        // `sniff --toggle` shows or hides it, for a system shortcut where the global one cannot work (Wayland).
+        .plugin(tauri_plugin_single_instance::init(|app, args, _| {
+            if args.iter().any(|a| a == "--toggle") {
+                toggle(app);
+            } else if let Some(w) = app.get_webview_window("main") {
                 show(&w);
             }
         }))
@@ -331,7 +285,7 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .manage(Children::default())
         .manage(Hotkey(Mutex::new(SHORTCUT.to_string())))
-        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, get_hotkey, open_ics])
+        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, get_hotkey, open_ics, hotkey_note])
         .setup(|app| {
             let _ = fs::create_dir_all(home().join("logs"));
             let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
@@ -368,13 +322,13 @@ fn main() {
 
             // In `tauri dev` the resource folder has no back end or llama-server: run them by hand (scripts/dev.ps1).
             let res = app.path().resource_dir()?;
-            let backend = res.join("backend").join("sniff-backend.exe");
+            let backend = res.join("backend").join(format!("sniff-backend{}", std::env::consts::EXE_SUFFIX));
             if port_open(API_PORT) {
                 log(&format!("backend: port {API_PORT} is already in use, reusing it"));
             } else if backend.exists() {
                 spawn(app.handle(), "backend", &backend, &[]);
             }
-            let llama = res.join("llama").join("llama-server.exe");
+            let llama = res.join("llama").join(format!("llama-server{}", std::env::consts::EXE_SUFFIX));
             if llama.exists() {
                 let handle = app.handle().clone();
                 std::thread::spawn(move || model_servers(handle, llama));
@@ -382,9 +336,10 @@ fn main() {
             let handle = app.handle().clone();
             std::thread::spawn(move || reminders(handle));
 
-            // started with Windows (--hidden): stay in the tray until the shortcut is pressed
-            if !std::env::args().any(|a| a == "--hidden") {
-                if let Some(w) = app.get_webview_window("main") {
+            if let Some(w) = app.get_webview_window("main") {
+                platform::backdrop(&w);
+                // started at sign-in (--hidden): stay in the tray until the shortcut is pressed
+                if !std::env::args().any(|a| a == "--hidden") {
                     show(&w);
                 }
             }
@@ -408,8 +363,7 @@ fn main() {
         .run(|app, e| {
             if let RunEvent::Exit = e {
                 for mut child in app.state::<Children>().0.lock().unwrap().drain(..) {
-                    let _ = child.kill();
-                    let _ = child.wait();
+                    platform::stop(&mut child);
                 }
                 log("quit: child processes stopped");
             }

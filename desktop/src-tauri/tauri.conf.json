@@ -13,7 +13,8 @@
     "windows": [
       { "label": "main", "title": "Sniff", "width": 760, "height": 480, "decorations": false, "resizable": false, "skipTaskbar": true, "visible": false }
     ],
-    "security": { "csp": null }
+    "security": { "csp": null },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,
@@ -23,6 +24,7 @@
     "useLocalToolsDir": true,
     "windows": {
       "nsis": { "installMode": "currentUser", "installerHooks": "installer-hooks.nsh" }
-    }
+    },
+    "macOS": { "signingIdentity": "-" }
   }
 }
