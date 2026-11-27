@@ -94,7 +94,7 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
 html.desktop, html.desktop body { background: transparent; min-height: 0; overflow: hidden; }
 html.desktop .stage { padding: 0; }
 html.desktop { --maxw: 100vw; --win-r: 8px; --win-shadow: none; --win-line: transparent; }
-html.desktop.solid { --bg: var(--bg-solid); } /* Windows transparency effects are off: no acrylic, so no see-through */
+html.desktop[data-backdrop="solid"] { --bg: var(--bg-solid); } /* no see-through backdrop: Windows transparency effects are off, or Linux */
 
 /* ---------- launcher window ---------- */
 .win { position: relative; width: var(--maxw); align-self: flex-start; border-radius: var(--win-r); overflow: hidden; isolation: isolate; container: win / inline-size;
@@ -194,7 +194,7 @@ kbd + kbd { margin-left: 3px; }
 .pane { position: absolute; top: 2px; right: 10px; bottom: 8px; left: 40%; padding: 16px; border-radius: 14px; background: var(--layer); display: none; flex-direction: column; align-items: flex-start; gap: 12px; container-type: size; }
 .main.split .pane { display: flex; }
 .pane.fade { animation: fade 83ms linear; }
-.pane .crop { width: min(100cqw, (100cqh - 32px) * 2); }
+.pane .crop { width: 100%; } /* its height comes from the pane (Launcher asks the back end for a strip of that shape) */
 .pv-field { display: flex; align-items: baseline; gap: 12px; white-space: nowrap; align-self: stretch; min-width: 0; }
 .pv-field .l { flex: none; font: var(--sm); letter-spacing: .015em; color: var(--text-2); }
 .pv-field .v { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

@@ -116,9 +116,9 @@ async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', path
 }
 
 // Mock mode has no pages: a plain strip of printed lines, the value outlined when there is one.
-const mockPage = (mark: boolean) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1190" height="595" viewBox="0 0 1190 595">
-<rect width="1190" height="595" fill="#fdfcf9"/><rect width="1190" height="14" fill="#b5461a"/>
-${[90, 150, 210, 270, 330, 390, 450, 510].map((y, i) => `<rect x="60" y="${y}" width="${[420, 300, 360, 520, 280, 340, 400, 260][i]}" height="18" rx="4" fill="#d9d6ce"/><rect x="${i % 2 ? 900 : 960}" y="${y}" width="${i % 2 ? 230 : 170}" height="18" rx="4" fill="#d9d6ce"/>`).join('')}
+const mockPage = (mark: boolean, ar = .5) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1190" height="${1190 * ar}" viewBox="0 0 1190 ${1190 * ar}">
+<rect width="1190" height="${1190 * ar}" fill="#fdfcf9"/><rect width="1190" height="14" fill="#b5461a"/>
+${Array.from({ length: Math.floor((1190 * ar - 78) / 60) }, (_, i) => 90 + i * 60).map((y, i) => `<rect x="60" y="${y}" width="${[420, 300, 360, 520, 280, 340, 400, 260][i % 8]}" height="18" rx="4" fill="#d9d6ce"/><rect x="${i % 2 ? 900 : 960}" y="${y}" width="${i % 2 ? 230 : 170}" height="18" rx="4" fill="#d9d6ce"/>`).join('')}
 ${mark ? '<rect x="940" y="380" width="210" height="38" rx="4" fill="rgb(79 70 229 / .16)" stroke="rgb(79 70 229)" stroke-width="3"/>' : ''}</svg>`)
 
 // POST /ask/stream: server-sent events. "token" pieces arrive while a search answer is written, then one "answer".
@@ -155,8 +155,8 @@ export const api = {
   indexStatus: () => call<{ queued: number; running: boolean }>('GET', '/index/status'),
   model: () => call<{ ready: boolean; starting: boolean }>('GET', '/model'), // starting: the chat model is loading (a cold start)
   // A PNG strip of the page around a fact (or the query's words); the top of the page without either.
-  cropUrl: (file_id: number, o: { fact_id?: number; page?: number; q?: string }) =>
-    MOCK ? mockPage(o.fact_id != null)
+  cropUrl: (file_id: number, o: { fact_id?: number; page?: number; q?: string; ar?: number }) => // ar: height / width of the strip
+    MOCK ? mockPage(o.fact_id != null, o.ar)
     : `${BASE}/documents/${file_id}/crop?${new URLSearchParams(Object.entries(o).filter(([, v]) => v != null && v !== '').map(([k, v]) => [k, String(v)]))}`,
   open: (file_id: number, page: number) => call<unknown>('POST', '/open', { file_id, page }),
   document: (id: number) => call<Document>('GET', `/documents/${id}`),

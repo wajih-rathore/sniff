@@ -51,7 +51,10 @@ export function headline(a: Answer): Headline {
   }
   if (a.alternatives?.length) {
     const sides = a.alternatives.map((x) => one(x.answer, 'facts'))
-    return { ...sides[0], value: null, alts: sides.map((s) => s.value ?? '–') }
+    // the citations list both disagreeing copies, so say how many files the records came from
+    const n = /from (\d+) documents?\./.exec(a.alternatives[0].answer)?.[1]
+    const sentence = n && a.sources.length > +n ? `In total, from ${n} ${n === '1' ? 'record' : 'records'} (${a.sources.length} files).` : sides[0].sentence
+    return { ...sides[0], sentence, value: null, alts: sides.map((s) => s.value ?? '–') }
   }
   return { ...one(a.answer), alts: null }
 }

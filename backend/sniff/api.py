@@ -284,8 +284,18 @@ def _spot(page, value: str, value_type: str, source_text: str | None):
     return line[0] if line else None
 
 
+def _snap(top: float, bottom: float, lines: list) -> tuple[float, float]:
+    """Move a band's edges inwards until neither cuts through a line of text (PyMuPDF line boxes)."""
+    while cut := [r for r in lines if r.y0 < bottom < r.y1]:
+        bottom = min(r.y0 for r in cut)
+    while cut := [r for r in lines if r.y0 < top < r.y1]:
+        top = max(r.y1 for r in cut)
+    return top, bottom
+
+
 @lru_cache(maxsize=32)
-def _crop_png(path: str, mtime: float, n: int, value: str | None, value_type: str, source_text: str | None, q: str) -> bytes:
+def _crop_png(path: str, mtime: float, n: int, value: str | None, value_type: str, source_text: str | None, q: str,
+              ar: float = .5) -> bytes:
     import pymupdf  # only when a page is shown, so an idle back end does not load it
 
     with pymupdf.open(path) as doc:
@@ -300,16 +310,21 @@ def _crop_png(path: str, mtime: float, n: int, value: str | None, value_type: st
         if spot:
             page.draw_rect(spot + (-3, -1, 3, 1), color=HL, fill=HL, fill_opacity=.16, width=1.2)
         focus = spot or (marks[0] if marks else None)
-        band = min(h, w * .5)  # a landscape strip of the page
+        band = min(h, w * ar)  # a strip of the page as tall as the place that shows it (ar = height / width)
         top = 0 if focus is None else min(max(0, (focus.y0 + focus.y1) / 2 - band / 2), h - band)
+        lines = [pymupdf.Rect(ln["bbox"]) for b in page.get_text("dict")["blocks"] if b["type"] == 0 for ln in b["lines"]]
+        top, bottom = _snap(top, top + band, lines)  # scans have no lines: their strip is cut where it falls
+        band = bottom - top
         z = min(2.0, 1200 / w)  # about 1200 px wide: sharp at 150% scaling, and a phone photo does not become a huge PNG
         return page.get_pixmap(matrix=pymupdf.Matrix(z, z), clip=pymupdf.Rect(0, top, w, top + band)).tobytes("png")
 
 
 @app.get("/documents/{file_id}/crop")
-def crop(file_id: int, fact_id: int | None = None, page: int = 1, q: str = "", conn=Depends(get_conn)):
+def crop(file_id: int, fact_id: int | None = None, page: int = 1, q: str = "", ar: float = .5, conn=Depends(get_conn)):
     """A PNG strip of a page around a fact's value (outlined), or around the first of the query's words. Without either,
-    or on a scan (no text layer to search), the top of the page. Cached by file, page, value and query."""
+    or on a scan (no text layer to search), the top of the page. ar is the strip's height over its width (the place it
+    is shown); the strip ends between lines of text, never through one. Cached by file, page, value, query and ar."""
+    ar = round(min(max(ar, .25), 1.5), 2)  # steps of 0.01: one shape per window size, so the cache is reused
     doc = _canonical(conn, file_id)
     fact = _fact_row(conn, fact_id) if fact_id is not None else None
     if fact and fact["file_id"] != doc["id"]:
@@ -320,7 +335,7 @@ def crop(file_id: int, fact_id: int | None = None, page: int = 1, q: str = "", c
     p = paths[0]
     try:
         png = _crop_png(str(p), p.stat().st_mtime, fact["page"] if fact else page, fact["value"] if fact else None,
-                        fact["value_type"] if fact else "text", fact["source_text"] if fact else None, q)
+                        fact["value_type"] if fact else "text", fact["source_text"] if fact else None, q, ar)
     except (RuntimeError, ValueError) as e:  # a format PyMuPDF cannot open, e.g. a Word file
         raise HTTPException(404, f"No page image for this file: {e}")
     return Response(png, media_type="image/png")
