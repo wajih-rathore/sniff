@@ -95,8 +95,10 @@ def save(conn: sqlite3.Connection, provider: str, base_url: str = "", model: str
                 keyring.set_password(KEYRING, f"ai-{p}", k)
             elif key(p):
                 keyring.delete_password(KEYRING, f"ai-{p}")
+            continue
         except Exception:
-            raise ValueError("The system's password store is not available, so the key was not saved.") from None
+            pass
+        raise ValueError("The system's password store is not available, so the key was not saved.")  # outside the except: nothing chained
     conn.execute("INSERT INTO settings(key, value) VALUES ('ai', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                  (json.dumps({"provider": provider, "base_url": base_url, "model": model, "allow": allow}),))
     conn.commit()
