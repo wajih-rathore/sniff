@@ -208,6 +208,76 @@ uv run --with psutil python ../scripts/benchmark.py --start-servers --threads 4 
 Rough time with Qwen3-1.7B, from the smoke tests (12 documents): 10 to 40 s per document to index, most of it LLM
 time. At that rate `test` (184) takes 0.5 to 2 hours, `hard` (125) 20 to 80 minutes and `real` (60) 10 to 40 minutes.
 
+## Fast indexing (dev only)
+
+`eval/run_fastindex.py` measures the deterministic first pass on the 72 dev documents. `prepare` reads and embeds
+each document once into `.sniff/fast-dev.db`; the other steps reuse that copy. Nothing here touches the test split.
+
+| Step | Result on dev | Command |
+|---|---|---|
+| Fields from rules alone (right type given) | accuracy 0.932 over 429 fields, filled 0.841, precision 0.997, 32 ms per document | `rules --split dev` |
+| Type classifier (rules + logistic regression on MiniLM) | answers 65 of 72 (abstains on 9.7%), all 65 right; classifier alone 0.986, keyword rules alone 0.917 | `train-types`, `types --split dev` |
+| Candidate-line window (label row + row below) | 99.7% of the 382 gold values on the page are inside their window; the window is 22% of the text | `window --split dev` |
+
+The classifier is trained on the training split only (`generate.py --splits train --seed 11`, 144 documents; 61 of
+them were embedded from the generator's text instead of OCR to save time). Its threshold is the lowest at which
+5-fold out-of-fold decisions on the training split were at least 99% right (0.30). Rules alone on the training split
+score 0.860 with precision 0.951; most wrong values there come from the 61 documents without layout, where two
+columns merge into one line.
+
+**Phase 2 end to end** (`run --mode today|fast`, 72 dev documents, through the real `read_facts`; seconds are the
+whole phase 2 per document, model calls included):
+
+| Pipeline (Qwen3 Q4_K_M on the CPU) | Type | Fields | Seconds per document: mean / median / p95 | No model call | Model calls per document |
+|---|---|---|---|---|---|
+| Before: the model types and reads every field from the whole document (1.7B) | 1.000 | 0.904 | 29.7 / 28.0 / 48.8 | 0% | 1.94 |
+| Rules + classifier first, model on the window for gaps (1.7B) | 1.000 | 0.963 | 5.5 / 0.1 / 28.1 | 78% | 0.26 |
+| The same with Qwen3-0.6B | 0.986 | 0.960 | 2.5 / 0.1 / 12.5 | 78% | 0.33 |
+
+Conditions: 27 and 28 Nov 2026, i5-8250U, one chat server per run started on demand on its own port. Another agent's
+1.7B server on 8080 shared the CPU and took occasional questions. The two fast runs were on mains power. In the
+"before" run 41 of 72 documents ran on battery; the 31 that ran on mains averaged 31.3 s (median 29.5 s), so it
+was not slower on battery. Cold start of an unloaded model, from the first call: 1.7B ready in 13.0 s and first
+answer in 37.8 s (6.8 s to ready on the next start, file in the disk cache); 0.6B ready in 3.2 s, first answer
+12.5 s. Averaged over all 72 documents, the fast run sent 77 new prompt tokens per document to the model,
+against 553 before.
+
+The fields score rose because the rules only keep a value whose own label is next to it. Of the old pipeline's
+41 field errors, 24 were a wrong value (often a neighbouring amount, such as the late-payment total as the amount
+due) and 13 filled a field the document does not print (10 times a receipt's subtotal with its total). The 0.6B run got one more type wrong (a photo of a note read as an offer
+letter), one ID wrong and one certificate title missing; 1.7B missed one receipt date that 0.6B read. Qwen3-0.6B
+with no output cap once wrote 1,300 tokens into one value, so replies are now capped at 40 tokens per field.
+
+Default: Qwen3-1.7B stays. 0.6B passes the bar for indexing (fields within 2 points of before; in fact above),
+but the same chat server also writes answers, and answer quality with 0.6B was not measured. Switching is one
+setting (`SNIFF_LLM_FILE=qwen3-0.6b-q4_k_m.gguf`, file from `eval/fetch_models.py qwen3-0.6b`) once answers are
+checked on `data/eval/ask_dev.jsonl`. Its memory while loaded was not measured (with `-c 8192` most of it is the
+KV cache, not the weights).
+
+**If a fine-tuned 0.6B model is wanted later** (not started; it needs the coordinator's go):
+- Data: the training split, grown with more households in `TRAIN_NAMES` to 500 to 1,000 documents, some read
+  through OCR. Input: the candidate-line window for the fields the rules missed. Target: the value as printed,
+  which the rules' matching code can recover from the gold value (`verify.needles`).
+- Time on this laptop: not measured. Arithmetic only: about 6 x 0.6 billion x 600,000 tokens (1,000 examples, 200
+  tokens, 3 epochs) is 2 x 10^15 operations, which at an assumed 50 to 100 GFLOP/s is 6 to 12 hours, and fp32
+  weights alone take 2.4 GB of the 5 to 6 GB headroom. A free Colab T4 GPU is the practical place to train.
+- After training: merge the adapter, convert to GGUF Q4_K_M with llama.cpp's scripts, and run `run --mode fast`
+  on dev again.
+- The rules already read 360 of the 389 printed fields on dev, so the model has little left to do and this is low
+  priority.
+
+**Memory** (`eval/backend_memory.py`, results in `eval/results/backend_memory.json`; MB of private bytes / working set):
+
+| Back end | Before (main 353f647) | After |
+|---|---|---|
+| Idle, 30 s after start | 327 / 110 | 62 / 75 |
+| Peak while indexing 10 dev documents (8 need OCR) | not measured | 645 / 672, plus the chat server 1,758 / 2,814 while it was up |
+| 150 s after indexing | | 177 / 203; the chat server had stopped itself |
+
+Most of the idle saving is one OpenBLAS thread: numpy reserved about 230 MB of commit for per-core buffers. The
+PDF, Word and PowerPoint readers now load on first use. The OCR models (about 55 MB) stay for 5 minutes after the
+last image, which is why the back end holds 177 MB right after indexing.
+
 ## Results
 
 To be filled by the final run. One table per component: Sniff vs baseline, per set.
