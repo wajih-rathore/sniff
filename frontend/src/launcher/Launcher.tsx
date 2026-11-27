@@ -145,6 +145,7 @@ export default function Launcher() {
   const panelEl = useRef<HTMLDivElement>(null)
   const seq = useRef(0) // drops search and ask responses that belong to an older query
   const lastH = useRef(0)
+  const hAnim = useRef<Animation | null>(null)
   const toastT = useRef(0)
 
   const say = (text: string, icon: LucideIcon = Check) => {
@@ -445,13 +446,14 @@ export default function Launcher() {
     fitWin(w)
     keepInView(s.querySelector<HTMLElement>('[data-scroll] [aria-selected=true]'))
     if (panel && panelEl.current) placePanel(s, panelEl.current)
+    // offsetHeight is a frame of a running height animation: note it, stop the animation, then measure what the content needs
+    const from = w.offsetHeight
+    hAnim.current?.cancel()
     const h1 = w.offsetHeight
-    if (h1 !== lastH.current) {
-      if (inDesktop) native.fitWindow(h1).catch(() => {})
-      else if (lastH.current && !matchMedia('(prefers-reduced-motion: reduce)').matches)
-        w.animate([{ height: lastH.current + 'px' }, { height: h1 + 'px' }], { duration: 167, easing: 'cubic-bezier(0,0,0,1)' })
-      lastH.current = h1
-    }
+    if (h1 !== lastH.current && inDesktop) native.fitWindow(h1).catch(() => {})
+    lastH.current = h1
+    if (from !== h1 && !inDesktop && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+      hAnim.current = w.animate([{ height: from + 'px' }, { height: h1 + 'px' }], { duration: 167, easing: 'cubic-bezier(0,0,0,1)' })
   })
   useLayoutEffect(() => { // each screen slides in, as in the mockup
     const s = sec.current
@@ -587,7 +589,7 @@ export default function Launcher() {
           {searchNote && <div className="note">{searchNote}</div>}
         </div>
         {showPane && pv && (
-          <div className="pane fade" key={pv.id}>
+          <div className="pane fade">{/* kept mounted while arrowing: the old page stays up until the next one loads, no blank flash */}
             {pv.kind === 'fold' ? <p className="pv-note">Press Enter to show the {plural(weak.length, 'weaker match', 'weaker matches')}.</p> : pv.src && (
               <>
                 <img className="crop" alt={`Page ${pv.hit?.fact?.page ?? pv.src.page} of ${pv.src.name}`}
