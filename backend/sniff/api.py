@@ -14,8 +14,9 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
-from . import config, db, gcal, ics, mcp_settings, records, titles, verify, watch
-from .ai import server
+from . import ai_settings, config, db, gcal, ics, mcp_settings, records, titles, verify, watch
+from . import ask as ask_mod
+from .ai import classify, extract, llm, server
 from .ask import ask, ask_stream
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
@@ -69,6 +70,14 @@ class WatchReq(BaseModel):
 class McpSettings(BaseModel):
     enabled: bool
     allow: dict[str, list[str]]
+
+
+class AiSettingsReq(BaseModel):
+    provider: str
+    base_url: str = ""
+    model: str = ""
+    allow: list[str] = []
+    key: str | None = None  # write-only: None keeps the saved key, "" removes it; never returned
 
 
 class AskReq(BaseModel):
@@ -580,6 +589,51 @@ def mcp_log(limit: int = 50):
     path = config.DATA_DIR / "mcp_access.log"
     lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
     return [json.loads(line) for line in reversed(lines[-max(1, min(limit, 500)):])]
+
+
+@app.get("/ai/settings")
+def ai_get(conn=Depends(get_conn)):
+    return ai_settings.payload(ai_settings.load(conn))
+
+
+@app.put("/ai/settings")
+def ai_put(req: AiSettingsReq, conn=Depends(get_conn)):
+    try:
+        return ai_settings.payload(ai_settings.save(conn, req.provider, req.base_url, req.model, req.allow, req.key))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.post("/ai/test")
+def ai_test():
+    """A one-token call to the saved provider: {"ok": true}, or {"ok": false, "error": a plain reason}."""
+    return llm.check()
+
+
+@app.get("/ai/preview")
+def ai_preview(file_id: int | None = None, question: str | None = None, conn=Depends(get_conn)):
+    """Exactly what the saved provider would get for one document (its gap filling) or for a question, masked as sent.
+    While AI is off nothing is sent, so it shows what a provider off this laptop would get."""
+    s = ai_settings.load(conn)
+    view = s | {"provider": "anthropic"} if s["provider"] == "off" else s
+    remote = ai_settings.remote(view)
+    if question:
+        calls = ask_mod.outbound(conn, question, view)
+    elif file_id is not None:
+        r = _canonical(conn, file_id)
+        if not Path(r["path"]).exists():
+            raise HTTPException(404, "File not found on disk")
+        pages, boxes = readers.read_layout(Path(r["path"]))
+        if r["doc_type"] in FIELDS:
+            calls = extract.outbound(r["doc_type"], pages, boxes, view)
+        elif r["doc_type"] is None and not remote:  # this laptop's model reads an unclassified document whole to sort it
+            calls = [{"purpose": "Sort the document into a type", "messages": llm.document_message(pages, classify.PROMPT)}]
+        else:
+            calls = []
+    else:
+        raise HTTPException(422, "Give a file_id or a question.")
+    return {"provider": s["provider"], "leaves_laptop": remote,
+            "calls": [{**c, "messages": llm.outgoing(c["messages"], remote)} for c in calls]}
 
 
 @app.get("/eval")
