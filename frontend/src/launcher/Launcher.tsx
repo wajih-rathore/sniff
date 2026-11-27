@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import {
   Ban, Bell, Bot, CalendarClock, CalendarPlus, Check, ChevronDown, ChevronRight, ClipboardCheck, Copy, ExternalLink, Eye, Files, Folder, FolderOpen, History,
-  Cpu, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
+  Cpu, Info, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
 } from 'lucide-react'
 import {
   api, type AiPreview, type AiProvider, type AiSave, type AiSettings, type Answer, type Document, type Fact, type Hit, type McpLogEntry, type McpSettings, type Overview,
@@ -438,15 +438,17 @@ export default function Launcher() {
     if (!aiPv) return (pvDocs ?? []).map((d, i) => ({ id: `d${d.id}`, head: i ? undefined : 'Or pick a document', tile: <Tile type={d.doc_type} size="xs" />,
       t: d.title || d.name, act: 'Preview', run: () => loadPv({ file_id: d.id }, d.title || d.name) }))
     if (!aiPv.r) return []
-    if (!aiPv.r.calls.length) return [{ id: 'none', icon: Check, t: 'Nothing would be sent', m: aiPv.doc ? 'The rules read what it needs, or its type is kept back' : 'The rules and code answer it' }]
-    return aiPv.r.calls.flatMap((c, k) => c.messages.flatMap((m, j): SRow[] => {
+    const note: SRow[] = aiPv.r.note ? [{ id: 'note', icon: Info, t: aiPv.r.note, pl: true }] : []
+    if (!aiPv.r.calls.length) return [...note, { id: 'none', icon: Check, t: 'Nothing would be sent',
+      m: aiPv.r.note ? undefined : aiPv.doc ? 'The rules read what it needs, or its type is kept back' : 'The rules and code answer it' }]
+    return [...note, ...aiPv.r.calls.flatMap((c, k) => c.messages.flatMap((m, j): SRow[] => {
       const id = `c${k}m${j}`, ls = m.content.split('\n').filter((l) => l.trim()), head = j ? undefined : c.purpose.replace(/_/g, ' ')
       const shown = ls.map((l, n): SRow => ({ id: `${id}l${n}`, head: m.role !== 'system' && !n ? head : undefined, t: l, pl: true }))
       if (m.role !== 'system') return shown
       return [{ id, head, icon: Bot, t: 'Instructions to the model', m: `${plural(ls.length, 'line', 'lines')}, none from your files`,
         right: <I i={pvOpen[id] ? ChevronDown : ChevronRight} />, act: pvOpen[id] ? 'Hide' : 'Show', run: () => setPvOpen((o) => ({ ...o, [id]: !o[id] })) },
       ...(pvOpen[id] ? shown : [])]
-    }))
+    }))]
   }
   const sRows: SRow[] = level === 'top' ? [
     { id: 'hotkey', icon: Keyboard, t: 'Hotkey', m: capturing ? 'Press the new shortcut, or Esc to keep this one' : hotkeyNote ?? 'Opens Sniff from any app',

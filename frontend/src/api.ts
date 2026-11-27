@@ -109,7 +109,8 @@ export type AiSettings = {
 }
 export type AiSave = Pick<AiSettings, 'provider' | 'base_url' | 'model' | 'allow'> & { key?: string } // key: "" removes it
 // GET /ai/preview: exactly what each model call would send, masked as sent. While AI is off, what a cloud provider would get.
-export type AiPreview = { provider: AiProvider; leaves_laptop: boolean; calls: { purpose: string; messages: { role: string; content: string }[] }[] }
+// note: for a document not sorted into a type yet, what sorting it means for what is sent.
+export type AiPreview = { provider: AiProvider; leaves_laptop: boolean; note: string | null; calls: { purpose: string; messages: { role: string; content: string }[] }[] }
 export type McpLogEntry = { time: string; tool: string; args: Record<string, unknown>; ids: number[]; refused?: boolean }
 // Exactly what Google Calendar (or the .ics file) would get, and whether a person has looked at the date.
 export type ReminderPreview = { fact_id: number; title: string; date: string; description: string; status: FactStatus; reviewed: boolean }
