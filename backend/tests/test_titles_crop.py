@@ -1,5 +1,6 @@
 """What the launcher shows: document titles, why a hit matched, recent documents, folder counts, and page crops."""
 import io
+from pathlib import Path
 
 import pymupdf
 import pytest
@@ -22,7 +23,7 @@ def test_titles():
     assert titles.title("utility_bill", {"provider": "Northern Electric Supply Co."}, "x.pdf") == "Northern Electric, utility bill"
     assert titles.title("id_card", {"name": "ZAINAB MALIK", "expiry_date": "2026-02-14"}, "x.pdf") == "Zainab Malik, ID card"
     assert titles.title("fee_voucher", {"student_name": "Omar Farooq", "semester": "Spring 2025"}, "v.pdf") == "Omar Farooq, fee voucher, Spring 2025"
-    assert titles.title("receipt", {"total_amount": "12.0"}, r"D:\scans\IMG_01.jpg") == "IMG_01.jpg"  # no name on it: the file name
+    assert titles.title("receipt", {"total_amount": "12.0"}, str(Path("scans", "IMG_01.jpg"))) == "IMG_01.jpg"  # no name on it: the file name
     assert titles.title(None, {}, "notes.pptx") == "notes.pptx"
 
 
