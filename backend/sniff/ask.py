@@ -777,10 +777,17 @@ def no_writer(question: str, hits, why: llm.Unavailable) -> Answer:
                   route="none", sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in pages])
 
 
+def nothing_sent(conn, question: str, k: int = TOP) -> Answer:
+    """No passage could go to the model: not found, unless search found documents the settings keep from the provider."""
+    if ai_settings.remote(ai_settings.current()) and (held := search(conn, question, k=k)):
+        return no_writer(question, held, llm.Unavailable("Your settings keep these documents from the AI provider."))
+    return Answer(question=question, answer=NOT_FOUND, route="none")
+
+
 def answer_from_search(conn, question: str, k: int = TOP) -> Answer:
     hits, messages = _search_prompt(conn, question, k)
     if not hits:
-        return Answer(question=question, answer=NOT_FOUND, route="none")
+        return nothing_sent(conn, question, k)
     try:
         text = llm.chat(messages)
     except llm.Unavailable as e:
@@ -798,7 +805,7 @@ def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = Non
         return
     hits, messages = _search_prompt(conn, question, TOP)
     if not hits:
-        yield "answer", Answer(question=question, answer=NOT_FOUND, route="none", parser=how)
+        yield "answer", nothing_sent(conn, question).model_copy(update={"parser": how})
         return
     text, sent = "", 0
     try:

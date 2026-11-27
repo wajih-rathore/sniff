@@ -207,3 +207,12 @@ def test_hidden_types_are_the_ones_mcp_hides_by_default():
 def test_sniff_ai_overrides_the_saved_provider(conn, monkeypatch):
     monkeypatch.setenv("SNIFF_AI", "local")  # the evaluation's switch: it measures this laptop's model
     assert ai_settings.current()["provider"] == "local" and not ai_settings.remote(ai_settings.current())
+
+
+def test_documents_kept_from_the_provider_are_named_not_reported_missing(conn, sent, monkeypatch):
+    use(conn, "openai")
+    add_chunks(conn, "Passport No AB1234567, expires 2031")
+    monkeypatch.setattr(ask, "search", lambda conn, q, k: hits("passport")[:k])
+    a = ask.answer_from_search(conn, "when does it expire?")
+    assert sent == [] and a.route == "none" and a.answer.startswith("Your settings keep these documents from the AI provider.")
+    assert [s.name for s in a.sources] == ["passport.txt"]
