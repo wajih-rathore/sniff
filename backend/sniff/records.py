@@ -2,13 +2,14 @@
 
 Exact copies (the same bytes in two folders) are already one document: files.copy_of. Here we deal with different
 files that hold the same record, like one bill saved as a PDF and as a phone photo. Documents with the same key
-(schemas.KEYS) are the same record. If they also agree on every stable field they are near-duplicates: calculations
+(schemas.KEYS) are the same record, and so are two bills whose key differs only by an OCR misread (same_record). If they also agree on every stable field they are near-duplicates: calculations
 count the most trusted one and list the rest as skipped. If a stable field differs, they are a conflict: both stay,
 and the conflict is reported with both values instead of picking one.
 """
 import re
 import sqlite3
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from .schemas import FIELDS, KEYS, Conflict, ConflictValue, Fact, Source
@@ -70,12 +71,34 @@ def agree(a: Doc, b: Doc) -> bool:
                for f in stable_fields(a.doc_type) if a.get(f) is not None and b.get(f) is not None)
 
 
+# A bill photo whose billing month OCR misread has another key, but it is the same bill when the provider, account and
+# amount agree exactly and the bill's own dates are within a few days of each other, or unreadable on one copy.
+SAME_BILL, BILL_DATES, NEAR_DAYS = ("provider", "account_number", "amount_due"), ("bill_date", "due_date"), 3
+
+
+def same_record(a: Doc, b: Doc) -> bool:
+    if a.doc_type != b.doc_type:
+        return False
+    if (k := key(a)) is not None and k == key(b):
+        return True
+    if a.doc_type != "utility_bill" or any(a.get(f) is None or b.get(f) is None or norm(a.doc_type, f, a.get(f)) != norm(a.doc_type, f, b.get(f))
+                                           for f in SAME_BILL):
+        return False
+    # shortcut: two months of a flat-rate bill are merged if one copy has no readable date at all; compare the billing
+    # months' distance too if that ever shows up
+    return all(abs(date.fromisoformat(a.get(f)).toordinal() - date.fromisoformat(b.get(f)).toordinal()) <= NEAR_DAYS
+               for f in BILL_DATES if a.get(f) and b.get(f))
+
+
 def resolve(docs: list[Doc]) -> Resolved:
-    groups: dict[tuple, list[Doc]] = {}
+    groups: list[list[Doc]] = []
     for d in docs:
-        groups.setdefault(key(d) or ("doc", d.id), []).append(d)
+        if g := next((g for g in groups if same_record(g[0], d)), None):
+            g.append(d)
+        else:
+            groups.append([d])
     kept, skipped, conflicts = [], [], []
-    for group in groups.values():
+    for group in groups:
         group.sort(key=lambda d: d.trust)
         reps: list[Doc] = []
         for d in group:

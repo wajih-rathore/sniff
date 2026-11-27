@@ -214,8 +214,7 @@ def document(file_id: int, conn=Depends(get_conn)):
     if r["doc_type"] in FIELDS:
         docs = records.load(conn, r["doc_type"])
         me = next((d for d in docs if d.id == r["id"]), None)
-        k = records.key(me) if me else None
-        near = [d.id for d in docs if k and d.id != r["id"] and records.key(d) == k]
+        near = [d.id for d in docs if me and d.id != me.id and records.same_record(me, d)]
     return _document(conn, r, near)
 
 

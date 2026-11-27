@@ -174,3 +174,46 @@ def test_expiring_window_across_types(conn, add_doc, monkeypatch):
     a = run(conn, monkeypatch, doc_type=None, field="expiry_date", op="list",
             filters=Filters(date_from="1 December 2026", date_to="31 December 2026"))
     assert a.answer.startswith("2026-12-10 (cnic_old.jpg); 2026-12-20 (laptop.jpg).")  # due dates are not expiries
+
+
+# ---------- near-duplicates despite an OCR misread ----------
+GAS = {"provider": "Metro Gas Ltd", "account_number": "MG-6421-9595"}
+
+
+def gas_bills(add_doc, photo_dates=True):
+    """The planted case of the acceptance test: September and October bills, and a phone photo of October whose
+    billing month OCR read as July (values as the indexer extracted them)."""
+    add_doc("/x/Metro Gas Sep 2026.pdf", "utility_bill", {**GAS, "billing_month": "2026-09", "bill_date": "2026-10-03", "due_date": "2026-10-15",
+                                                          "current_charges": "3000.0", "tax": "150.0", "amount_due": "3000.0"})
+    oct_ = {**GAS, "billing_month": "2026-10", "bill_date": "2026-11-04", "due_date": "2026-12-12", "current_charges": "5400.0",
+            "previous_balance": "3000.0", "tax": "270.0", "amount_due": "8400.0"}
+    add_doc("/x/Metro Gas Oct 2026.pdf", "utility_bill", oct_)
+    photo = {**oct_, "billing_month": "2026-07"}
+    if not photo_dates:
+        photo = {k: v for k, v in photo.items() if k not in ("bill_date", "due_date")}
+    return add_doc("/x/IMG-20261105-WA0412.jpg", "utility_bill", photo, statuses={"current_charges": "needs_review"})
+
+
+def test_photo_with_a_misread_month_is_the_same_bill(conn, add_doc, monkeypatch):
+    photo = gas_bills(add_doc)
+    a = run(conn, monkeypatch, doc_type="utility_bill", field="current_charges", op="sum", filters=Filters(provider="gas", year=2026))
+    assert a.answer.startswith("8,400 in total, from 2 documents") and [s.file_id for s in a.skipped_duplicates] == [photo]
+    client = TestClient(api.app)
+    assert client.get("/overview").json()["near_duplicates"] == 1
+    due = [i["fact"]["value"] for i in client.get("/upcoming", params={"days": 400}).json() if i["fact"]["field"] == "due_date"]
+    assert due.count("2026-12-12") == 1  # the bill is listed once, not once per copy
+    assert photo in client.get(f"/documents/{photo - 1}").json()["near_duplicates"]
+
+
+def test_photo_with_unreadable_dates_is_the_same_bill(conn, add_doc, monkeypatch):
+    gas_bills(add_doc, photo_dates=False)
+    a = run(conn, monkeypatch, doc_type="utility_bill", field="current_charges", op="sum", filters=Filters(provider="gas"))
+    assert a.answer.startswith("8,400 in total, from 2 documents")
+
+
+def test_same_amount_a_month_apart_is_another_bill(conn, add_doc, monkeypatch):
+    for month, issued in (("2026-01", "2026-02-04"), ("2026-02", "2026-03-04")):  # a flat-rate internet bill
+        add_doc(f"/x/net_{month}.pdf", "utility_bill", {"provider": "FastLink", "account_number": "FL-1", "billing_month": month,
+                                                        "bill_date": issued, "current_charges": "3558.0", "amount_due": "3558.0"})
+    a = run(conn, monkeypatch, doc_type="utility_bill", field="current_charges", op="sum")
+    assert a.answer.startswith("7,116 in total, from 2 documents")

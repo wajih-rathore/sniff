@@ -90,6 +90,8 @@ The statement rule is `opening_balance + total_credits - total_debits = closing_
 | tenancy_agreement | landlord + tenant + start_date |
 | fee_voucher | registration_number + semester |
 
+A key field that OCR misread would keep two copies apart, so bills have a second test (`records.same_record`): two bills are the same record when provider, account number and `amount_due` agree exactly and their `bill_date` and `due_date` are within 3 days of each other, or unreadable on one copy. This catches a phone photo whose billing month was read as July when the PDF says October. The billing month of the more trusted copy is the one used.
+
 Within a key, documents that agree on every stable field are near-duplicates. Calculations count one of them: the one with the fewest facts needing review, then the most facts a person corrected or approved, then the one indexed first. The others are listed in the answer's `skipped_duplicates` and the answer text says how many were left out. A document with a key field missing is never merged.
 
 ## Facts that still need review
@@ -119,7 +121,8 @@ Stable fields: every field of `id_card`, `certificate`, `passport`, `transcript`
 
 ## Known limits
 
-- Keys compare text exactly after normalising. An OCR error in a key field (a misread account number) keeps two copies apart, and both are counted.
+- Keys compare text exactly after normalising. An OCR error in a key field keeps two copies apart, and both are counted, except for a bill whose provider, account and amount still agree (above). A misread account number or amount on a bill, or a misread key on any other type, still splits the record.
+- Two months of a flat-rate bill (same amount every month) are merged if one copy has no readable bill or due date at all.
 - A changed or renewed document with the same key and the same stable values is treated as a duplicate. For bills this means a corrected bill for the same month is folded into the first one; the more trusted copy wins.
 - Spending assumes `current_charges` includes tax, as on the bills we generate. The "tax outside current charges" case is handled by the rule above but is not in the test data yet.
 - Both sides of a conflict stay in sums. A re-issued fee voucher is therefore counted twice in a fee total until the user corrects or removes one; the answer shows the conflict.
