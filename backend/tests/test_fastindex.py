@@ -220,3 +220,14 @@ def test_really_locked_file_does_not_stop_the_scan(conn, tmp_path, monkeypatch):
 
 def test_the_shipped_weights_load():
     assert len(typer.CLASSES) == 13 and typer._W.shape == (13, 384) and 0 < typer.THRESHOLD < 1
+
+
+def test_an_indexed_file_that_gets_locked_stays_findable(conn, tmp_path, monkeypatch):
+    f = tmp_path / "a.txt"
+    f.write_text("Electricity bill one")
+    scan.scan(conn, tmp_path)
+    f.write_text("Electricity bill one, edited")  # changed on disk, then held open
+    monkeypatch.setattr(scan, "sha256", lambda p: (_ for _ in ()).throw(PermissionError(13, "in use")))
+    monkeypatch.setattr(scan, "RETRY_AFTER", 3600)
+    assert scan.scan(conn, tmp_path)["errors"] == 1
+    assert conn.execute("SELECT status FROM files").fetchone()[0] == "indexed"

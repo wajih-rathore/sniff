@@ -67,7 +67,8 @@ def _scan(conn, folder, ai, status) -> dict:
         try:
             st, r, h = p.stat(), known.get(str(p)), sha256(p)
         except OSError as e:  # held open by another program (Windows will not share it), or gone meanwhile
-            _mark_error(conn, p, None, None, e)
+            if not (known.get(str(p)) and known[str(p)]["status"] == "indexed"):  # an indexed copy stays findable
+                _mark_error(conn, p, None, None, e)
             locked.append(p)
             counts["errors"] += 1
             status["errors"] += 1
