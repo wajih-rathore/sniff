@@ -1,9 +1,26 @@
-# Installing Sniff on Windows
+# Installing Sniff
 
-Sniff ships as one installer, `Sniff_0.1.0_x64-setup.exe` (166 MB). It installs for the current user only, so it
-needs no administrator rights. Nobody has to install Python, open a terminal or fetch models by hand.
+Sniff runs on Windows, macOS and Linux. Each system gets its own installer, and none of them needs Python, a
+terminal or a manual model download.
 
-## What the installer does
+| System | File | Status |
+|---|---|---|
+| Windows 10/11, x64 | `Sniff_0.1.0_x64-setup.exe` | Built and tested on our laptop |
+| macOS, Apple Silicon | `Sniff_0.1.0_aarch64.dmg` | Built by CI, not run yet |
+| macOS, Intel | `Sniff_0.1.0_x64.dmg` | Built by CI, not run yet |
+| Linux x64, any distribution | `Sniff_0.1.0_amd64.AppImage` | Built by CI, not run yet |
+| Debian, Ubuntu 22.04 or newer | `Sniff_0.1.0_amd64.deb` | Built by CI, not run yet |
+
+The macOS and Linux files come from `.github/workflows/release.yml`, which builds every installer on GitHub's
+machines. It has not run yet, because the repository is pushed only after review. Until then, Linux and macOS
+teammates can run Sniff from source (below). The file names are what Tauri normally produces; check them on the
+first CI run.
+
+## Windows
+
+The installer is 166 MB. It installs for the current user only, so it needs no administrator rights.
+
+### What the installer does
 
 - Copies the app to `%LOCALAPPDATA%\Sniff` (usually `C:\Users\<you>\AppData\Local\Sniff`).
 - Adds Sniff to the Start menu and to Settings > Apps, with an uninstaller. The last page offers a desktop shortcut.
@@ -12,7 +29,7 @@ needs no administrator rights. Nobody has to install Python, open a terminal or 
 
 The installer is not signed yet, so Windows SmartScreen may warn the first time. Click "More info", then "Run anyway".
 
-## Where the files go
+### Where the files go
 
 Everything is under `%LOCALAPPDATA%\Sniff`. The program itself takes 497 MB (1,032 files); most of it is the back
 end's libraries (OpenCV, PyMuPDF and ONNX Runtime for reading and OCR).
@@ -23,13 +40,13 @@ end's libraries (OpenCV, PyMuPDF and ONNX Runtime for reading and OCR).
 | `backend\` | The Sniff back end (FastAPI, frozen with PyInstaller): readers, OCR models, search and the database code |
 | `llama\` | `llama-server.exe` (llama.cpp build b12628, CPU) and its DLLs, including the Visual C++ runtime it needs |
 | `models\` | The two model files, downloaded on first run |
-| `data\` | `sniff.db` (the index, facts and reminders), the Google sign-in token, the MCP access log |
+| `data\` | `sniff.db` (the index, facts and reminders), the MCP access log. The Google sign-in token is in Windows Credential Manager (`Sniff`); it falls back to a file here only when that fails |
 | `logs\` | One log per process: `desktop.log`, `backend.log`, `chat-server.log`, `embed-server.log` |
 | `secrets\` | Put `google_client.json` here to turn on Google Calendar reminders |
 
 The browser engine keeps its cache in `%LOCALAPPDATA%\pk.edu.nu.sniff`.
 
-## First run
+### First run
 
 When the model files are missing, Sniff shows a download screen. It fetches two models from the Ollama registry,
 the same files and checksums as `eval/fetch_models.py`:
@@ -42,7 +59,7 @@ the same files and checksums as `eval/fetch_models.py`:
 That is 1.41 GB in total. A broken download resumes where it stopped, also after closing the app. Each file
 gets its final name only after its sha256 matches; a file that does not match is deleted.
 
-## Running
+### Running
 
 - **Alt+Shift+Space** shows or hides the launcher from any app. Alt+Space was the first choice, but Windows uses
   it for the window menu and PowerToys Run uses it too. Settings > Hotkey changes it; the new one is saved in
@@ -65,7 +82,7 @@ gets its final name only after its sha256 matches; a file that does not match is
   as an `.ics` file in `%TEMP%` and opened in the default calendar app.
 - Everything listens on 127.0.0.1 only.
 
-## Uninstalling
+### Uninstalling
 
 Settings > Apps > Installed apps > Sniff > Uninstall, or run `%LOCALAPPDATA%\Sniff\uninstall.exe`.
 
@@ -77,19 +94,178 @@ them too (`data`, `models`, `logs`, `secrets` and the WebView2 cache). From a te
 & "$env:LOCALAPPDATA\Sniff\uninstall.exe" /S /DELETEAPPDATA
 ```
 
-## Building the installer
+## macOS
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-desktop.ps1
+Not run on a Mac yet: everything in this section is what the build is set up to do.
+
+1. Download the `.dmg` for your Mac: `aarch64` for Apple Silicon (M1 and later), `x64` for Intel. Apple menu >
+   About This Mac shows which one you have.
+2. Open it and drag Sniff into Applications.
+3. Sniff has only an ad-hoc signature. It is not notarised by Apple (planned; it needs a paid Apple Developer
+   account), so macOS blocks the first start:
+   - macOS 15 Sequoia and later: open Sniff, click Done on the warning, then go to System Settings > Privacy &
+     Security, scroll to the bottom and click "Open Anyway". Confirm with your password.
+   - macOS 14 and earlier: Control-click Sniff in Applications, choose Open, then Open again.
+   - If macOS says Sniff "is damaged", remove the download flag and try again:
+     `xattr -dr com.apple.quarantine /Applications/Sniff.app`
+4. The first run downloads the models, as on Windows.
+
+Where things go: the app is `/Applications/Sniff.app`, with the back end and `llama-server` inside
+`Contents/Resources`. Data, models and logs go to `~/Library/Application Support/Sniff`, in the same folders as on
+Windows. The Google sign-in token goes to the Keychain.
+
+How it differs from Windows:
+- The shortcut is Option+Shift+Space. Settings > Hotkey can use Cmd too.
+- Enter opens the file in its default app, on page 1 (Preview takes no page number). Ctrl+Enter shows it in Finder.
+- Start at sign-in adds `~/Library/LaunchAgents/Sniff.plist`. macOS may show a "background item added" notice.
+- Reminders use macOS notifications. macOS may ask once whether Sniff may send them.
+- The launcher gets a blurred (vibrancy) backdrop. It only shows once the window is transparent, which the UI
+  branch sets up for the Windows acrylic.
+
+Uninstall: quit Sniff from its menu bar icon, drag `/Applications/Sniff.app` to the Bin, and delete
+`~/Library/Application Support/Sniff` to remove the index and the models. If start at sign-in was on, also delete
+`~/Library/LaunchAgents/Sniff.plist`.
+
+## Linux
+
+Not run on Linux yet: everything in this section is what the build is set up to do. Only x86-64 is built.
+
+- **AppImage** (any distribution with glibc 2.35 or newer, such as Ubuntu 22.04, Debian 12 or Fedora 36 and
+  later): `chmod +x Sniff_0.1.0_amd64.AppImage`, then run it.
+- **.deb** (Debian and Ubuntu): `sudo apt install ./Sniff_0.1.0_amd64.deb`. apt also installs WebKitGTK 4.1.
+  The command is then `sniff`, and Sniff appears in the app menu.
+
+Data, models and logs go to `$XDG_DATA_HOME/sniff`, which is `~/.local/share/sniff` on most systems. The Google
+sign-in token goes to the Secret Service (GNOME Keyring or KWallet); without one, to a file in `data/`.
+
+How it differs from Windows:
+- **Shortcut on Wayland.** Alt+Shift+Space works on X11. On Wayland (the default on Ubuntu, Fedora and new KDE)
+  apps cannot catch global shortcuts, and Settings > Hotkey says so. Bind a system shortcut to `sniff --toggle`
+  instead; it shows or hides the running Sniff. With the AppImage, use its full path followed by `--toggle`.
+  - GNOME: Settings > Keyboard > Keyboard Shortcuts > View and Customise Shortcuts > Custom Shortcuts > +.
+  - KDE Plasma: System Settings > Keyboard > Shortcuts > Add New > Command or Script.
+  - On Wayland the window also cannot place itself; the desktop decides where it opens.
+- **Tray icon.** It needs AppIndicator support. Ubuntu has it; on plain GNOME install the "AppIndicator and
+  KStatusNotifierItem Support" extension. Without it there is no tray icon; the shortcut still opens Sniff.
+- Enter opens the file with `xdg-open`, on page 1. Ctrl+Enter asks the file manager to show the file (Nautilus,
+  Dolphin, Nemo and Thunar support this); otherwise its folder opens.
+- Start at sign-in adds `~/.config/autostart/Sniff.desktop`. For the AppImage it stores the file's path, so moving
+  the AppImage breaks it.
+- Reminders use the desktop's notification service. The backdrop is solid: Linux has no blur behind windows.
+
+Uninstall: `sudo apt remove sniff` (the package name Tauri normally gives; `apt list --installed | grep -i sniff`
+shows the real one), or delete the AppImage. `rm -rf ~/.local/share/sniff` removes the index and the models, and
+deleting `~/.config/autostart/Sniff.desktop` turns off start at sign-in.
+
+## Known limitations
+
+- Only the Windows build has been run. The macOS and Linux installers come from CI, which has not run yet.
+- macOS: not notarised, so the first start needs the steps above.
+- Linux on Wayland: no global shortcut; use `sniff --toggle`.
+- Opening a PDF at the matching page works on Windows only (through Edge). Elsewhere the file opens on page 1.
+- If Sniff crashes on macOS or Linux, the back end and the chat server notice and stop, but the embedding server
+  keeps running. The next start finds it on port 8081 and reuses it. Windows ends all of them through the job
+  object. Quitting normally stops everything on every system.
+- No ARM builds for Linux or Windows. GitHub keeps Intel Mac machines only until August 2027.
+
+## Run from source (Linux and macOS)
+
+This works before CI does. It needs git, Python's `uv`, Node 22 with npm, and Rust (from rustup.rs). On macOS also
+the Xcode command line tools (`xcode-select --install`). On Debian or Ubuntu also Tauri's libraries:
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev build-essential curl file
 ```
 
-It needs uv, Node and npm, and Rust. It freezes the back end with PyInstaller, copies `llama-server` (downloaded
-from the llama.cpp release if `models\llama` is empty), builds the front end and runs `tauri build`. Builds run at
-below-normal priority with 2 cargo jobs, and all caches go to `.cache\` in the repo. The installer lands in
-`.cache\cargo-target\release\bundle\nsis\`.
+From the repo root:
+
+```bash
+# 1. the back end's packages
+(cd backend && uv sync)
+
+# 2. llama-server, the same build as on Windows (b12628). Pick your file:
+#    Apple Silicon: llama-b12628-bin-macos-arm64.tar.gz, Intel Mac: llama-b12628-bin-macos-x64.tar.gz,
+#    Linux: llama-b12628-bin-ubuntu-x64.tar.gz
+F=llama-b12628-bin-ubuntu-x64.tar.gz
+mkdir -p models/llama
+curl -L -o "models/$F" "https://github.com/ggml-org/llama.cpp/releases/download/b12628/$F"
+shasum -a 256 "models/$F"   # must match the value in scripts/build-desktop.ps1
+tar -xzf "models/$F" -C models/llama --strip-components 1
+# On a Mac, `brew install llama.cpp` works too: Sniff then uses the llama-server on the PATH (a newer build).
+
+# 3. the two models, 1.41 GB, resumable
+python3 eval/fetch_models.py qwen3-1.7b all-minilm
+
+# 4. the embedding server; leave it running
+models/llama/llama-server -m models/all-minilm-l6-v2.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
+```
+
+In a second terminal, the API on port 8000. It starts the chat server (port 8080) by itself the first time a
+question needs it, from `models/llama/llama-server`:
+
+```bash
+cd backend && uv run uvicorn sniff.api:app --port 8000
+```
+
+In a third terminal, the desktop window. The first build takes several minutes and about 3 GB of disk:
+
+```bash
+(cd frontend && npm ci) && cd desktop && npm ci && npx tauri dev
+```
+
+`npx tauri dev` is the same CLI as `cargo tauri dev`, without installing it, and it also starts the front end's dev
+server. Without Rust, `cd frontend && npm ci && npm run dev` and http://localhost:5173 in a browser give the same
+screens, without the shortcut, the tray and the notifications. Run from source, the data goes to `.sniff/` in the
+repo, not to the app folder.
+
+## Tester checklist
+
+For each item write pass or fail, and what you saw. A screenshot helps for anything that looks wrong.
+
+1. **System:** OS and version, the chip (Apple Silicon or Intel / x86-64), RAM, and on Linux X11 or Wayland
+   (`echo $XDG_SESSION_TYPE`).
+2. **Install:** which file, any warning and what you clicked, time to install.
+3. **First run:** the download screen appears. Note how long 1.41 GB takes. Close Sniff halfway and start it again:
+   it should resume. Afterwards `models/` in the data folder holds two `.gguf` files and no `.part` file.
+4. **Index a folder:** Settings > add a folder with about 10 documents (PDFs, a Word file, a photo of a receipt).
+   Note the time until they show as indexed.
+5. **Search:** type a word from one document. Is the right file at the top? Enter opens it, Ctrl+Enter shows it in
+   the file manager.
+6. **Ask:** a question your documents can answer, such as "When does my passport expire?". Note the answer, whether
+   it is right, and how long the first answer took (the chat model loads then).
+7. **Hotkey:** from another app, Alt+Shift+Space (Option+Shift+Space on a Mac) shows the window, and again hides
+   it. On Wayland, set up `sniff --toggle` as above and try that. Change the hotkey in Settings and restart Sniff:
+   the new one is kept.
+8. **Tray and start at sign-in:** the tray (menu bar) icon opens Sniff. Turn on start at sign-in, sign out and in
+   again: Sniff is in the tray, without a window.
+9. **Quit:** Quit from the tray. Then check nothing is left: `ps aux | grep -E 'sniff|llama-server'` (Task Manager on
+   Windows). Only model servers you started yourself may remain.
+10. **Uninstall:** as described for your system. Check that the program is gone, and the data folder too if you
+    chose to delete it.
+11. **Report back:** send the list, the screenshots and the `logs/` folder from the data folder (`desktop.log`,
+    `backend.log`, `chat-server.log`, `embed-server.log`) to Wajih.
+
+## Building the installers
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-desktop.ps1     # Windows
+pwsh scripts/build-desktop.ps1                                         # macOS or Linux (PowerShell 7)
+```
+
+The same script builds the installer for the system it runs on, and CI (`.github/workflows/release.yml`) runs it on
+`windows-latest`, `macos-15` (Apple Silicon), `macos-15-intel` and `ubuntu-22.04` (GitHub retired `macos-14` in November 2026 and
+`macos-13` in December 2025). The script needs uv, Node and npm, and Rust;
+Linux also needs the libraries listed under "Run from source". It downloads llama.cpp build b12628 for the system
+into `models/llama` and checks its sha256, freezes the back end with PyInstaller, builds the front end and runs
+`tauri build`. Builds run at below-normal priority with 2 cargo jobs, and all caches go to `.cache/` in the repo.
+The bundles land in `.cache/cargo-target/release/bundle/` (`nsis/`, `dmg/`, `appimage/`, `deb/`).
+
+Pushing a tag such as `v0.1.0` makes CI attach all five files to a draft GitHub release. Running the workflow by
+hand (Actions > Release > Run workflow) keeps them as downloadable artifacts only. So far only the Windows build has
+been run, on our laptop, with the version of this script from before it handled macOS and Linux.
 
 On our laptop Rust uses the GNU toolchain (`x86_64-pc-windows-gnu`) with MSYS2's MinGW on the PATH, because
-Visual Studio Build Tools do not fit on drive C:.
+Visual Studio Build Tools do not fit on drive C:. CI uses the MSVC toolchain that GitHub's Windows machines have.
 
 ## Clean-machine test in Windows Sandbox (8 GB, no GPU)
 
