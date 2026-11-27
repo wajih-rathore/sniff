@@ -216,3 +216,8 @@ def test_documents_kept_from_the_provider_are_named_not_reported_missing(conn, s
     a = ask.answer_from_search(conn, "when does it expire?")
     assert sent == [] and a.route == "none" and a.answer.startswith("Your settings keep these documents from the AI provider.")
     assert [s.name for s in a.sources] == ["passport.txt"]
+
+
+def test_an_openai_compatible_provider_without_url_or_model_says_so(conn, store):
+    ai_settings.save(conn, "openai")  # saved field by field from the app
+    assert llm.check() == {"ok": False, "error": "Set the base URL and the model first."}

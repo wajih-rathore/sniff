@@ -72,8 +72,8 @@ def save(conn: sqlite3.Connection, provider: str, base_url: str = "", model: str
     if bad := [t for t in allow if t not in HIDDEN]:
         raise ValueError(f"Not a hidden document type: {', '.join(bad)}")
     base_url, model = base_url.strip(), model.strip()
-    if provider == "openai" and not (base_url.startswith(("http://", "https://")) and model):
-        raise ValueError("An OpenAI-compatible provider needs a base URL starting with http:// or https://, and a model.")
+    if base_url and not base_url.startswith(("http://", "https://")):
+        raise ValueError("The base URL must start with http:// or https://.")
     if provider == "local" and not local_available():
         raise ValueError("This laptop's model is not downloaded.")
     if new_key is not None and provider in ("anthropic", "openai"):

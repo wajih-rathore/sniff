@@ -73,8 +73,7 @@ def test_test_reports_success(conn, sent):
 
 @pytest.mark.parametrize("body,error", [
     ({"provider": "gpt"}, "Unknown provider"),
-    ({"provider": "openai", "model": "m"}, "needs a base URL"),
-    ({"provider": "openai", "base_url": "ftp://x", "model": "m"}, "needs a base URL"),
+    ({"provider": "openai", "base_url": "ftp://x", "model": "m"}, "must start with http"),
     ({"provider": "anthropic", "allow": ["receipt"]}, "Not a hidden document type"),
     ({"provider": "local"}, "not downloaded"),
 ])
