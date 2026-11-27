@@ -71,6 +71,7 @@ export default function Launcher() {
   const [previews, setPreviews] = useState<Record<number, ReminderPreview>>({}) // by fact id
   const [hotkey, setHotkey] = useState('Alt+Shift+Space') // the desktop app's saved one replaces this on load
   const [capturing, setCapturing] = useState(false)
+  const [hotkeyNote, setHotkeyNote] = useState<string | null>(null)
   const [autostart, setAutostart] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const seq = useRef(0) // drops responses that belong to an older query
@@ -80,6 +81,7 @@ export default function Launcher() {
     api.calendarStatus().then((s) => setGoogle(s.connected), () => setGoogle(false)) // no answer: offer only the .ics file
     native.autostart().then(setAutostart, () => {})
     native.hotkey().then(setHotkey, () => {})
+    native.hotkeyNote().then(setHotkeyNote, () => {})
     const onGo = (e: Event) => go((e as CustomEvent<Mode>).detail) // the tray's Settings item
     const onFocus = () => input.current?.focus() // the hotkey shows the window: be ready to type
     window.addEventListener('sniff:go', onGo)
@@ -352,7 +354,7 @@ export default function Launcher() {
     }
     if (mode === 'settings') {
       return [
-        { id: 'hotkey', head: 'General', icon: Keyboard, title: 'Hotkey', detail: capturing ? 'Press the new shortcut now, or Esc to keep this one' : 'Opens Sniff from anywhere in Windows',
+        { id: 'hotkey', head: 'General', icon: Keyboard, title: 'Hotkey', detail: capturing ? 'Press the new shortcut now, or Esc to keep this one' : hotkeyNote ?? 'Opens Sniff from any app',
           right: <kbd>{hotkey}</kbd>, enter: () => setCapturing(true), actions: [] },
         { id: 'autostart', icon: Power, title: 'Start with Windows', detail: autostart ? 'On: Sniff starts when you sign in' : 'Off', right: <Toggle on={autostart} />, enter: toggleAutostart, actions: [] },
         // shortcut: fixed text; phase B reads the models and ports from the desktop app.
@@ -392,7 +394,7 @@ export default function Launcher() {
     if (e.key === 'Escape') return setCapturing(false)
     if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return
     if (!e.ctrlKey && !e.altKey && !e.metaKey) return setStatus('Use Ctrl, Alt or Win together with a key')
-    const combo = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Win', e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key].filter(Boolean).join('+')
+    const combo = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Super', e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key].filter(Boolean).join('+')
     setCapturing(false)
     attempt(native.setHotkey(combo).then(() => setHotkey(combo)), `The hotkey is now ${combo}`, `use ${combo}`)
   }

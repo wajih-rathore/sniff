@@ -16,6 +16,8 @@ export const native = {
   setAutostart: (enabled: boolean) => (invoke ? invoke('set_autostart', { enabled }) : desktopOnly()),
   hotkey: () => (invoke ? (invoke('get_hotkey') as Promise<string>) : Promise.reject(new Error('desktop only'))),
   setHotkey: (hotkey: string) => (invoke ? invoke('set_hotkey', { hotkey }) : desktopOnly()),
+  // why the global shortcut may not work here (a Wayland session), or null
+  hotkeyNote: () => (invoke ? (invoke('hotkey_note') as Promise<string | null>) : Promise.resolve(null)),
   // The desktop app saves the .ics and opens it in the default calendar app; a browser downloads it.
   openIcs: (path: string) =>
     invoke ? invoke('open_ics', { url: path })
