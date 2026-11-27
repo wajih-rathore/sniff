@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in Sniff does not work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations: {required: true}
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Use made-up documents only. Never attach real IDs, bills or statements.
+    validations: {required: true}
+  - type: input
+    id: version
+    attributes:
+      label: Sniff version and operating system
+      placeholder: v0.1.0 on Windows 11
+    validations: {required: true}
