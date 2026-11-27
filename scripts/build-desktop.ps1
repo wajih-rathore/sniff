@@ -66,6 +66,8 @@ if ($win) {
 }
 
 # 2. the back end, frozen with PyInstaller (one folder). PyInstaller builds for the system it runs on.
+#    On macOS with uv's own Python: the one GitHub's Macs have cannot load SQLite extensions, so sqlite-vec fails (issue #18)
+if ($mac) { $env:UV_PYTHON_PREFERENCE = "only-managed" }
 Invoke-Step (Join-Path $root "backend") {
     uv sync --frozen
     uv run --with pyinstaller pyinstaller sniff/desktop.py --noconfirm --clean --onedir --name sniff-backend --paths . `
@@ -75,10 +77,15 @@ Invoke-Step (Join-Path $root "backend") {
 # Google's client library ships discovery files for every Google API (tens of MB); Sniff only uses Calendar
 Get-ChildItem "$build/sniff-backend/_internal/googleapiclient/discovery_cache/documents" -Exclude "calendar.v3.json" -ErrorAction SilentlyContinue |
     Remove-Item
+# OpenCV's Qt plugins (Linux wheel only) are for windows Sniff never opens, and linuxdeploy cannot resolve their Qt library
+Remove-Item -Recurse -Force "$build/sniff-backend/_internal/cv2/qt" -ErrorAction SilentlyContinue
 
 # 3. the front end and the desktop app; tauri builds the front end first (beforeBuildCommand)
 if (-not $Bundles) { $Bundles = if ($win) { "nsis" } elseif ($mac) { "dmg" } else { "appimage,deb" } }
 Invoke-Step (Join-Path $root "frontend") { npm ci --no-audit --no-fund }
+# Linux: linuxdeploy (AppImage) resolves the libraries of every program in the bundle, the back end's too. PyInstaller
+# puts OpenCV's libraries in _internal, not in the opencv_python.libs folder that cv2's RPATH names, so point it there.
+if (-not $win -and -not $mac) { $env:LD_LIBRARY_PATH = (Resolve-Path "$build/sniff-backend/_internal").Path }
 Invoke-Step (Join-Path $root "desktop") { npm ci --no-audit --no-fund; npx tauri build --bundles $Bundles }
 
 Get-ChildItem (Join-Path $env:CARGO_TARGET_DIR "release/bundle") -Recurse -File -Include "*.exe", "*.dmg", "*.AppImage", "*.deb" |
