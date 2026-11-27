@@ -226,11 +226,10 @@ def test_an_openai_compatible_provider_without_url_or_model_says_so(conn, store)
 
 # ---------- one provider per call chain ----------
 @pytest.fixture
-def local_then_cloud(conn, sent, monkeypatch, tmp_path):
-    """AI is on this laptop's model; switch() moves it to a cloud provider, as a user could at any moment."""
-    monkeypatch.setattr(config, "MODELS_DIR", tmp_path / "models")
-    (tmp_path / "models").mkdir()
-    (tmp_path / "models" / server.MODEL_FILE).touch()
+def local_then_cloud(conn, sent):
+    """AI is on this laptop's model; the returned function moves it to a cloud provider, as a user could at any moment."""
+    config.MODELS_DIR.mkdir()
+    (config.MODELS_DIR / server.MODEL_FILE).touch()
     ai_settings.save(conn, "local")
     return lambda: use(conn, "openai")
 

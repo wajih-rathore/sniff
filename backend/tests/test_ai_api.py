@@ -129,6 +129,10 @@ def test_a_rejected_request_does_not_echo_the_key(conn, store):
     assert r.status_code == 422 and r.json()["detail"][0]["loc"] == ["body", "provider"] and KEY not in r.text
 
 
+def test_the_models_folder_is_the_tests_own(tmp_path):
+    assert config.MODELS_DIR == tmp_path / "models"  # so "not downloaded" holds on a laptop that has the model
+
+
 def test_without_a_password_store_the_key_is_not_saved_anywhere(conn):
     # conftest.py selects keyring's "fail" backend: a system without a store
     r = TestClient(api.app).put("/ai/settings", json={"provider": "anthropic", "key": KEY})
