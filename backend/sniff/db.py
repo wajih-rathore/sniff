@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 from datetime import datetime
 
 import sqlite_vec
@@ -75,6 +76,10 @@ def connect(path=None) -> sqlite3.Connection:
     conn = sqlite3.connect(path, check_same_thread=False, timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")  # the API reads while the indexer writes
+    if not hasattr(conn, "enable_load_extension"):  # e.g. the Python on GitHub's macOS machines (issue #18)
+        raise RuntimeError(f"This Python ({sys.executable}) cannot load SQLite extensions, and Sniff needs sqlite-vec. "
+                           "Use a Python that uv installs: delete backend/.venv, then run "
+                           "`uv sync --python-preference only-managed` (docs/INSTALL.md).")
     conn.enable_load_extension(True)
     sqlite_vec.load(conn)
     conn.enable_load_extension(False)

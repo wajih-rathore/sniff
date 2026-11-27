@@ -9,6 +9,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      # uv's own Python on every system: the one GitHub's macOS machines have cannot load sqlite-vec (issue #18)
+      UV_PYTHON_PREFERENCE: only-managed
     defaults:
       run:
         working-directory: backend

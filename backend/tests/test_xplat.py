@@ -3,11 +3,13 @@ llama-server binary, the Google token store, and the Unix clean-up after a crash
 import signal
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import keyring
 import keyring.backend
+import pytest
 
-from sniff import config, desktop, gcal
+from sniff import config, db, desktop, gcal
 from sniff.ai import server
 
 
@@ -83,3 +85,10 @@ def test_backend_ends_its_group_when_the_app_dies(monkeypatch):
     monkeypatch.setattr(desktop.os, "killpg", lambda pgid, sig: killed.append((pgid, sig)), raising=False)
     desktop.end_with_parent(poll=0)
     assert killed == [(4242, signal.SIGTERM)]
+
+
+def test_db_says_how_to_get_a_python_that_loads_sqlite_extensions(monkeypatch):
+    """python.org's macOS Python has no enable_load_extension (issue #18): say what to do, not AttributeError."""
+    monkeypatch.setattr(db.sqlite3, "connect", lambda *a, **k: SimpleNamespace(execute=lambda sql: None))
+    with pytest.raises(RuntimeError, match="only-managed"):
+        db.connect(":memory:")
