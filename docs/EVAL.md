@@ -225,6 +225,20 @@ them were embedded from the generator's text instead of OCR to save time). Its t
 score 0.860 with precision 0.951; most wrong values there come from the 61 documents without layout, where two
 columns merge into one line.
 
+**With AI off, a guessed type** (`guess --split dev`, `run --split dev --mode off`). On the 7 dev documents the
+classifier abstains on, its top guess is right for 6. The wrong one, a photo of a note read as a certificate, had
+p = 0.254. Guesses at a floor of 0.3, 0.4 or 0.5 are 6 of 6 right; at 0.6, 5 of 5; at 0.7, 3 of 3. When no model
+can sort a document (AI off, a provider off this laptop, or a failed call), Sniff now takes the top guess at 0.50 or
+above (`typer.GUESS_FLOOR`). Its fields come from the rules only, and every fact goes to review with the reason
+"type guessed". Below the floor the document stays unclassified. With AI off on dev, type accuracy goes from 0.917 to
+1.000 and fields from 0.879 to 0.932 (filled 0.788 to 0.841, precision 0.997 both). 23 of 361 facts, from 6
+documents, wait in review. A second check used the dev records rendered again with another seed
+(`generate.py --splits dev --seed 8`, prepared into its own database, not committed). There the classifier abstained
+on 6, and its top guess was right for 5; the wrong one was again a note, at p = 0.268. At 0.50 it made 3 guesses,
+all right, and left two right guesses (p 0.32 and 0.33) unclassified: type 0.931 to 0.972, fields 0.830 to 0.853.
+Dev allowed any floor from 0.3 to 0.5; 0.5 keeps clear of the wrong guesses at 0.25 to 0.27. These are only 13
+abstained documents. The test split was not used.
+
 **Phase 2 end to end** (`run --mode today|fast`, 72 dev documents, through the real `read_facts`; seconds are the
 whole phase 2 per document, model calls included):
 
