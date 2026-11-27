@@ -224,6 +224,11 @@ class Hit(BaseModel):
     score: float
     doc_type: str | None = None
     reading: bool = False  # findable already; its type and facts are still in the queue
+    title: str = ""  # readable name from the facts (titles.py), e.g. "Metro Gas, utility bill, Nov 2025"
+    date: str | None = None  # the document's own date (bill date, purchase date...), ISO
+    match: Literal["fact", "name", "text", "meaning"] = "text"  # meaning: found by vector search only, a weaker match
+    match_reason: str = ""  # one line, e.g. "Matches the provider name on page 1"
+    fact: "Fact | None" = None  # the fact that holds the query's words, when match is "fact"
 
 
 
@@ -240,11 +245,15 @@ class Fact(BaseModel):
     source_text: str | None = None
 
 
+Hit.model_rebuild()  # Hit.fact refers to Fact, defined after it
+
+
 class Source(BaseModel):
     file_id: int
     path: str
     name: str
     page: int
+    title: str = ""  # readable name from the facts, set by the API
 
 
 class ConflictValue(BaseModel):
@@ -296,6 +305,7 @@ class Document(BaseModel):
     paths: list[str] = []  # every place this exact file is stored; the first is `path`
     near_duplicates: list[int] = []  # other documents holding the same record (e.g. a scan of the same bill)
     pages: int = 1
+    title: str = ""
 
 
 class UpcomingItem(BaseModel):
@@ -313,6 +323,7 @@ class ReviewItem(BaseModel):
     document: str
     path: str
     doc_type: str | None
+    title: str = ""
 
 
 class MissingFields(BaseModel):
