@@ -107,7 +107,7 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
         return same["id"]
 
     pages, boxes = readers.read_layout(path)
-    pieces = readers.chunk(pages)
+    pieces = embed.fit(readers.chunk(pages))
     vectors = embed.embed([t for _, t in pieces]) if pieces else []
     doc_type, facts, ai_error = None, [], None
     if ai and pieces:
@@ -125,16 +125,20 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
         file_id = conn.execute("INSERT INTO files(path) VALUES (?)", (str(path),)).lastrowid
     for (page, text), vec in zip(pieces, vectors):
         cid = conn.execute("INSERT INTO chunks(file_id, page, text) VALUES (?,?,?)", (file_id, page, text)).lastrowid
-        conn.execute("INSERT INTO chunk_vec(chunk_id, embedding) VALUES (?,?)", (cid, vec.tobytes()))
+        if vec is not None:  # refused by the embedding server: keyword search still finds the chunk
+            conn.execute("INSERT INTO chunk_vec(chunk_id, embedding) VALUES (?,?)", (cid, vec.tobytes()))
     for f in facts:
         status = f.get("status") or ("verified" if f["verified"] else "needs_review")
         conn.execute(
             "INSERT INTO facts(file_id, field, value, value_type, page, verified, source_text, status, reason) VALUES (?,?,?,?,?,?,?,?,?)",
             (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"], status, f.get("reason")),
         )
+    missed = sum(v is None for v in vectors)
+    embed_error = f"{missed} of {len(pieces)} chunks could not be embedded; keyword search still finds them" if missed else None
     conn.execute(
         "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
-        (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"), ai_error, file_id),
+        (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"),
+         "; ".join(e for e in (embed_error, ai_error) if e) or None, file_id),
     )
     db.log(conn, "indexed", str(path))
     return file_id
