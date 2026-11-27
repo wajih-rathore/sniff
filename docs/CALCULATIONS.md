@@ -16,6 +16,8 @@ The model never calculates. For a facts question it fills a fixed template: docu
 
 **Spending** over a period is the sum, over unique bills whose `billing_month` is in the period, of `current_charges`. If the router asks to sum `amount_due` over more than one bill of the same account, code sums `current_charges` instead and says so in the answer. The reason: when a bill is not paid, the next bill repeats it inside `amount_due`, so summing `amount_due` counts the same money twice. With one bill per account nothing can repeat, so `amount_due` is summed as asked. If a bill prints tax outside its current charges (`amount_due` = current + previous + tax), that bill's tax is added to its spending.
 
+**One bill** ("How much is my gas bill?"): with no period and no total-like word, the question is about the latest bill, so code sets op `latest` on `amount_due` after the router, whatever op the router chose. The answer gives that bill's amount due, its billing month and the file. A total needs a word like "total", "spent" or "all", or a time: "in 2026", "in March 2026", "last month". So "How much did we pay for gas in 2026?" is still a sum of current charges. Wajih's decision, 25 Nov.
+
 **Tax** is the sum of `tax` over unique bills in the period.
 
 **Outstanding balance** (op `outstanding`): for each provider and account, take the latest bill by `billing_month`. If it is not marked paid, its `amount_due` is owed. Nothing else is added, because that `amount_due` already includes the older unpaid bills. If every latest bill is marked paid, the answer is 0.

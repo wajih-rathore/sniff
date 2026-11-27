@@ -91,7 +91,7 @@ def test_utility_words_pick_the_provider(docs, monkeypatch):
     from sniff.ai import llm
     bare = Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum")
     monkeypatch.setattr(llm, "chat_json", lambda messages, model: bare.model_copy(deep=True))
-    assert ask.ask(docs, "How much is my electricity bill?", today=TODAY).answer.startswith("15,499.50 in total, from 3 documents")
+    assert ask.ask(docs, "How much did we spend on electricity bills?", today=TODAY).answer.startswith("15,499.50 in total, from 3 documents")
     assert ask.ask(docs, "How much was our water bill?", today=TODAY).answer == "No matching documents found."  # no water bill: say so
     r = ask.route("How much did the phone cost?")  # a phone on a receipt is not a phone bill
     assert r.doc_type == "utility_bill" and r.filters.provider is None
@@ -137,3 +137,32 @@ def test_reminder_only_after_approval(docs, monkeypatch):
     assert r.status_code == 200 and len(created) == 1
     assert "/" not in created[0][2] and "\\" not in created[0][2]  # only the file name leaves the laptop
     assert client.get("/upcoming", params={"days": 400}).json()[0]["reminder_status"] == "created"
+
+
+# ---------- "How much is my gas bill?" means the latest bill ----------
+@pytest.mark.parametrize("question, slip, answer", [
+    ("How much is my electricity bill?", Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum"),
+     "2,500.50 (bill_2026-02.pdf), from the newest document (2026-02)."),
+    ("What is my electricity bill?", Route(route="facts", doc_type="utility_bill", field="amount_due", op="list", filters=Filters(provider="electric")),
+     "2,500.50 (bill_2026-02.pdf), from the newest document (2026-02)."),
+    ("How much is my gas bill?", Route(route="facts", doc_type="utility_bill", field="amount_due", op="sum", filters=Filters(provider="gas")),
+     "700 (gas.pdf), from the newest document (2026-01)."),
+])
+def test_a_bill_with_no_period_is_the_latest_bill(docs, monkeypatch, question, slip, answer):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: slip.model_copy(deep=True))
+    a = ask.ask(docs, question, today=TODAY)
+    assert a.answer == answer and a.query["op"] == "latest" and a.query["field"] == "amount_due" and len(a.sources) == 1
+
+
+@pytest.mark.parametrize("question, slip", [
+    ("How much did we pay for electricity in 2026?", Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
+                                                           filters=Filters(provider="electric", year=2026))),
+    ("What is the total of my electricity bills?", Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum")),
+    ("How much did we spend on electricity last month?", Route(route="facts", doc_type="utility_bill", field="current_charges", op="sum",
+                                                               filters=Filters(period="last_month"))),
+])
+def test_totals_need_total_words_or_a_period(docs, monkeypatch, question, slip):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: slip.model_copy(deep=True))
+    assert ask.route(question).op == "sum"

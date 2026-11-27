@@ -115,7 +115,15 @@ def repair(question: str, r: Route) -> Route:
         f.provider = f.provider or utility
         if r.field not in FIELDS["utility_bill"]:
             r.field = "amount_due"
+    # "How much is my gas bill?" means the latest bill. A total needs total-like words or a time ("in 2026", "last month").
+    timed = f.year or f.month or f.date_from or f.date_to or f.period
+    if r.doc_type == "utility_bill" and r.field in ("amount_due", "current_charges") and r.op in ("sum", "list", None) and not timed \
+            and not TOTAL_WORDS & words:
+        r.op, r.field = "latest", "amount_due"
     return r
+
+
+TOTAL_WORDS = {"total", "totals", "sum", "spent", "spend", "spending", "altogether", "combined", "overall", "all", "every", "each"}
 
 
 def valid(r: Route) -> bool:
@@ -125,6 +133,8 @@ def valid(r: Route) -> bool:
         return r.field in EXPIRY_FIELDS and r.op in ("list", "count", "min", "max", "next_expiring")
     if r.op == "outstanding":
         return r.doc_type == "utility_bill"
+    if r.op == "sum" and r.field in FIELDS[r.doc_type] and FIELDS[r.doc_type][r.field].kind != "money":
+        return False  # "sum insured" once came back as a sum of names: only money adds up
     return r.field in FACT_MODELS[r.doc_type].model_fields
 
 
