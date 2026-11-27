@@ -168,6 +168,13 @@ def test_with_ai_off_an_unsure_type_is_guessed_and_its_facts_go_to_review(conn, 
     assert fill == [False]  # the rules only: nothing is sent to a provider for a type that may be wrong
     assert [tuple(r) for r in conn.execute("SELECT field, status, reason FROM facts ORDER BY id")] == [
         ("amount_due", "needs_review", "type guessed"), ("due_date", "needs_review", "type guessed; value not found on the page")]
+    (tmp_path / "c.txt").write_text("Electricity bill. Amount due 1200.")  # an exact copy of a.txt
+    scan.scan(conn, tmp_path)
+    flags = dict(conn.execute("SELECT substr(path, -5), type_guessed FROM files").fetchall())
+    assert flags == {"a.txt": 1, "b.txt": 0, "c.txt": 1}  # db.guessed: hidden from agents and AI until confirmed
+    (tmp_path / "a.txt").write_text("Electricity bill. Amount due 1300.")  # edited: read again from scratch
+    scan.scan(conn, tmp_path)
+    assert conn.execute("SELECT type_guessed FROM files WHERE path LIKE '%a.txt'").fetchone()[0] == 0
 
 
 def test_classifier_reads_the_stored_vectors(conn, tmp_path):

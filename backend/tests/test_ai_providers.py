@@ -145,6 +145,21 @@ def test_written_answers_leave_out_hidden_types(conn, sent, monkeypatch):
     assert a.route == "search" and a.sources[0].name == "utility_bill.txt"
 
 
+def test_a_guessed_type_is_sent_only_as_an_unclassified_document_would_be(conn, sent, monkeypatch):
+    use(conn, "openai")
+    add_chunks(conn, "The electricity bill is due on 15 Nov 2026", "The gas bill is due on 20 Nov 2026")
+    conn.execute("UPDATE files SET doc_type='utility_bill', type_guessed=1 WHERE id=1")  # the classifier's guess
+    conn.commit()
+    monkeypatch.setattr(ask, "search", lambda conn, q, k: hits("utility_bill", "utility_bill")[:k])
+    sent.reply = lambda req: _openai_reply("It is due on 20 Nov 2026 [1].")
+    ask.answer_from_search(conn, "when is it due?")
+    body = json.dumps(sent[0][2]["messages"])
+    assert "electricity" not in body and "gas bill" in body
+    use(conn, "openai", allow=["other"])  # the user lets unclassified documents go: a guessed one goes with them
+    ask.answer_from_search(conn, "when is it due?")
+    assert "electricity" in json.dumps(sent[1][2]["messages"])
+
+
 def test_ids_are_masked_in_every_message_sent(conn, sent):
     use(conn, "openai")
     llm.chat([{"role": "user", "content": f"My CNIC is {CNIC} and EMP-27986"}])

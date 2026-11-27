@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ValidationError
 
-from . import ai_settings, records, verify
+from . import ai_settings, db, records, verify
 from .ai import llm
 from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Alternative, Answer, Conflict, Source
 from .search import STOP, search
@@ -722,7 +722,8 @@ def passage(text: str, q: str, limit: int = PASSAGE_WORDS) -> str:
 
 def _search_prompt(conn, question: str, k: int, s: dict):
     if ai_settings.remote(s):  # only types the user lets leave this laptop; fetch extra, as hidden ones drop out
-        hits = [h for h in search(conn, question, k=k * 4) if ai_settings.may_send(s, h.doc_type)][:k]
+        guessed = db.guessed(conn)  # a guessed type counts as unclassified
+        hits = [h for h in search(conn, question, k=k * 4) if ai_settings.may_send(s, None if h.file_id in guessed else h.doc_type)][:k]
     else:
         hits = search(conn, question, k=k)
     texts = [passage(conn.execute("SELECT text FROM chunks WHERE id=?", (h.chunk_id,)).fetchone()["text"], question) for h in hits]

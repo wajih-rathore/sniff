@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS files(
   indexed_at TEXT,
   status TEXT NOT NULL DEFAULT 'new',   -- new | indexed | error
   error TEXT,
-  copy_of INTEGER                       -- set when this path holds the same bytes as an indexed file; it has no rows of its own
+  copy_of INTEGER,                      -- set when this path holds the same bytes as an indexed file; it has no rows of its own
+  type_guessed INTEGER NOT NULL DEFAULT 0  -- 1: doc_type is the classifier's guess (scan.read_facts), not confirmed in review
 );
 CREATE TABLE IF NOT EXISTS chunks(
   id INTEGER PRIMARY KEY,
@@ -66,7 +67,14 @@ CREATE TABLE IF NOT EXISTS queue(
 );
 """
 
-MIGRATIONS = [("files", "copy_of", "INTEGER"), ("facts", "status", "TEXT NOT NULL DEFAULT 'needs_review'"), ("facts", "reason", "TEXT")]
+MIGRATIONS = [("files", "copy_of", "INTEGER"), ("facts", "status", "TEXT NOT NULL DEFAULT 'needs_review'"), ("facts", "reason", "TEXT"),
+              ("files", "type_guessed", "INTEGER NOT NULL DEFAULT 0")]
+
+
+def guessed(conn: sqlite3.Connection) -> set[int]:
+    """Documents whose type is the classifier's guess, not yet confirmed by a person (approving or correcting one of
+    their facts). Agents and AI providers treat them as unclassified, whatever type was guessed."""
+    return {r[0] for r in conn.execute("SELECT id FROM files WHERE type_guessed")}
 
 
 def connect(path=None) -> sqlite3.Connection:

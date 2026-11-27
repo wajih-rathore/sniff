@@ -366,6 +366,11 @@ def crop(file_id: int, fact_id: int | None = None, page: int = 1, q: str = "", a
     return Response(png, media_type="image/png")
 
 
+def _confirm_type(conn, file_id: int) -> None:
+    """A person approved or corrected one of the document's facts, so a guessed type now stands (db.guessed)."""
+    conn.execute("UPDATE files SET type_guessed=0 WHERE id=? OR copy_of=?", (file_id, file_id))
+
+
 def _fact_row(conn, fact_id: int):
     r = conn.execute("SELECT fa.*, f.doc_type FROM facts fa JOIN files f ON f.id=fa.file_id WHERE fa.id=?", (fact_id,)).fetchone()
     if not r:
@@ -391,6 +396,7 @@ def correct_fact(fact_id: int, req: FactEdit, conn=Depends(get_conn)):
     warnings = [why for fields, why in verify.cross_problems(r["doc_type"], {**others, r["field"]: value}) if r["field"] in fields]
     conn.execute("UPDATE facts SET value=?, value_type=?, status='corrected', reason=? WHERE id=?",
                  (verify.stored(value), verify.VALUE_TYPES.get(spec.kind, "text"), "; ".join(warnings) or None, fact_id))
+    _confirm_type(conn, r["file_id"])
     db.log(conn, "corrected", json.dumps({"fact_id": fact_id, "field": r["field"], "old": r["value"], "new": verify.stored(value)}))
     conn.commit()
     return records.fact(_fact_row(conn, fact_id))
@@ -400,6 +406,7 @@ def correct_fact(fact_id: int, req: FactEdit, conn=Depends(get_conn)):
 def approve_fact(fact_id: int, conn=Depends(get_conn)):
     r = _fact_row(conn, fact_id)
     conn.execute("UPDATE facts SET status='approved', reason=NULL WHERE id=?", (fact_id,))
+    _confirm_type(conn, r["file_id"])
     db.log(conn, "approved", json.dumps({"fact_id": fact_id, "field": r["field"], "value": r["value"]}))
     conn.commit()
     return records.fact(_fact_row(conn, fact_id))
