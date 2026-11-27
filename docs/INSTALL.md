@@ -73,9 +73,9 @@ gets its final name only after its sha256 matches; a file that does not match is
 - Once an hour Sniff checks the expiry and due dates it found. For a date in the next 7 days it shows a Windows
   notification, at most once a day per document.
 - On start, Sniff starts its back end on `127.0.0.1:8765` and the embedding server on 8081 (reused if one already
-  answers there). The chat model is not loaded at start: the back end starts `llama-server` on 8080 the first time
-  a document or a question needs it, and stops it after 120 s without a call (`SNIFF_LLM_IDLE`). Most documents
-  never need it. Quit stops every process Sniff started. They are in a Windows job object (the chat server joins it
+  answers there). The chat model is not loaded at start: when Settings > AI is set to This laptop, the back end
+  starts `llama-server` on 8080 the first time a document or a question needs it, and stops it after 120 s without a
+  call (`SNIFF_LLM_IDLE`). Most documents never need it. AI is off by default (see AI providers below). Quit stops every process Sniff started. They are in a Windows job object (the chat server joins it
   through the back end), so they also end if Sniff crashes. Model servers it only reuses are left alone.
 - Enter on a result opens the file. A PDF hit on page 2 or later opens in Microsoft Edge at that page, because the
   default PDF reader may ignore page numbers. Ctrl+Enter shows the file in Explorer. A calendar reminder is saved
@@ -158,6 +158,38 @@ How it differs from Windows:
 Uninstall: `sudo apt remove sniff` (the package name Tauri normally gives; `apt list --installed | grep -i sniff`
 shows the real one), or delete the AppImage. `rm -rf ~/.local/share/sniff` removes the index and the models, and
 deleting `~/.config/autostart/Sniff.desktop` turns off start at sign-in.
+
+## AI providers (optional)
+
+Sniff works without AI: rules read most fields, a small classifier sorts most documents, and code does every sum,
+count and date comparison. AI is **off** until you pick a provider in Settings > AI. When it is on, a model only fills
+gaps: a required field the rules missed, a question the rules cannot read, and written answers from passages. No model
+does arithmetic.
+
+| Provider | What it needs |
+|---|---|
+| Anthropic | Your API key. The model is `claude-haiku-5-5` unless you name another |
+| OpenAI-compatible | Base URL, model and key: OpenAI, OpenRouter, Groq, Gemini's OpenAI-compatible endpoint, or a local Ollama, LM Studio or llama.cpp server (a local server needs no key) |
+| This laptop | The bundled `llama-server` and Qwen3-1.7B, offered when the model file is downloaded. Nothing leaves the computer |
+
+What a provider other than this laptop gets:
+- Only the candidate lines the extractor already builds (the rows with a missing field's label and the row under it),
+  a question, or the top passages for a written answer. Never a whole document: a document whose labels are not
+  printed is not sent, and such a provider never sorts documents into types.
+- Never a document of a type hidden from agents by default (ID cards, passports, bank statements, offer letters,
+  transcripts and unclassified files), unless you allow that type in Settings > AI.
+- ID numbers are masked as for MCP: `35202-1234567-8` goes out as `•••••-•••••67-8`.
+- `GET /ai/preview?file_id=N` or `?question=...` returns exactly what would be sent. While AI is off it shows what a
+  cloud provider would get.
+
+The key is kept in the system's password store (Windows Credential Manager, the macOS Keychain or the Secret Service,
+as `Sniff` / `ai-<provider>`), never in the database, logs or error messages. Without a password store the key is not
+saved. Requests time out after 30 seconds. If a call fails, Sniff keeps the facts the rules found and says why a
+written answer is missing. `POST /ai/test` makes a one-token call and reports success or a plain reason.
+
+The API is `GET` and `PUT /ai/settings` (`provider`: `off`, `anthropic`, `openai` or `local`, plus `base_url`, `model`,
+`allow` and a write-only `key`), `POST /ai/test` and `GET /ai/preview`. `SNIFF_AI=local` overrides the saved provider;
+the evaluation scripts set it.
 
 ## Known limitations
 
