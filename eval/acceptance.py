@@ -46,7 +46,7 @@ PROXY = {18080: 8080, 18081: 8081}  # proxy port -> model server port (chat, emb
 TARGETS = {"search_ms": 100, "new_file_s": 2, "fact_answer_s": 2, "first_word_s": 3, "memory_gb": 4.5}
 DETACHED = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
 BREAKAWAY = 0x01000000  # CREATE_BREAKAWAY_FROM_JOB, so the shell that runs `start` can exit
-STEPS = ["index", "facts", "search", "ui", "ask", "reminders", "overview", "mcp", "changes", "badinput"]
+STEPS = ["index", "search", "ui", "reminders", "overview", "ask", "mcp", "facts", "changes", "badinput"]  # facts and later steps change the index
 
 # planted documents (paths inside the test folder)
 GAS_SEP, GAS_OCT = "Bills/Metro Gas Sep 2026.pdf", "Bills/Metro Gas Oct 2026.pdf"
@@ -115,8 +115,14 @@ def conditions() -> dict:
         c = json.loads(subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, timeout=60).stdout)
     except Exception as e:
         return {"error": str(e)}
-    c["mains"] = c.get("battery") == 2
-    c["at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    import ctypes
+
+    class Power(ctypes.Structure):
+        _fields_ = [("ac", ctypes.c_ubyte), ("flag", ctypes.c_ubyte), ("pct", ctypes.c_ubyte), ("saver", ctypes.c_ubyte),
+                    ("life", ctypes.c_ulong), ("full", ctypes.c_ulong)]
+    p = Power()
+    ctypes.windll.kernel32.GetSystemPowerStatus(ctypes.byref(p))
+    c.update(ac_line=p.ac, charge=p.pct, mains=c.get("battery") == 2 and p.ac == 1, at=time.strftime("%Y-%m-%d %H:%M:%S"))
     return c
 
 
@@ -482,6 +488,25 @@ def model_split(calls: list[dict], t0: float, t1: float) -> dict:
             "chat_calls": sum(c["port"] == 8080 for c in inside), "embed_calls": sum(c["port"] == 8081 for c in inside)}
 
 
+def split_by_calls(calls: list[dict], order: list[str], truth: dict) -> list[dict]:
+    """Per document: reading time and model time, from the proxy's call log. A new document is read, then embedded
+    (one embeddings call per 32 chunks), then classified and its facts extracted. So each run of embeddings calls starts
+    a document, and the idle time before it is that document's reading (and OCR). `order` is the scan order.
+    Polling /index/status for the current file is not precise enough: it answers late while OCR runs."""
+    calls = [x for x in calls if x["path"] != "/v1/models"]
+    starts = [i for i, x in enumerate(calls) if x["port"] == 8081 and (i == 0 or calls[i - 1]["port"] != 8081)]
+    if len(starts) != len(order) or sum(calls[i]["port"] == 8080 for i in range(len(calls))) < len(order) // 2:
+        return [{"error": f"{len(starts)} embedding runs for {len(order)} scanned files, or facts read apart from reading: cannot split"}]
+    out = []
+    for k, i in enumerate(starts):
+        mine = calls[i:starts[k + 1] if k + 1 < len(starts) else len(calls)]
+        read = calls[i]["t0"] - calls[i - 1]["t1"] if i else None
+        m = model_split(mine, mine[0]["t0"], mine[-1]["t1"] + 1)
+        out.append({"file": order[k], "format": truth.get(order[k], {}).get("format"), "read_s": read and round(read, 3), **m,
+                    "total_s": round((read or 0) + mine[-1]["t1"] - mine[0]["t0"], 3)})
+    return out
+
+
 def step_index(c: Ctx):
     if c.get("/documents"):
         sys.exit("The index is not empty. The index step needs a fresh SNIFF_HOME.")
@@ -514,15 +539,13 @@ def step_index(c: Ctx):
             break
         time.sleep(0.25)
     c.mem.phase = None
+    docs = c.get("/documents")
+    found = sum(len(d["paths"]) for d in docs if d["status"] == "indexed")
+    if found >= expected and all_found is None:  # the last file was committed between two polls
+        all_found = done
     calls = c.calls(t0, time.time())
-    per_doc = []
-    for path, (s0, s1) in spans.items():
-        rel = c.rel(path)
-        if s1 is None:
-            continue
-        m = model_split(calls, s0, s1)
-        per_doc.append({"file": rel, "format": c.truth.get(rel, {}).get("format"), "total_s": round(s1 - s0, 3), **m,
-                        "read_s": round(s1 - s0 - m["model_s"], 3)})
+    main = {d["path"] for d in docs}  # of two identical files, the one scanned second is only a copy: no reading, no calls
+    per_doc = split_by_calls(calls, [c.rel(p) for p in spans if p in main], c.truth)
     by_fmt = {}
     for d in per_doc:
         by_fmt.setdefault(d["format"], []).append(d)
@@ -599,7 +622,7 @@ def expiring(c: Ctx, lo: date, hi: date, fields=("expiry_date", "warranty_until"
 
 
 def questions(c: Ctx) -> dict[str, list]:
-    T, gas = c.today, {"numbers": [8400], "counted_in": [GAS_SEP, GAS_OCT, GAS_OCT_PHOTO], "not_numbers": [11400, 13800, 14400, 16800]}
+    T, gas = c.today, {"numbers": [8400], "counted_in": [GAS_SEP, GAS_OCT, GAS_OCT_PHOTO], "not_numbers": [11400, 13800, 14400, 16800], "largest": True}
     nxt = min((v, rel) for rel, v in expiring(c, T, date(2100, 1, 1)))
     win = lambda lo, hi, f=("expiry_date", "warranty_until", "end_date"): {"expiring": expiring(c, lo, hi, f)}  # noqa: E731
     return {
@@ -614,8 +637,8 @@ def questions(c: Ctx) -> dict[str, list]:
             ("How much did I spend on gas in 2026?", gas),
             ("What was my total gas spending this year?", gas),
             ("Add up my Metro Gas bills for 2026.", gas),
-            ("How much did I spend on electricity in 2025?", {"numbers": [27668], "counted_in": ["Desktop/scan_3591.pdf", "Downloads/9f5d83e4.pdf"]}),
-            ("How much did I spend at Metro Electronics Mart in 2025?", {"numbers": [231800.4], "counted_in": [
+            ("How much did I spend on electricity in 2025?", {"numbers": [27668], "largest": True, "counted_in": ["Desktop/scan_3591.pdf", "Downloads/9f5d83e4.pdf"]}),
+            ("How much did I spend at Metro Electronics Mart in 2025?", {"numbers": [231800.4], "largest": True, "counted_in": [
                 "Documents/old/IMG_4953.jpg", "Documents/old/PXL_20251115_134335.jpg", "Downloads/Print_2025-03-16.pdf"]}),
         ],
         "expiring_window": [
@@ -625,7 +648,7 @@ def questions(c: Ctx) -> dict[str, list]:
             ("Which document expires next?", {"dates": [nxt[0]], "sources": [nxt[1]]}),
             ("Which warranties end in 2027?", win(date(2027, 1, 1), date(2027, 12, 31), ("warranty_until",))),
         ],
-        "gas_bill": [(q, {"numbers": [8400], "sources": [GAS_OCT, GAS_OCT_PHOTO]}) for q in (
+        "gas_bill": [(q, {"numbers": [8400], "largest": True, "sources": [GAS_OCT, GAS_OCT_PHOTO]}) for q in (
             "How much is my gas bill?", "What is my gas bill?", "How much do I owe for gas?",
             "What is the amount on my latest gas bill?", "How much is the gas bill I need to pay?")],
         "conflict": [(q, {"conflict": True, "sources": [CNIC, "Desktop/PXL_20190101_186672.jpg"]}) for q in (
@@ -649,6 +672,8 @@ def judge(c: Ctx, r: dict, exp: dict) -> dict:
     for n in exp.get("numbers", []):
         if not any(abs(n - g) < 0.01 for g in got):
             why.append(f"missing {n:,}")
+    if exp.get("largest") and exp.get("numbers") and (big := [g for g in got if g > max(exp["numbers"]) + 0.01]):
+        why.append(f"a larger total in the answer: {big[0]:,}")  # the expected figure as one bill inside a wrong total
     for n in exp.get("not_numbers", []):
         if any(abs(n - g) < 0.01 for g in got):
             why.append(f"wrong total {n:,} (counted twice)")
@@ -746,12 +771,20 @@ def step_facts(c: Ctx):
     n = sum(types.values())
     type_ok = sum(v for (g, p), v in types.items() if g == p)
     # correcting and approving through the API changes what totals use
-    corr = {"question": "How much did I spend on gas in 2026?"}
+    corr = {}
     sep = docs.get(GAS_SEP)
     fact = next((f for f in (sep or {}).get("facts", []) if f["field"] == "current_charges"), None)
-    if fact:
-        total = lambda a: next((float(x.replace(",", "")) for x in re.findall(r"([\d,]+(?:\.\d+)?) in total", a["answer"] or "")), None)  # noqa: E731
-        a0 = ask(c, corr["question"])
+    total = lambda a: next((float(x.replace(",", "")) for x in re.findall(r"([\d,]+(?:\.\d+)?) in total", a["answer"] or "")), None)  # noqa: E731
+    tried = []
+    for q in ("How much did I spend on gas in 2026?", "What was my total gas spending this year?", "Add up my Metro Gas bills for 2026.",
+              "What is the sum of the current charges on my Metro Gas bills in 2026?"):
+        a0 = ask(c, q)  # the router is tested in the ask step; here a question is needed that reaches the facts route
+        tried.append({"q": q, "route": a0["route"], "answer": (a0["answer"] or "")[:300]})
+        if a0["route"] == "facts" and total(a0) is not None:
+            corr["question"] = q
+            break
+    corr["tried"] = tried
+    if fact and corr.get("question"):
         r1 = c.http.patch(f"/facts/{fact['id']}", json={"value": "Rs. 3,100"})
         a1 = ask(c, corr["question"])
         bad = c.http.patch(f"/facts/{fact['id']}", json={"value": "abc"})
@@ -767,14 +800,37 @@ def step_facts(c: Ctx):
                         and corr["correction_status"] == "corrected" and corr["approve_status"] == "approved"
                         and corr["garbage_rejected"] and not corr["unreviewed_after"])
     else:
-        corr["pass"], corr["why"] = False, "the planted September gas bill has no current_charges fact"
+        corr["pass"], corr["why"] = False, ("no gas total question reached the facts route" if fact else
+                                            "the planted September gas bill has no current_charges fact")
+    # A near-duplicate whose key field was misread is counted as another record. Correcting that field in review
+    # should fold it into the record. This changes the index, so the facts step runs after ask and mcp.
+    sys.path.insert(0, str(ROOT / "backend"))
+    from sniff.schemas import KEYS
+
+    fold = {"pass": None, "why": "no near-duplicate with a misread key field"}
+    for rel, t in c.truth.items():
+        d = docs.get(rel)
+        if not t.get("near_of") or not d or not corr.get("question"):
+            continue
+        have = {f["field"]: f for f in d["facts"]}
+        misread = [(f, t["fields"][f]) for f in KEYS[t["type"]] if f in have and not same_value(have[f]["value"], t["fields"][f])]
+        if not misread:
+            continue
+        b = ask(c, corr["question"])
+        fixed = {f: c.http.patch(f"/facts/{have[f]['id']}", json={"value": str(g)}).status_code for f, g in misread}
+        a = ask(c, corr["question"])
+        want = sum(float(x["fields"]["current_charges"]) for x in c.kept().values()
+                   if x["type"] == "utility_bill" and x["fields"].get("provider") == "Metro Gas Ltd" and x["fields"]["billing_month"] >= "2026")
+        fold = {"file": rel, "misread": {f: have[f]["value"] for f, _ in misread}, "corrected_to": dict(misread), "patch_status": fixed,
+                "before": b["answer"], "after": a["answer"], "skipped_after": a["skipped"], "expected_total": want,
+                "pass": total(a) == want and {c.same_record(s) for s in a["skipped"]} == {t["near_of"]}}
     save("facts", {"documents": n, "type_accuracy": round(type_ok / n, 3), "type_confusions": {f"{g} -> {p}": v for (g, p), v in types.items() if g != p},
                    "field_accuracy": round(ok / tot, 3), "fields": tot, "values_for_absent_fields": absent,
                    "field_accuracy_by_type": {k: round(a / b, 3) for k, (a, b) in by_type.items() if b},
                    "statuses": dict(statuses), "needs_review_without_reason": no_reason,
                    "verified_precision": round(ver["verified"][0] / ver["verified"][1], 3) if ver["verified"][1] else None,
                    "needs_review_correct_share": round(ver["needs_review"][0] / ver["needs_review"][1], 3) if ver["needs_review"][1] else None,
-                   "correct_and_approve": corr, "wrong_fields": wrong})
+                   "correct_and_approve": corr, "fix_misread_near_duplicate": fold, "wrong_fields": wrong})
 
 
 # ---------------------------------------------------------------- search, and the real launcher
@@ -938,7 +994,10 @@ def step_reminders(c: Ctx):
     want = {(rel, f, v) for rel, t in c.kept().items() for f, v in (t["fields"] or {}).items()
             if f in ("expiry_date", "due_date", "warranty_until", "end_date") and v and -30 <= (date.fromisoformat(v) - T).days <= 90
             and not (f == "due_date" and (t["fields"] or {}).get("payment_status") == "paid")}
-    got = {(c.same_record(c.rel(i["path"])), i["fact"]["field"], i["fact"]["value"]) for i in up}
+    items = [(c.same_record(c.rel(i["path"])), i["fact"]["field"], i["fact"]["value"]) for i in up]
+    got = set(items)
+    twice = [(i["document"], i["fact"]["field"]) for i in up if Counter((c.same_record(c.rel(x["path"])), x["fact"]["field"]) for x in up)[
+        (c.same_record(c.rel(i["path"])), i["fact"]["field"])] > 1]  # one record listed twice, e.g. a bill and its photo
     ics = []
     for i in up:
         q = {"file_id": i["fact"]["file_id"], "field": i["fact"]["field"]}
@@ -946,7 +1005,8 @@ def step_reminders(c: Ctx):
         r = c.http.get("/reminders/ics", params=q)
         ics.append({"file": c.rel(i["path"]), "field": q["field"], **ics_check(r.text, r.headers.get("content-type", ""), pv)})
     conflict = [{"file": c.rel(i["path"]), "value": i["fact"]["value"], "conflict": bool(i.get("conflict"))} for i in up if c.rel(i["path"]) == CNIC]
-    save("reminders", {"upcoming_pass": got == want, "expected": sorted(want), "got": sorted(got), "missing": sorted(want - got),
+    save("reminders", {"upcoming_pass": got == want and not twice, "listed_twice": twice, "expected": sorted(want), "got": sorted(items),
+                       "missing": sorted(want - got),
                        "extra": sorted(got - want), "conflict_shown": conflict, "ics": ics,
                        "ics_pass": bool(ics) and all(x["pass"] for x in ics), "google_connected": c.get("/calendar/status").get("connected")})
 
@@ -997,17 +1057,18 @@ def step_mcp(c: Ctx):
         r.raise_for_status()
 
     def payload(res):
-        if res.structuredContent is not None:
-            sc = res.structuredContent
+        sc = getattr(res, "structured_content", None) or getattr(res, "structuredContent", None)  # the name differs by SDK version
+        if sc is not None:
             return sc.get("result", sc) if isinstance(sc, dict) and set(sc) == {"result"} else sc
         out = [json.loads(x.text) for x in res.content if getattr(x, "text", None) and x.text.strip()[:1] in "[{"]
         return out[0] if len(out) == 1 else out
 
     async def go():
-        async with stdio_client(StdioServerParameters(command=cmd[0], args=cmd[1:], env=env)) as (rd, wr):
+        async with stdio_client(StdioServerParameters(command=cmd[0], args=cmd[1:], env=env, cwd=str(c.home))) as (rd, wr):
             async with ClientSession(rd, wr) as s:
                 await s.initialize()
-                c.mem.extra.update({f"mcp {p.pid}": p.pid for p in psutil.Process().children(recursive=True) if "python" in p.name().lower()})
+                # direct children only: a venv's python.exe is a launcher whose child is the real server, and the sampler adds children
+                c.mem.extra.update({f"mcp {p.pid}": p.pid for p in psutil.Process().children() if "python" in p.name().lower()})
 
                 async def call(tool, **args):
                     t = time.perf_counter()
@@ -1019,7 +1080,8 @@ def step_mcp(c: Ctx):
 
                 put(False, default)
                 res = await call("list_documents")
-                checks["refused_while_off"] = {"pass": res.isError and "turned off" in str(res.content).lower(), "reply": str(res.content)[:200]}
+                checks["refused_while_off"] = {"pass": bool(getattr(res, "is_error", None) or getattr(res, "isError", None)),
+                                               "reason_shown_to_agent": "turned off" in str(res.content).lower(), "reply": str(res.content)[:200]}
                 put(True, default)
                 docs = payload(await call("list_documents"))
                 hidden = [d for d in docs if d["type"] not in default]
@@ -1046,6 +1108,8 @@ def step_mcp(c: Ctx):
                           "What is the due date of my October 2026 gas bill?", "Which warranties end in 2027?"):
                     await call("ask", question=q)
 
+    # which source the server runs: from home, `-m sniff.mcp_server` imports the installed package, not a sniff/ folder in the cwd
+    source = subprocess.run(cmd[:1] + ["-c", "import sniff; print(sniff.__file__)"], capture_output=True, text=True, cwd=str(c.home)).stdout.strip()
     cond = conditions()
     c.mem.phase = "mcp"
     try:
@@ -1058,7 +1122,7 @@ def step_mcp(c: Ctx):
     logged = [x["tool"] for x in reversed(log)]
     checks["every_call_logged"] = {"pass": logged == calls, "calls": len(calls), "logged": len(logged),
                                    "refused_logged": sum(x["refused"] for x in log)}
-    save("mcp", {"conditions": cond, "command": cmd, "pass": all(v["pass"] for v in checks.values()), "checks": checks,
+    save("mcp", {"conditions": cond, "command": cmd, "server_source": source, "pass": all(v["pass"] for v in checks.values()), "checks": checks,
                  "ms": {k: stats(v, 1) for k, v in timing.items()}, "memory_mb": c.mem.peak("mcp")})
 
 
@@ -1161,7 +1225,12 @@ def step_badinput(c: Ctx):
 
     since = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(t0))
 
+    seen = {}  # file -> seconds until it first appeared in the index, with any status
+
     def settled():  # a scan finished after the files were written, or the watcher reported an error
+        for k in c.documents():
+            if k.startswith("Bad/"):
+                seen.setdefault(k[4:], round(time.time() - t0, 2))
         if time.time() - t0 < 6:
             return False
         s, w = c.get("/index/status"), c.get("/watch")
@@ -1177,6 +1246,11 @@ def step_badinput(c: Ctx):
     later = c.wait(lambda: (c.documents().get("Bad/locked.pdf") or {}).get("status") == "indexed", timeout=30, every=1)
     os.utime(bad / "locked.pdf")  # a change event, as when the other program saves and closes it
     after_touch = c.wait(lambda: (c.documents().get("Bad/locked.pdf") or {}).get("status") == "indexed", timeout=300, every=1)
+    c.wait(lambda: not c.get("/index/status").get("running"), timeout=300)
+    with c.db() as conn:  # every file once the lock is gone and the folder was scanned again
+        rows = {c.rel(r["path"]): dict(r) for r in conn.execute("SELECT path, status, error FROM files WHERE path LIKE ?", (str(bad) + "%",))}
+    after = {n: {"status": (rows.get(rel(n)) or {}).get("status"), "error": (rows.get(rel(n)) or {}).get("error")} for n in files}
+    errors_shown = c.get("/overview")["errors"]
     expect = {"corrupt.pdf": "error", "empty.pdf": "error", "protected.pdf": "error", "locked.pdf": "error", "large.pdf": "indexed", "budget.xlsx": None}
     for n, want in expect.items():
         r = result[n]
@@ -1186,7 +1260,8 @@ def step_badinput(c: Ctx):
     shutil.rmtree(stage, ignore_errors=True)
     removed = c.wait(lambda: not any(k.startswith("Bad/") for k in c.documents()), timeout=300)
     save("badinput", {"conditions": cond, "backend_alive": alive, "settled_s": waited, "watch_error": watch.get("error"),
-                      "files": result, "overview_errors": c.get("/overview")["errors"], "locked_indexed_after_unlock_without_event": later,
+                      "files": result, "first_seen_s": seen, "after_unlock": after, "overview_errors_after_unlock": errors_shown,
+                      "locked_indexed_after_unlock_without_event": later,
                       "locked_indexed_after_touch_s": after_touch, "bad_folder_removed_s": removed,
                       "pass": alive and all(r["pass"] for r in result.values())})
 
@@ -1212,6 +1287,8 @@ def selftest(_):
     assert judge(c, ok, exp)["pass"], judge(c, ok, exp)
     twice = {**ok, "answer": "13,800 in total, from 3 documents.", "sources": [(GAS_SEP, 1), (GAS_OCT, 1), (GAS_OCT_PHOTO, 1)]}
     assert not judge(c, twice, exp)["pass"]
+    inside = {**ok, "answer": "September PKR 3000.00, October PKR 8400.00: a total of PKR 11,000.00", "sources": [(GAS_OCT, 1)]}
+    assert not judge(c, inside, {**exp, "largest": True})["pass"]
     print("selftest ok")
 
 
@@ -1226,6 +1303,7 @@ def run(a):
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # answers hold characters the Windows console code page lacks
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("docs")

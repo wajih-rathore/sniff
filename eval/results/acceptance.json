@@ -1,0 +1,3855 @@
+{
+ "startup_empty": {
+  "exe": "E:/E/FAST/Semester 7/GenAI/.cache/acceptance/bin/sniff-backend.exe",
+  "index_had_files": false,
+  "runs": [
+   {
+    "s": 5.184,
+    "conditions": {
+     "builds": [],
+     "battery": 2,
+     "cpu": 28,
+     "free_commit_kb": 7551764,
+     "mains": true,
+     "at": "2026-11-27 19:32:33"
+    }
+   },
+   {
+    "s": 4.135,
+    "conditions": {
+     "builds": [],
+     "battery": 2,
+     "cpu": 18,
+     "free_commit_kb": 7575364,
+     "mains": true,
+     "at": "2026-11-27 19:32:42"
+    }
+   },
+   {
+    "s": 4.143,
+    "conditions": {
+     "builds": [],
+     "battery": 2,
+     "cpu": 16,
+     "free_commit_kb": 7642848,
+     "mains": true,
+     "at": "2026-11-27 19:32:50"
+    }
+   },
+   {
+    "s": 4.131,
+    "conditions": {
+     "builds": [],
+     "battery": 2,
+     "cpu": 22,
+     "free_commit_kb": 7760040,
+     "mains": true,
+     "at": "2026-11-27 19:32:58"
+    }
+   },
+   {
+    "s": 4.592,
+    "conditions": {
+     "builds": [],
+     "battery": 2,
+     "cpu": 22,
+     "free_commit_kb": 7755940,
+     "mains": true,
+     "at": "2026-11-27 19:33:06"
+    }
+   }
+  ],
+  "s": {
+   "n": 5,
+   "p50": 4.143,
+   "p95": 5.184,
+   "min": 4.131,
+   "max": 5.184
+  },
+  "note": "from process start until GET /index/status answers"
+ },
+ "index": {
+  "conditions": {
+   "builds": [],
+   "battery": 2,
+   "cpu": 19,
+   "free_commit_kb": 7231228,
+   "mains": true,
+   "at": "2026-11-27 19:33:35"
+  },
+  "conditions_after": {
+   "builds": [],
+   "battery": 2,
+   "cpu": 27,
+   "free_commit_kb": 6661516,
+   "mains": true,
+   "at": "2026-11-27 20:15:56"
+  },
+  "files": 82,
+  "first_findable_s": 53.45,
+  "all_findable_s": 2537.17,
+  "all_facts_s": 2537.17,
+  "last_status": {
+   "running": false,
+   "done": 82,
+   "total": 82,
+   "current": null,
+   "errors": 0,
+   "watching": [
+    "E:\\E\\FAST\\Semester 7\\GenAI\\.cache\\acceptance\\docs"
+   ],
+   "watch_last": {
+    "folder": "E:\\E\\FAST\\Semester 7\\GenAI\\.cache\\acceptance\\docs",
+    "at": "2026-11-27T19:33:37",
+    "indexed": 82,
+    "unchanged": 0,
+    "renamed": 0,
+    "removed": 0,
+    "errors": 0
+   }
+  },
+  "total_model_calls": {
+   "chat": 158,
+   "embed": 81
+  },
+  "per_doc_all": {
+   "total_s": {
+    "n": 81,
+    "p50": 29.481,
+    "p95": 50.174,
+    "min": 9.811,
+    "max": 66.462
+   },
+   "read_s": {
+    "n": 80,
+    "p50": 3.405,
+    "p95": 9.649,
+    "min": 0.02,
+    "max": 18.125
+   },
+   "model_s": {
+    "n": 81,
+    "p50": 24.837,
+    "p95": 45.614,
+    "min": 9.765,
+    "max": 55.258
+   }
+  },
+  "per_format": {
+   "pdf_text": {
+    "total_s": {
+     "n": 31,
+     "p50": 27.02,
+     "p95": 45.675,
+     "min": 9.811,
+     "max": 50.654
+    },
+    "read_s": {
+     "n": 30,
+     "p50": 0.047,
+     "p95": 0.207,
+     "min": 0.02,
+     "max": 0.344
+    },
+    "model_s": {
+     "n": 31,
+     "p50": 26.88,
+     "p95": 45.614,
+     "min": 9.765,
+     "max": 50.529
+    }
+   },
+   "pdf_scan": {
+    "total_s": {
+     "n": 16,
+     "p50": 35.81,
+     "p95": 55.0,
+     "min": 25.525,
+     "max": 66.462
+    },
+    "read_s": {
+     "n": 16,
+     "p50": 8.777,
+     "p95": 11.17,
+     "min": 5.282,
+     "max": 18.125
+    },
+    "model_s": {
+     "n": 16,
+     "p50": 27.77,
+     "p95": 37.141,
+     "min": 18.709,
+     "max": 55.258
+    }
+   },
+   "image": {
+    "total_s": {
+     "n": 29,
+     "p50": 27.902,
+     "p95": 48.079,
+     "min": 19.054,
+     "max": 52.533
+    },
+    "read_s": {
+     "n": 29,
+     "p50": 3.799,
+     "p95": 7.555,
+     "min": 2.373,
+     "max": 7.972
+    },
+    "model_s": {
+     "n": 29,
+     "p50": 24.168,
+     "p95": 40.087,
+     "min": 12.107,
+     "max": 46.546
+    }
+   },
+   "docx": {
+    "total_s": {
+     "n": 1,
+     "p50": 20.503,
+     "p95": 20.503,
+     "min": 20.503,
+     "max": 20.503
+    },
+    "read_s": {
+     "n": 1,
+     "p50": 0.039,
+     "p95": 0.039,
+     "min": 0.039,
+     "max": 0.039
+    },
+    "model_s": {
+     "n": 1,
+     "p50": 20.447,
+     "p95": 20.447,
+     "min": 20.447,
+     "max": 20.447
+    }
+   },
+   "pptx": {
+    "total_s": {
+     "n": 1,
+     "p50": 15.47,
+     "p95": 15.47,
+     "min": 15.47,
+     "max": 15.47
+    },
+    "read_s": {
+     "n": 1,
+     "p50": 0.07,
+     "p95": 0.07,
+     "min": 0.07,
+     "max": 0.07
+    },
+    "model_s": {
+     "n": 1,
+     "p50": 15.386,
+     "p95": 15.386,
+     "min": 15.386,
+     "max": 15.386
+    }
+   },
+   "image_real": {
+    "total_s": {
+     "n": 3,
+     "p50": 32.136,
+     "p95": 35.034,
+     "min": 25.731,
+     "max": 35.034
+    },
+    "read_s": {
+     "n": 3,
+     "p50": 5.8,
+     "p95": 5.988,
+     "min": 3.466,
+     "max": 5.988
+    },
+    "model_s": {
+     "n": 3,
+     "p50": 26.312,
+     "p95": 29.035,
+     "min": 22.243,
+     "max": 29.035
+    }
+   }
+  },
+  "text_by_format": {
+   "pdf_text": {
+    "files": 31,
+    "with_text": 31,
+    "word_recall_mean": 1.0,
+    "word_recall_min": 1.0
+   },
+   "pdf_scan": {
+    "files": 16,
+    "with_text": 16,
+    "word_recall_mean": 0.703,
+    "word_recall_min": 0.391
+   },
+   "image": {
+    "files": 29,
+    "with_text": 29,
+    "word_recall_mean": 0.728,
+    "word_recall_min": 0.553
+   },
+   "docx": {
+    "files": 1,
+    "with_text": 1,
+    "word_recall_mean": 1.0,
+    "word_recall_min": 1.0
+   },
+   "pptx": {
+    "files": 1,
+    "with_text": 1,
+    "word_recall_mean": 1.0,
+    "word_recall_min": 1.0
+   },
+   "image_real": {
+    "files": 3,
+    "with_text": 3,
+    "word_recall_mean": null,
+    "word_recall_min": null
+   }
+  },
+  "errors": [],
+  "memory_mb": {
+   "backend": 992,
+   "chat": 2250,
+   "embed": 75,
+   "total": 3287
+  },
+  "per_doc": [
+   {
+    "file": "Backup/Metro Gas Sep 2026.pdf",
+    "format": "pdf_text",
+    "read_s": null,
+    "model_s": 50.529,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 50.654
+   },
+   {
+    "file": "Bills/Metro Gas Oct 2026.pdf",
+    "format": "pdf_text",
+    "read_s": 0.344,
+    "model_s": 49.783,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 50.174
+   },
+   {
+    "file": "Desktop/CamScanner 02-27-2019 18.24.pdf",
+    "format": "pdf_scan",
+    "read_s": 11.166,
+    "model_s": 21.477,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 32.667
+   },
+   {
+    "file": "Desktop/CamScanner 03-01-2024 17.45.pdf",
+    "format": "pdf_scan",
+    "read_s": 18.125,
+    "model_s": 36.842,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 55.0
+   },
+   {
+    "file": "Desktop/CamScanner 08-30-2025 15.14.pdf",
+    "format": "pdf_scan",
+    "read_s": 10.858,
+    "model_s": 22.41,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 33.286
+   },
+   {
+    "file": "Desktop/CamScanner 09-01-2023 17.56.pdf",
+    "format": "pdf_scan",
+    "read_s": 5.531,
+    "model_s": 21.217,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 26.77
+   },
+   {
+    "file": "Desktop/Document (19).pdf",
+    "format": "pdf_text",
+    "read_s": 0.04,
+    "model_s": 45.291,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 45.352
+   },
+   {
+    "file": "Desktop/Document (28).pdf",
+    "format": "pdf_text",
+    "read_s": 0.055,
+    "model_s": 33.367,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 33.437
+   },
+   {
+    "file": "Desktop/Document (30).pdf",
+    "format": "pdf_text",
+    "read_s": 0.048,
+    "model_s": 22.91,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 22.974
+   },
+   {
+    "file": "Desktop/Document (4).pdf",
+    "format": "pdf_scan",
+    "read_s": 7.229,
+    "model_s": 34.16,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 41.409
+   },
+   {
+    "file": "Desktop/Document (6).pdf",
+    "format": "pdf_scan",
+    "read_s": 8.777,
+    "model_s": 25.65,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 34.449
+   },
+   {
+    "file": "Desktop/download (27).pdf",
+    "format": "pdf_text",
+    "read_s": 0.049,
+    "model_s": 27.625,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.696
+   },
+   {
+    "file": "Desktop/download (6).pdf",
+    "format": "pdf_text",
+    "read_s": 0.045,
+    "model_s": 10.437,
+    "chat_calls": 1,
+    "embed_calls": 1,
+    "total_s": 10.494
+   },
+   {
+    "file": "Desktop/download (7).pdf",
+    "format": "pdf_text",
+    "read_s": 0.02,
+    "model_s": 24.837,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.875
+   },
+   {
+    "file": "Desktop/file_1814.pdf",
+    "format": "pdf_text",
+    "read_s": 0.047,
+    "model_s": 9.821,
+    "chat_calls": 1,
+    "embed_calls": 1,
+    "total_s": 9.874
+   },
+   {
+    "file": "Desktop/file_2221.pdf",
+    "format": "pdf_text",
+    "read_s": 0.022,
+    "model_s": 16.56,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 16.598
+   },
+   {
+    "file": "Desktop/IMG_1222.jpg",
+    "format": "image",
+    "read_s": 2.988,
+    "model_s": 22.197,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 25.204
+   },
+   {
+    "file": "Desktop/IMG_3063.jpg",
+    "format": "image",
+    "read_s": 2.779,
+    "model_s": 20.675,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 23.474
+   },
+   {
+    "file": "Desktop/IMG_4356.jpg",
+    "format": "image",
+    "read_s": 4.231,
+    "model_s": 33.478,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 37.728
+   },
+   {
+    "file": "Desktop/IMG_9204.jpg",
+    "format": "image",
+    "read_s": 5.918,
+    "model_s": 33.41,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 39.354
+   },
+   {
+    "file": "Desktop/photo_12.png",
+    "format": "image",
+    "read_s": 3.587,
+    "model_s": 23.934,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.537
+   },
+   {
+    "file": "Desktop/photo_17.png",
+    "format": "image",
+    "read_s": 3.405,
+    "model_s": 23.272,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 26.685
+   },
+   {
+    "file": "Desktop/Print_2020-06-19.pdf",
+    "format": "pdf_text",
+    "read_s": 0.029,
+    "model_s": 17.463,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 17.511
+   },
+   {
+    "file": "Desktop/Print_2023-06-18.pdf",
+    "format": "pdf_text",
+    "read_s": 0.056,
+    "model_s": 16.917,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 16.992
+   },
+   {
+    "file": "Desktop/PXL_20190101_186672.jpg",
+    "format": "image",
+    "read_s": 3.285,
+    "model_s": 21.404,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.704
+   },
+   {
+    "file": "Desktop/PXL_20250201_151805.jpg",
+    "format": "image",
+    "read_s": 6.545,
+    "model_s": 34.384,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 40.95
+   },
+   {
+    "file": "Desktop/Scan 13.pdf",
+    "format": "pdf_scan",
+    "read_s": 6.793,
+    "model_s": 18.709,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 25.525
+   },
+   {
+    "file": "Desktop/scan_3591.pdf",
+    "format": "pdf_scan",
+    "read_s": 11.17,
+    "model_s": 55.258,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 66.462
+   },
+   {
+    "file": "Desktop/scan_9174.pdf",
+    "format": "pdf_scan",
+    "read_s": 7.1,
+    "model_s": 23.569,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 30.694
+   },
+   {
+    "file": "Desktop/scan_9417.pdf",
+    "format": "pdf_scan",
+    "read_s": 6.019,
+    "model_s": 25.722,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 31.767
+   },
+   {
+    "file": "Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+    "format": "image",
+    "read_s": 5.079,
+    "model_s": 21.138,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 26.239
+   },
+   {
+    "file": "Documents/Offer - Riverside Analytics.docx",
+    "format": "docx",
+    "read_s": 0.039,
+    "model_s": 20.447,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 20.503
+   },
+   {
+    "file": "Documents/Solar PV certificate.pptx",
+    "format": "pptx",
+    "read_s": 0.07,
+    "model_s": 15.386,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 15.47
+   },
+   {
+    "file": "Documents/Zainab CNIC copy.pdf",
+    "format": "pdf_text",
+    "read_s": 0.047,
+    "model_s": 19.954,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 20.016
+   },
+   {
+    "file": "Downloads/7fac459b.pdf",
+    "format": "pdf_text",
+    "read_s": 0.036,
+    "model_s": 22.663,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 22.722
+   },
+   {
+    "file": "Downloads/9f5d83e4.pdf",
+    "format": "pdf_text",
+    "read_s": 0.038,
+    "model_s": 34.511,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 34.567
+   },
+   {
+    "file": "Downloads/CamScanner 03-31-2025 14.40.pdf",
+    "format": "pdf_scan",
+    "read_s": 7.023,
+    "model_s": 35.084,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 42.115
+   },
+   {
+    "file": "Downloads/CamScanner 08-05-2024 9.22.pdf",
+    "format": "pdf_scan",
+    "read_s": 9.649,
+    "model_s": 36.381,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 46.07
+   },
+   {
+    "file": "Downloads/Document (14).pdf",
+    "format": "pdf_text",
+    "read_s": 0.078,
+    "model_s": 23.938,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.033
+   },
+   {
+    "file": "Downloads/Document (17).pdf",
+    "format": "pdf_scan",
+    "read_s": 8.021,
+    "model_s": 27.77,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 35.81
+   },
+   {
+    "file": "Downloads/Document (19).pdf",
+    "format": "pdf_text",
+    "read_s": 0.078,
+    "model_s": 35.589,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 35.687
+   },
+   {
+    "file": "Downloads/Document (29).pdf",
+    "format": "pdf_text",
+    "read_s": 0.047,
+    "model_s": 23.341,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 23.402
+   },
+   {
+    "file": "Downloads/download (14).pdf",
+    "format": "pdf_text",
+    "read_s": 0.036,
+    "model_s": 36.98,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 37.042
+   },
+   {
+    "file": "Downloads/download (21).pdf",
+    "format": "pdf_text",
+    "read_s": 0.136,
+    "model_s": 29.594,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 29.746
+   },
+   {
+    "file": "Downloads/IMG_4574.jpg",
+    "format": "image",
+    "read_s": 7.555,
+    "model_s": 35.915,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 43.49
+   },
+   {
+    "file": "Downloads/photo_6.png",
+    "format": "image",
+    "read_s": 3.063,
+    "model_s": 24.818,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.902
+   },
+   {
+    "file": "Downloads/Print_2025-01-06.pdf",
+    "format": "pdf_text",
+    "read_s": 0.047,
+    "model_s": 45.614,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 45.675
+   },
+   {
+    "file": "Downloads/Print_2025-03-16.pdf",
+    "format": "pdf_text",
+    "read_s": 0.059,
+    "model_s": 24.583,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.662
+   },
+   {
+    "file": "Downloads/Print_2025-06-14.pdf",
+    "format": "pdf_text",
+    "read_s": 0.05,
+    "model_s": 23.688,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 23.76
+   },
+   {
+    "file": "Downloads/Scan 27.pdf",
+    "format": "pdf_scan",
+    "read_s": 8.898,
+    "model_s": 37.141,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 46.061
+   },
+   {
+    "file": "Downloads/scan_6405.pdf",
+    "format": "pdf_scan",
+    "read_s": 5.282,
+    "model_s": 23.525,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 28.827
+   },
+   {
+    "file": "Downloads/Screenshot 2022-04-11 at 15.24.22.png",
+    "format": "image",
+    "read_s": 4.7,
+    "model_s": 24.757,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 29.481
+   },
+   {
+    "file": "Downloads/Screenshot 2025-07-28 at 22.45.24.png",
+    "format": "image",
+    "read_s": 2.528,
+    "model_s": 21.79,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.336
+   },
+   {
+    "file": "Receipts/038.jpg",
+    "format": "image_real",
+    "read_s": 5.8,
+    "model_s": 26.312,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 32.136
+   },
+   {
+    "file": "Receipts/047.jpg",
+    "format": "image_real",
+    "read_s": 3.466,
+    "model_s": 22.243,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 25.731
+   },
+   {
+    "file": "Receipts/049.jpg",
+    "format": "image_real",
+    "read_s": 5.988,
+    "model_s": 29.035,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 35.034
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250109-WA0055.jpg",
+    "format": "image",
+    "read_s": 3.737,
+    "model_s": 19.308,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 23.055
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250424-WA0861.jpg",
+    "format": "image",
+    "read_s": 4.267,
+    "model_s": 20.53,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.814
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250503-WA0574.jpg",
+    "format": "image",
+    "read_s": 4.415,
+    "model_s": 37.208,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 41.631
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250603-WA0111.jpg",
+    "format": "image",
+    "read_s": 2.373,
+    "model_s": 19.487,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 21.88
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250625-WA0678.jpg",
+    "format": "image",
+    "read_s": 3.473,
+    "model_s": 23.495,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 26.99
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250903-WA0341.jpg",
+    "format": "image",
+    "read_s": 7.972,
+    "model_s": 40.087,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 48.079
+   },
+   {
+    "file": "WhatsApp Images/IMG-20251107-WA0936.jpg",
+    "format": "image",
+    "read_s": 4.017,
+    "model_s": 33.317,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 37.354
+   },
+   {
+    "file": "WhatsApp Images/IMG-20261101-WA0274.jpg",
+    "format": "image",
+    "read_s": 6.823,
+    "model_s": 12.107,
+    "chat_calls": 1,
+    "embed_calls": 1,
+    "total_s": 19.054
+   },
+   {
+    "file": "WhatsApp Images/IMG-20261105-WA0412.jpg",
+    "format": "image",
+    "read_s": 5.958,
+    "model_s": 46.546,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 52.533
+   },
+   {
+    "file": "Documents/old/3d552e5c.pdf",
+    "format": "pdf_text",
+    "read_s": 0.207,
+    "model_s": 22.562,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 22.849
+   },
+   {
+    "file": "Documents/old/90c2b896.pdf",
+    "format": "pdf_text",
+    "read_s": 0.044,
+    "model_s": 36.217,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 36.283
+   },
+   {
+    "file": "Documents/old/af6e1597.pdf",
+    "format": "pdf_text",
+    "read_s": 0.167,
+    "model_s": 31.672,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 31.863
+   },
+   {
+    "file": "Documents/old/Document (8).pdf",
+    "format": "pdf_text",
+    "read_s": 0.067,
+    "model_s": 26.88,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.02
+   },
+   {
+    "file": "Documents/old/download (14).pdf",
+    "format": "pdf_text",
+    "read_s": 0.037,
+    "model_s": 9.765,
+    "chat_calls": 1,
+    "embed_calls": 1,
+    "total_s": 9.811
+   },
+   {
+    "file": "Documents/old/download (5).pdf",
+    "format": "pdf_text",
+    "read_s": 0.022,
+    "model_s": 33.444,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 33.477
+   },
+   {
+    "file": "Documents/old/ece95bbc.pdf",
+    "format": "pdf_text",
+    "read_s": 0.081,
+    "model_s": 44.664,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 44.77
+   },
+   {
+    "file": "Documents/old/IMG_4953.jpg",
+    "format": "image",
+    "read_s": 4.479,
+    "model_s": 26.082,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 30.577
+   },
+   {
+    "file": "Documents/old/IMG_7333.jpg",
+    "format": "image",
+    "read_s": 3.716,
+    "model_s": 23.527,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.27
+   },
+   {
+    "file": "Documents/old/photo_14.png",
+    "format": "image",
+    "read_s": 3.116,
+    "model_s": 21.846,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 24.973
+   },
+   {
+    "file": "Documents/old/photo_9.png",
+    "format": "image",
+    "read_s": 3.799,
+    "model_s": 24.98,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 28.796
+   },
+   {
+    "file": "Documents/old/Print_2025-03-01.pdf",
+    "format": "pdf_text",
+    "read_s": 0.049,
+    "model_s": 36.52,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 36.591
+   },
+   {
+    "file": "Documents/old/PXL_20251115_134335.jpg",
+    "format": "image",
+    "read_s": 3.119,
+    "model_s": 26.902,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 30.037
+   },
+   {
+    "file": "Documents/old/Scan 4.pdf",
+    "format": "pdf_scan",
+    "read_s": 9.185,
+    "model_s": 34.722,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 43.942
+   },
+   {
+    "file": "Documents/old/Screenshot 2019-01-01 at 8.24.34.png",
+    "format": "image",
+    "read_s": 3.736,
+    "model_s": 24.168,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 27.925
+   },
+   {
+    "file": "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+    "format": "image",
+    "read_s": 3.88,
+    "model_s": 28.49,
+    "chat_calls": 2,
+    "embed_calls": 1,
+    "total_s": 32.393
+   }
+  ],
+  "notes": [
+   "per_doc is split by the proxy's call log (split_by_calls), re-derived from this run's log after the first version split by polling /index/status, which answered late while OCR ran",
+   "all_findable_s: the last file's text and facts are committed in one transaction when the scan ends, so it equals all_facts_s; the run's last document-list poll came just before that commit"
+  ]
+ },
+ "facts": {
+  "documents": 81,
+  "type_accuracy": 1.0,
+  "type_confusions": {},
+  "field_accuracy": 0.92,
+  "fields": 439,
+  "values_for_absent_fields": 13,
+  "field_accuracy_by_type": {
+   "receipt": 0.849,
+   "id_card": 0.975,
+   "utility_bill": 0.893,
+   "certificate": 1.0,
+   "fee_voucher": 0.893,
+   "insurance_policy": 1.0,
+   "bank_statement": 1.0,
+   "warranty_card": 0.8,
+   "transcript": 0.875,
+   "tenancy_agreement": 0.857,
+   "passport": 1.0,
+   "offer_letter": 1.0
+  },
+  "statuses": {
+   "verified": 387,
+   "needs_review": 63,
+   "approved": 1
+  },
+  "needs_review_without_reason": [],
+  "verified_precision": 0.982,
+  "needs_review_correct_share": 0.542,
+  "correct_and_approve": {
+   "question": "What is the sum of the current charges on my Metro Gas bills in 2026?",
+   "tried": [
+    {
+     "q": "How much did I spend on gas in 2026?",
+     "route": "search",
+     "answer": "The total gas expenditure for 2026 is calculated by summing the current bill and any late payment surcharge. From the provided data, the current bill for October 2026 is PKR 5400.00 and the late payment surcharge is PKR 9072.00. Therefore, the total amount spent on gas in 2026 is PKR 5400.00 + PKR 9"
+    },
+    {
+     "q": "What was my total gas spending this year?",
+     "route": "facts",
+     "answer": "No matching documents found."
+    },
+    {
+     "q": "Add up my Metro Gas bills for 2026.",
+     "route": "search",
+     "answer": "The total Metro Gas bills for 2026 include the September 2026 bill (PKR 3000.00), October 2026 bill (PKR 8400.00), and the December 2026 bill (PKR 5400.00). Adding these amounts gives a total of PKR 17,400.00."
+    },
+    {
+     "q": "What is the sum of the current charges on my Metro Gas bills in 2026?",
+     "route": "facts",
+     "answer": "13,800 in total, from 3 documents. 1 of the values used needs review."
+    }
+   ],
+   "fact": {
+    "id": 6,
+    "value": "3000.0",
+    "status": "approved",
+    "reason": null
+   },
+   "before": "13,800 in total, from 3 documents. 1 of the values used needs review.",
+   "after_correction": "13,900 in total, from 3 documents. 1 of the values used needs review.",
+   "after_approval": "13,800 in total, from 3 documents. 1 of the values used needs review.",
+   "correction_status": "corrected",
+   "garbage_rejected": true,
+   "approve_status": "approved",
+   "unreviewed_before": false,
+   "unreviewed_after": false,
+   "pass": true
+  },
+  "fix_misread_near_duplicate": {
+   "file": "WhatsApp Images/IMG-20261105-WA0412.jpg",
+   "misread": {
+    "billing_month": "2026-07"
+   },
+   "corrected_to": {
+    "billing_month": "2026-10"
+   },
+   "patch_status": {
+    "billing_month": 200
+   },
+   "before": "13,800 in total, from 3 documents. 1 of the values used needs review.",
+   "after": "8,400 in total, from 2 documents. Left out 1 duplicate copy of documents already counted.",
+   "skipped_after": [
+    "WhatsApp Images/IMG-20261105-WA0412.jpg"
+   ],
+   "expected_total": 8400.0,
+   "pass": true
+  },
+  "wrong_fields": [
+   {
+    "file": "Documents/old/ece95bbc.pdf",
+    "field": "amount_due",
+    "gold": 5558.0,
+    "got": "6002.64",
+    "status": "needs_review"
+   },
+   {
+    "file": "Documents/old/photo_14.png",
+    "field": "date",
+    "gold": "2025-06-11",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Documents/old/photo_14.png",
+    "field": "total_amount",
+    "gold": 1895.0,
+    "got": "7282.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/scan_6405.pdf",
+    "field": "name",
+    "gold": "Bilal Ahmed",
+    "got": "BILALAHMED ONOI",
+    "status": "verified"
+   },
+   {
+    "file": "Downloads/Scan 27.pdf",
+    "field": "current_charges",
+    "gold": 3769.0,
+    "got": "377.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/Scan 27.pdf",
+    "field": "previous_balance",
+    "gold": 0.0,
+    "got": "3769.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/Scan 27.pdf",
+    "field": "tax",
+    "gold": 377.0,
+    "got": "188.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/Scan 27.pdf",
+    "field": "amount_due",
+    "gold": 3769.0,
+    "got": "0.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/scan_3591.pdf",
+    "field": "current_charges",
+    "gold": 13195.0,
+    "got": "792.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/scan_3591.pdf",
+    "field": "previous_balance",
+    "gold": 0.0,
+    "got": "13195.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/scan_3591.pdf",
+    "field": "tax",
+    "gold": 1320.0,
+    "got": "1583.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "WhatsApp Images/IMG-20251107-WA0936.jpg",
+    "field": "total_amount",
+    "gold": 11537.0,
+    "got": "12000.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Documents/old/PXL_20251115_134335.jpg",
+    "field": "subtotal",
+    "gold": 54500.0,
+    "got": "63765.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Documents/old/PXL_20251115_134335.jpg",
+    "field": "tax",
+    "gold": 9265.0,
+    "got": "54500.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/CamScanner 08-05-2024 9.22.pdf",
+    "field": "amount",
+    "gold": 151200.0,
+    "got": "135000.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/CamScanner 08-30-2025 15.14.pdf",
+    "field": "product",
+    "gold": "UPS 1500VA",
+    "got": "UPS1500VA VX-1500",
+    "status": "verified"
+   },
+   {
+    "file": "WhatsApp Images/IMG-20250424-WA0861.jpg",
+    "field": "product",
+    "gold": "Refrigerator 12cft",
+    "got": "Refrigerator12cft SW-R12",
+    "status": "verified"
+   },
+   {
+    "file": "Documents/old/Scan 4.pdf",
+    "field": "registration_number",
+    "gold": "2024-LU-MBA-077",
+    "got": "2025-02-10",
+    "status": "needs_review"
+   },
+   {
+    "file": "Documents/old/Scan 4.pdf",
+    "field": "issue_date",
+    "gold": "2025-02-10",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Desktop/Document (4).pdf",
+    "field": "monthly_rent",
+    "gold": 90000.0,
+    "got": "270000.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/Document (4).pdf",
+    "field": "security_deposit",
+    "gold": 270000.0,
+    "got": "1.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/Document (4).pdf",
+    "field": "start_date",
+    "gold": "2025-01-01",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Desktop/Document (4).pdf",
+    "field": "end_date",
+    "gold": "2025-12-31",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Desktop/IMG_4356.jpg",
+    "field": "amount",
+    "gold": 151200.0,
+    "got": "152700.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Downloads/IMG_4574.jpg",
+    "field": "amount",
+    "gold": 134400.0,
+    "got": "135900.0",
+    "status": "needs_review"
+   },
+   {
+    "file": "Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+    "field": "product",
+    "gold": "Microwave Oven 25L",
+    "got": "MicrowaveOven25L KV-25MG",
+    "status": "verified"
+   },
+   {
+    "file": "Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+    "field": "brand",
+    "gold": "Kelvon",
+    "got": "Galaxy Home Store",
+    "status": "needs_review"
+   },
+   {
+    "file": "Documents/old/photo_9.png",
+    "field": "program",
+    "gold": "Master of Fine Arts",
+    "got": "Master ot Fine Arts",
+    "status": "needs_review"
+   },
+   {
+    "file": "Receipts/038.jpg",
+    "field": "merchant",
+    "gold": "YHM AEON TEBRAU CITY",
+    "got": "Aeon Tebrau City",
+    "status": "verified"
+   },
+   {
+    "file": "Receipts/038.jpg",
+    "field": "date",
+    "gold": "2018-03-11",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Receipts/038.jpg",
+    "field": "total_amount",
+    "gold": 13.1,
+    "got": "20.1",
+    "status": "needs_review"
+   },
+   {
+    "file": "Receipts/047.jpg",
+    "field": "merchant",
+    "gold": "RESTAURANT SIN DU",
+    "got": "K3-113,JL IBRAHIM SULTAN",
+    "status": "verified"
+   },
+   {
+    "file": "Receipts/047.jpg",
+    "field": "date",
+    "gold": "2018-03-09",
+    "got": null,
+    "status": null
+   },
+   {
+    "file": "Receipts/049.jpg",
+    "field": "merchant",
+    "gold": "PERNIAGAAN ZHENG HUI",
+    "got": "ZHENG HUI",
+    "status": "verified"
+   },
+   {
+    "file": "WhatsApp Images/IMG-20261105-WA0412.jpg",
+    "field": "billing_month",
+    "gold": "2026-10",
+    "got": "2026-07",
+    "status": "needs_review"
+   }
+  ],
+  "note": "wrong_fields rebuilt from the index after the run (a variable clash had overwritten it); values the test corrected are shown as extracted, from the actions log"
+ },
+ "search": {
+  "conditions": {
+   "builds": [],
+   "battery": 2,
+   "cpu": 31,
+   "free_commit_kb": 6763548,
+   "ac_line": 1,
+   "charge": 97,
+   "mains": true,
+   "at": "2026-11-27 20:24:25"
+  },
+  "queries": 27,
+  "runs": 5,
+  "ms": {
+   "n": 135,
+   "p50": 38.6,
+   "p95": 59.0,
+   "min": 28.1,
+   "max": 64.1
+  },
+  "under_target": 135,
+  "calls": 135,
+  "hit_at_5": 25,
+  "per_query": {
+   "Metro Gas bill": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/old/90c2b896.pdf",
+     "Bills/Metro Gas Oct 2026.pdf",
+     "Documents/old/ece95bbc.pdf"
+    ]
+   },
+   "driving licence": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+     "Downloads/Screenshot 2022-04-11 at 15.24.22.png",
+     "Downloads/Document (29).pdf"
+    ]
+   },
+   "brownie recipe": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/file_1814.pdf",
+     "Documents/old/photo_14.png",
+     "Desktop/Document (28).pdf"
+    ]
+   },
+   "eigenvalues": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/old/download (14).pdf",
+     "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+     "Downloads/Screenshot 2022-04-11 at 15.24.22.png"
+    ]
+   },
+   "Voltix UPS warranty": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/CamScanner 08-30-2025 15.14.pdf",
+     "Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+     "Downloads/Print_2025-06-14.pdf"
+    ]
+   },
+   "Lakeshore University fee voucher": {
+    "hit_at_5": true,
+    "top": [
+     "Downloads/Print_2025-01-06.pdf",
+     "Desktop/IMG_4356.jpg",
+     "Downloads/IMG_4574.jpg"
+    ]
+   },
+   "Omar Farooq passport": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/photo_12.png",
+     "Desktop/scan_9417.pdf",
+     "Desktop/scan_9174.pdf"
+    ]
+   },
+   "tenancy agreement Rubina Siddiqui": {
+    "hit_at_5": true,
+    "top": [
+     "WhatsApp Images/IMG-20250903-WA0341.jpg",
+     "Documents/old/Print_2025-03-01.pdf",
+     "Desktop/CamScanner 03-01-2024 17.45.pdf"
+    ]
+   },
+   "CareFirst health insurance": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/PXL_20250201_151805.jpg",
+     "Downloads/Document (17).pdf",
+     "Desktop/download (7).pdf"
+    ]
+   },
+   "Orchard Bank statement March 2025": {
+    "hit_at_5": false,
+    "top": [
+     "Downloads/Document (19).pdf",
+     "Desktop/Document (19).pdf",
+     "Documents/old/90c2b896.pdf"
+    ]
+   },
+   "Cedar Books offer letter": {
+    "hit_at_5": true,
+    "top": [
+     "Downloads/7fac459b.pdf",
+     "WhatsApp Images/IMG-20261101-WA0274.jpg",
+     "Desktop/Document (6).pdf"
+    ]
+   },
+   "Master of Fine Arts transcript": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/old/download (5).pdf",
+     "Documents/old/photo_9.png",
+     "Desktop/file_2221.pdf"
+    ]
+   },
+   "Daily Needs Mart receipt": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/IMG_3063.jpg",
+     "Documents/old/Document (8).pdf",
+     "Documents/old/PXL_20251115_134335.jpg"
+    ]
+   },
+   "CityFuel Station": {
+    "hit_at_5": true,
+    "top": [
+     "Downloads/photo_6.png",
+     "WhatsApp Images/IMG-20251107-WA0936.jpg",
+     "WhatsApp Images/IMG-20250503-WA0574.jpg"
+    ]
+   },
+   "Bachelor of Commerce degree": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/Scan 13.pdf",
+     "Desktop/file_2221.pdf",
+     "Desktop/scan_9174.pdf"
+    ]
+   },
+   "FastLink internet bill": {
+    "hit_at_5": true,
+    "top": [
+     "Downloads/download (14).pdf",
+     "Downloads/Scan 27.pdf",
+     "Documents/old/Print_2025-03-01.pdf"
+    ]
+   },
+   "weekly team sync agenda": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/download (6).pdf",
+     "Desktop/IMG_3063.jpg",
+     "Desktop/download (7).pdf"
+    ]
+   },
+   "Sunwave refrigerator warranty": {
+    "hit_at_5": true,
+    "top": [
+     "WhatsApp Images/IMG-20250424-WA0861.jpg",
+     "Desktop/Screenshot 2025-02-03 at 22.49.53.png",
+     "Downloads/Print_2025-06-14.pdf"
+    ]
+   },
+   "welding safety certificate": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/Print_2023-06-18.pdf",
+     "Desktop/CamScanner 02-27-2019 18.24.pdf",
+     "Desktop/Screenshot 2025-02-03 at 22.49.53.png"
+    ]
+   },
+   "HomeEase Appliances receipt": {
+    "hit_at_5": true,
+    "top": [
+     "WhatsApp Images/IMG-20250625-WA0678.jpg",
+     "Documents/old/IMG_7333.jpg",
+     "Downloads/Print_2025-03-16.pdf"
+    ]
+   },
+   "Riverside Analytics offer": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/Offer - Riverside Analytics.docx",
+     "Desktop/IMG_9204.jpg",
+     "Downloads/download (21).pdf"
+    ]
+   },
+   "Solar PV Installation certificate": {
+    "hit_at_5": true,
+    "top": [
+     "Documents/Solar PV certificate.pptx",
+     "Desktop/CamScanner 02-27-2019 18.24.pdf",
+     "Desktop/Print_2020-06-19.pdf"
+    ]
+   },
+   "electricity bill June 2025": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/scan_3591.pdf",
+     "Downloads/9f5d83e4.pdf",
+     "Documents/old/90c2b896.pdf"
+    ]
+   },
+   "Zainab Malik identity card": {
+    "hit_at_5": true,
+    "top": [
+     "Desktop/PXL_20190101_186672.jpg",
+     "Documents/Zainab CNIC copy.pdf",
+     "Desktop/CamScanner 09-01-2023 17.56.pdf"
+    ]
+   },
+   "Yhm Aeon Tebrau City": {
+    "hit_at_5": true,
+    "top": [
+     "Receipts/038.jpg",
+     "Desktop/photo_12.png",
+     "Desktop/scan_9417.pdf"
+    ]
+   },
+   "Restaurant Sin Du": {
+    "hit_at_5": false,
+    "top": [
+     "Desktop/download (27).pdf",
+     "Documents/old/Document (8).pdf",
+     "Receipts/038.jpg"
+    ]
+   },
+   "Perniagaan Zheng Hui": {
+    "hit_at_5": true,
+    "top": [
+     "Receipts/049.jpg",
+     "WhatsApp Images/IMG-20250109-WA0055.jpg",
+     "Desktop/scan_9174.pdf"
+    ]
+   }
+  }
+ },
+ "ui": {
+  "conditions": {
+   "builds": [],
+   "battery": 2,
+   "cpu": 15,
+   "free_commit_kb": 6565280,
+   "ac_line": 1,
+   "charge": 97,
+   "mains": true,
+   "at": "2026-11-27 20:24:34"
+  },
+  "frontend": "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\frontend\\dist",
+  "ms": {
+   "n": 25,
+   "p50": 193.5,
+   "p95": 215.3,
+   "min": 177.6,
+   "max": 228.8
+  },
+  "runs": [
+   {
+    "q": "Metro Gas bill",
+    "ms": 208.29999995231628
+   },
+   {
+    "q": "driving licence",
+    "ms": 192.70000004768372
+   },
+   {
+    "q": "brownie recipe",
+    "ms": 191
+   },
+   {
+    "q": "eigenvalues",
+    "ms": 193.59999990463257
+   },
+   {
+    "q": "Voltix UPS warranty",
+    "ms": 193.5
+   },
+   {
+    "q": "Metro Gas bill",
+    "ms": 193.10000014305115
+   },
+   {
+    "q": "driving licence",
+    "ms": 192.79999995231628
+   },
+   {
+    "q": "brownie recipe",
+    "ms": 199.29999995231628
+   },
+   {
+    "q": "eigenvalues",
+    "ms": 200.39999985694885
+   },
+   {
+    "q": "Voltix UPS warranty",
+    "ms": 201.20000004768372
+   },
+   {
+    "q": "Metro Gas bill",
+    "ms": 200.60000014305115
+   },
+   {
+    "q": "driving licence",
+    "ms": 190.70000004768372
+   },
+   {
+    "q": "brownie recipe",
+    "ms": 190.5
+   },
+   {
+    "q": "eigenvalues",
+    "ms": 177.60000014305115
+   },
+   {
+    "q": "Voltix UPS warranty",
+    "ms": 191.5
+   },
+   {
+    "q": "Metro Gas bill",
+    "ms": 190.09999990463257
+   },
+   {
+    "q": "driving licence",
+    "ms": 192
+   },
+   {
+    "q": "brownie recipe",
+    "ms": 203.10000014305115
+   },
+   {
+    "q": "eigenvalues",
+    "ms": 199.09999990463257
+   },
+   {
+    "q": "Voltix UPS warranty",
+    "ms": 198
+   },
+   {
+    "q": "Metro Gas bill",
+    "ms": 183.29999995231628
+   },
+   {
+    "q": "driving licence",
+    "ms": 228.79999995231628
+   },
+   {
+    "q": "brownie recipe",
+    "ms": 215.29999995231628
+   },
+   {
+    "q": "eigenvalues",
+    "ms": 191.39999985694885
+   },
+   {
+    "q": "Voltix UPS warranty",
+    "ms": 203.39999985694885
+   }
+  ],
+  "method": "headless Chromium (Playwright); from the last keydown to the first frame after the top result's file name is in the results list; includes the launcher's 120 ms typing pause"
+ },
+ "reminders": {
+  "upcoming_pass": false,
+  "listed_twice": [
+   [
+    "Metro Gas Oct 2026.pdf",
+    "due_date"
+   ],
+   [
+    "IMG-20261105-WA0412.jpg",
+    "due_date"
+   ]
+  ],
+  "expected": [
+   [
+    "Bills/Metro Gas Oct 2026.pdf",
+    "due_date",
+    "2026-12-12"
+   ],
+   [
+    "Documents/Zainab CNIC copy.pdf",
+    "expiry_date",
+    "2027-01-20"
+   ],
+   [
+    "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+    "expiry_date",
+    "2026-12-14"
+   ]
+  ],
+  "got": [
+   [
+    "Bills/Metro Gas Oct 2026.pdf",
+    "due_date",
+    "2026-12-12"
+   ],
+   [
+    "Bills/Metro Gas Oct 2026.pdf",
+    "due_date",
+    "2026-12-12"
+   ],
+   [
+    "Documents/Zainab CNIC copy.pdf",
+    "expiry_date",
+    "2027-01-20"
+   ],
+   [
+    "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+    "expiry_date",
+    "2026-12-14"
+   ]
+  ],
+  "missing": [],
+  "extra": [],
+  "conflict_shown": [
+   {
+    "file": "Documents/Zainab CNIC copy.pdf",
+    "value": "2027-01-20",
+    "conflict": true
+   }
+  ],
+  "ics": [
+   {
+    "file": "Bills/Metro Gas Oct 2026.pdf",
+    "field": "due_date",
+    "pass": true,
+    "why": [],
+    "alarms": [
+     "-P7D",
+     "-P1D"
+    ],
+    "preview": {
+     "fact_id": 13,
+     "title": "Utility bill payment due (Metro Gas Ltd)",
+     "date": "2026-12-12",
+     "description": "From Metro Gas Oct 2026.pdf, page 1. Added by Sniff.",
+     "status": "verified",
+     "reviewed": true
+    }
+   },
+   {
+    "file": "WhatsApp Images/IMG-20261105-WA0412.jpg",
+    "field": "due_date",
+    "pass": true,
+    "why": [],
+    "alarms": [
+     "-P7D",
+     "-P1D"
+    ],
+    "preview": {
+     "fact_id": 360,
+     "title": "Utility bill payment due (Metro Gas Ltd)",
+     "date": "2026-12-12",
+     "description": "From IMG-20261105-WA0412.jpg, page 1. Added by Sniff.",
+     "status": "verified",
+     "reviewed": true
+    }
+   },
+   {
+    "file": "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+    "field": "expiry_date",
+    "pass": true,
+    "why": [],
+    "alarms": [
+     "-P7D",
+     "-P1D"
+    ],
+    "preview": {
+     "fact_id": 451,
+     "title": "Id card expires (Bilal Ahmed)",
+     "date": "2026-12-14",
+     "description": "From Screenshot 2021-09-14 at 14.29.27.png, page 1. Added by Sniff.",
+     "status": "verified",
+     "reviewed": true
+    }
+   },
+   {
+    "file": "Documents/Zainab CNIC copy.pdf",
+    "field": "expiry_date",
+    "pass": true,
+    "why": [],
+    "alarms": [
+     "-P7D",
+     "-P1D"
+    ],
+    "preview": {
+     "fact_id": 176,
+     "title": "Id card expires (ZAINAB MALIK)",
+     "date": "2027-01-20",
+     "description": "From Zainab CNIC copy.pdf, page 1. Added by Sniff.",
+     "status": "verified",
+     "reviewed": true
+    }
+   }
+  ],
+  "ics_pass": true,
+  "google_connected": false
+ },
+ "overview": {
+  "pass": false,
+  "checks": {
+   "total_files": {
+    "expected": 82,
+    "got": 82,
+    "pass": true
+   },
+   "documents": {
+    "expected": 81,
+    "got": 81,
+    "pass": true
+   },
+   "by_type": {
+    "expected": {
+     "receipt": 19,
+     "id_card": 8,
+     "utility_bill": 9,
+     "other": 4,
+     "certificate": 8,
+     "fee_voucher": 4,
+     "insurance_policy": 4,
+     "bank_statement": 4,
+     "warranty_card": 4,
+     "transcript": 4,
+     "tenancy_agreement": 4,
+     "passport": 4,
+     "offer_letter": 5
+    },
+    "got": {
+     "utility_bill": 9,
+     "certificate": 8,
+     "tenancy_agreement": 4,
+     "warranty_card": 4,
+     "id_card": 8,
+     "bank_statement": 4,
+     "receipt": 19,
+     "offer_letter": 5,
+     "other": 4,
+     "insurance_policy": 4,
+     "passport": 4,
+     "fee_voucher": 4,
+     "transcript": 4
+    },
+    "pass": true
+   },
+   "exact_copies": {
+    "expected": 1,
+    "got": 1,
+    "pass": true
+   },
+   "near_duplicates": {
+    "expected": 1,
+    "got": 0,
+    "pass": false
+   },
+   "expiring": {
+    "expected": {
+     "30": 1,
+     "60": 2,
+     "90": 2
+    },
+    "got": {
+     "30": 1,
+     "60": 2,
+     "90": 2
+    },
+    "pass": true
+   },
+   "missing_required": {
+    "expected": 0,
+    "got": 5,
+    "pass": false
+   },
+   "conflicts": {
+    "expected": 2,
+    "got": 2,
+    "pass": true
+   },
+   "errors": {
+    "expected": 0,
+    "got": 0,
+    "pass": true
+   },
+   "needs_review_matches_review_list": {
+    "got": 63,
+    "review_list": 63,
+    "pass": true
+   }
+  },
+  "raw": {
+   "total_files": 82,
+   "documents": 81,
+   "by_type": {
+    "utility_bill": 9,
+    "certificate": 8,
+    "tenancy_agreement": 4,
+    "warranty_card": 4,
+    "id_card": 8,
+    "bank_statement": 4,
+    "receipt": 19,
+    "offer_letter": 5,
+    "other": 4,
+    "insurance_policy": 4,
+    "passport": 4,
+    "fee_voucher": 4,
+    "transcript": 4
+   },
+   "exact_copies": 1,
+   "near_duplicates": 0,
+   "expiring": {
+    "30": 1,
+    "60": 2,
+    "90": 2
+   },
+   "missing_required": [
+    {
+     "file_id": 11,
+     "name": "Document (4).pdf",
+     "doc_type": "tenancy_agreement",
+     "fields": [
+      "start_date",
+      "end_date"
+     ]
+    },
+    {
+     "file_id": 55,
+     "name": "038.jpg",
+     "doc_type": "receipt",
+     "fields": [
+      "date"
+     ]
+    },
+    {
+     "file_id": 56,
+     "name": "047.jpg",
+     "doc_type": "receipt",
+     "fields": [
+      "date"
+     ]
+    },
+    {
+     "file_id": 76,
+     "name": "photo_14.png",
+     "doc_type": "receipt",
+     "fields": [
+      "date"
+     ]
+    },
+    {
+     "file_id": 80,
+     "name": "Scan 4.pdf",
+     "doc_type": "transcript",
+     "fields": [
+      "issue_date"
+     ]
+    }
+   ],
+   "needs_review": 63,
+   "conflicts": 2,
+   "errors": 0
+  }
+ },
+ "ask": {
+  "conditions": {
+   "builds": [],
+   "battery": 1,
+   "cpu": 35,
+   "free_commit_kb": 6900704,
+   "ac_line": 0,
+   "charge": 91,
+   "mains": false,
+   "at": "2026-11-27 20:32:49"
+  },
+  "conditions_after": {
+   "builds": [],
+   "battery": 1,
+   "cpu": 62,
+   "free_commit_kb": 7194800,
+   "ac_line": 0,
+   "charge": 70,
+   "mains": false,
+   "at": "2026-11-27 20:49:49"
+  },
+  "streaming": false,
+  "summary": {
+   "single_fact": {
+    "passed": 4,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 37.914,
+     "p95": 68.902,
+     "min": 8.649,
+     "max": 68.902
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 37.914,
+     "p95": 68.899,
+     "min": 8.649,
+     "max": 68.899
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 37.856,
+     "p95": 68.829,
+     "min": 8.626,
+     "max": 68.829
+    },
+    "citations_ok": 4
+   },
+   "cross_doc_total": {
+    "passed": 0,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 56.559,
+     "p95": 67.491,
+     "min": 8.057,
+     "max": 67.491
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 56.559,
+     "p95": 67.491,
+     "min": 8.057,
+     "max": 67.491
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 56.496,
+     "p95": 67.446,
+     "min": 8.028,
+     "max": 67.446
+    },
+    "citations_ok": 4
+   },
+   "expiring_window": {
+    "passed": 2,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 9.283,
+     "p95": 52.084,
+     "min": 7.836,
+     "max": 52.084
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 9.283,
+     "p95": 52.084,
+     "min": 7.836,
+     "max": 52.084
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 9.255,
+     "p95": 52.046,
+     "min": 7.588,
+     "max": 52.046
+    },
+    "citations_ok": 2
+   },
+   "gas_bill": {
+    "passed": 0,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 12.564,
+     "p95": 63.231,
+     "min": 5.126,
+     "max": 63.231
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 12.562,
+     "p95": 63.231,
+     "min": 5.124,
+     "max": 63.231
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 12.386,
+     "p95": 63.171,
+     "min": 5.103,
+     "max": 63.171
+    },
+    "citations_ok": 0
+   },
+   "conflict": {
+    "passed": 0,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 8.127,
+     "p95": 31.876,
+     "min": 4.936,
+     "max": 31.876
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 8.127,
+     "p95": 31.876,
+     "min": 4.936,
+     "max": 31.876
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 8.093,
+     "p95": 31.834,
+     "min": 4.906,
+     "max": 31.834
+    },
+    "citations_ok": 1
+   },
+   "written": {
+    "passed": 5,
+    "of": 5,
+    "s": {
+     "n": 5,
+     "p50": 59.362,
+     "p95": 79.554,
+     "min": 34.419,
+     "max": 79.554
+    },
+    "first_s": {
+     "n": 5,
+     "p50": 59.359,
+     "p95": 79.554,
+     "min": 34.419,
+     "max": 79.554
+    },
+    "model_s": {
+     "n": 5,
+     "p50": 59.312,
+     "p95": 79.511,
+     "min": 34.375,
+     "max": 79.511
+    },
+    "citations_ok": 5
+   }
+  },
+  "fact_answer_s": {
+   "n": 14,
+   "p50": 8.127,
+   "p95": 12.823,
+   "min": 4.936,
+   "max": 21.019
+  },
+  "memory_mb": {
+   "backend": 468,
+   "chat": 2229,
+   "embed": 75,
+   "total": 2773
+  },
+  "runs": {
+   "single_fact": [
+    {
+     "q": "When does Bilal Ahmed's driving licence expire?",
+     "s": 8.992,
+     "first_s": 8.992,
+     "model_s": 8.965,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2026-12-14 (Screenshot 2021-09-14 at 14.29.27.png), from the newest document (2026-12-14).",
+     "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "expiry_date",
+      "op": "latest",
+      "filters": {
+       "holder": "Bilal Ahmed",
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+       1
+      ]
+     ],
+     "counted": [
+      "Documents/old/Screenshot 2021-09-14 at 14.29.27.png"
+     ],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "What is the due date of my October 2026 gas bill?",
+     "s": 37.914,
+     "first_s": 37.914,
+     "model_s": 37.856,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The due date of the October 2026 gas bill is 2026-10-15, as stated in the statement [3].",
+     "query": null,
+     "sources": [
+      [
+       "Backup/Metro Gas Sep 2026.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing date 2026-12-12",
+      "citations wrong: ['Backup/Metro Gas Sep 2026.pdf']"
+     ],
+     "citations": "wrong: ['Backup/Metro Gas Sep 2026.pdf']"
+    },
+    {
+     "q": "What is the monthly rent in Zainab Malik's tenancy agreement?",
+     "s": 68.902,
+     "first_s": 68.899,
+     "model_s": 68.829,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The monthly rent in Zainab Malik's tenancy agreement is Rs. 21,000, as stated in the EASTLAND NON-JUDICIAL STAMPPAPERRS300 TENANCYAGREEMENT document [1].",
+     "query": null,
+     "sources": [
+      [
+       "WhatsApp Images/IMG-20250903-WA0341.jpg",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "When does Zainab Malik's passport expire?",
+     "s": 8.649,
+     "first_s": 8.649,
+     "model_s": 8.626,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2026-08-09 (Document (14).pdf), from the newest document (2026-08-09).",
+     "query": {
+      "route": "facts",
+      "doc_type": "passport",
+      "field": "expiry_date",
+      "op": "latest",
+      "filters": {
+       "holder": "Zainab Malik",
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Downloads/Document (14).pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Downloads/Document (14).pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "What monthly salary does Riverside Analytics offer Zainab Malik?",
+     "s": 54.889,
+     "first_s": 54.889,
+     "model_s": 54.847,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "Riverside Analytics offers Zainab Malik a monthly salary of Rs. 185,000 (gross) [1].",
+     "query": null,
+     "sources": [
+      [
+       "Documents/Offer - Riverside Analytics.docx",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    }
+   ],
+   "cross_doc_total": [
+    {
+     "q": "How much did I spend on gas in 2026?",
+     "s": 56.265,
+     "first_s": 56.265,
+     "model_s": 56.196,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The total gas expenditure for 2026 is calculated by summing the current bill and any late payment surcharge. From the provided data, the current bill for October 2026 is PKR 5400.00 and the late payment surcharge is PKR 9072.00. Therefore, the total amount spent on gas in 2026 is PKR 5400.00 + PKR 9072.00 = PKR 14472.00.",
+     "query": null,
+     "sources": [
+      [
+       "Bills/Metro Gas Oct 2026.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "a larger total in the answer: 9,072.0"
+     ],
+     "citations": "ok"
+    },
+    {
+     "q": "What was my total gas spending this year?",
+     "s": 8.057,
+     "first_s": 8.057,
+     "model_s": 8.028,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "No matching documents found.",
+     "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "current_charges",
+      "op": "sum",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": 2023,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "citations no sources"
+     ],
+     "citations": "no sources"
+    },
+    {
+     "q": "Add up my Metro Gas bills for 2026.",
+     "s": 56.559,
+     "first_s": 56.559,
+     "model_s": 56.496,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The total Metro Gas bills for 2026 include the September 2026 bill (PKR 3000.00), October 2026 bill (PKR 8400.00), and the December 2026 bill (PKR 5400.00). Adding these amounts gives a total of PKR 17,400.00.",
+     "query": null,
+     "sources": [
+      [
+       "WhatsApp Images/IMG-20261105-WA0412.jpg",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "a larger total in the answer: 17,400.0"
+     ],
+     "citations": "ok"
+    },
+    {
+     "q": "How much did I spend on electricity in 2025?",
+     "s": 67.491,
+     "first_s": 67.491,
+     "model_s": 67.446,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The total electricity bill for 2025 for Bilal Ahmed is calculated by summing up the energy charges, fuel price adjustment, taxes and duties, and meter rent from the electricity bill. From passage [1], the energy charges are PKR 792.00, and from passage [2], the current charges are Rs. 14,473. Adding these together gives the total electricity expenditure for 2025 as PKR 14,473. \n\nThus, the answer is PKR 14,473.",
+     "query": null,
+     "sources": [
+      [
+       "Desktop/scan_3591.pdf",
+       1
+      ],
+      [
+       "Downloads/9f5d83e4.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 27,668"
+     ],
+     "citations": "ok"
+    },
+    {
+     "q": "How much did I spend at Metro Electronics Mart in 2025?",
+     "s": 64.0,
+     "first_s": 64.0,
+     "model_s": 63.93,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The total amount spent at Metro Electronics Mart in 2025 is PKR 150,345.00, as indicated in the order confirmation [1].",
+     "query": null,
+     "sources": [
+      [
+       "Documents/old/IMG_4953.jpg",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 231,800.4"
+     ],
+     "citations": "ok"
+    }
+   ],
+   "expiring_window": [
+    {
+     "q": "What expires in the next 90 days?",
+     "s": 8.008,
+     "first_s": 8.008,
+     "model_s": 7.978,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "No matching documents found.",
+     "query": {
+      "route": "facts",
+      "doc_type": "warranty_card",
+      "field": "warranty_until",
+      "op": "next_expiring",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": "next_90_days"
+      }
+     },
+     "sources": [],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 2026-12-14 (Documents/old/Screenshot 2021-09-14 at 14.29.27.png)",
+      "missing 2027-01-20 (Documents/Zainab CNIC copy.pdf)",
+      "citations no sources"
+     ],
+     "citations": "no sources"
+    },
+    {
+     "q": "Is anything expiring in the next 30 days?",
+     "s": 9.283,
+     "first_s": 9.283,
+     "model_s": 9.255,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "No matching documents found.",
+     "query": {
+      "route": "facts",
+      "doc_type": "warranty_card",
+      "field": "warranty_until",
+      "op": "next_expiring",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": "next_30_days"
+      }
+     },
+     "sources": [],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 2026-12-14 (Documents/old/Screenshot 2021-09-14 at 14.29.27.png)",
+      "citations no sources"
+     ],
+     "citations": "no sources"
+    },
+    {
+     "q": "What expires between 1 December 2026 and 31 January 2027?",
+     "s": 52.084,
+     "first_s": 52.084,
+     "model_s": 52.046,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The warranty expires between 1 December 2026 and 31 January 2027 [1].",
+     "query": null,
+     "sources": [
+      [
+       "Downloads/Print_2025-03-16.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 2026-12-14 (Documents/old/Screenshot 2021-09-14 at 14.29.27.png)",
+      "missing 2027-01-20 (Documents/Zainab CNIC copy.pdf)",
+      "citations wrong: ['Downloads/Print_2025-03-16.pdf']"
+     ],
+     "citations": "wrong: ['Downloads/Print_2025-03-16.pdf']"
+    },
+    {
+     "q": "Which document expires next?",
+     "s": 7.836,
+     "first_s": 7.836,
+     "model_s": 7.588,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "Screenshot 2021-09-14 at 14.29.27.png: expiry date 2026-12-14, in 17 days.",
+     "query": {
+      "route": "facts",
+      "doc_type": null,
+      "field": "expiry_date",
+      "op": "next_expiring",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": "now",
+       "date_to": "now",
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Documents/old/Screenshot 2021-09-14 at 14.29.27.png",
+       1
+      ]
+     ],
+     "counted": [
+      "Documents/old/Screenshot 2021-09-14 at 14.29.27.png"
+     ],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "Which warranties end in 2027?",
+     "s": 21.019,
+     "first_s": 21.019,
+     "model_s": 20.982,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2027-08-30 (CamScanner 08-30-2025 15.14.pdf).",
+     "query": {
+      "route": "facts",
+      "doc_type": "warranty_card",
+      "field": "warranty_until",
+      "op": "min",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": 2027,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Desktop/CamScanner 08-30-2025 15.14.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Desktop/CamScanner 08-30-2025 15.14.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    }
+   ],
+   "gas_bill": [
+    {
+     "q": "How much is my gas bill?",
+     "s": 5.126,
+     "first_s": 5.124,
+     "model_s": 5.103,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "45,088.61 in total, from 9 documents. 4 of the values used need review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "current_charges",
+      "op": "sum",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Backup/Metro Gas Sep 2026.pdf",
+       1
+      ],
+      [
+       "Bills/Metro Gas Oct 2026.pdf",
+       1
+      ],
+      [
+       "Desktop/scan_3591.pdf",
+       1
+      ],
+      [
+       "Downloads/9f5d83e4.pdf",
+       1
+      ],
+      [
+       "Downloads/download (14).pdf",
+       1
+      ],
+      [
+       "Downloads/Scan 27.pdf",
+       1
+      ],
+      [
+       "WhatsApp Images/IMG-20261105-WA0412.jpg",
+       1
+      ],
+      [
+       "Documents/old/90c2b896.pdf",
+       1
+      ],
+      [
+       "Documents/old/ece95bbc.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Backup/Metro Gas Sep 2026.pdf",
+      "Bills/Metro Gas Oct 2026.pdf",
+      "Desktop/scan_3591.pdf",
+      "Downloads/9f5d83e4.pdf",
+      "Downloads/download (14).pdf",
+      "Downloads/Scan 27.pdf",
+      "WhatsApp Images/IMG-20261105-WA0412.jpg",
+      "Documents/old/90c2b896.pdf",
+      "Documents/old/ece95bbc.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      141,
+      286,
+      361,
+      400
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "a larger total in the answer: 45,088.61",
+      "citations wrong: ['Backup/Metro Gas Sep 2026.pdf', 'Desktop/scan_3591.pdf', 'Downloads/9f5d83e4.pdf', 'Downloads/download (14).pdf', 'Downloads/Scan 27.pdf', 'Documents/old/90c2b896.pdf', 'Documents/old/ece95bbc.pdf']"
+     ],
+     "citations": "wrong: ['Backup/Metro Gas Sep 2026.pdf', 'Desktop/scan_3591.pdf', 'Downloads/9f5d83e4.pdf', 'Downloads/download (14).pdf', 'Downloads/Scan 27.pdf', 'Documents/old/90c2b896.pdf', 'Documents/old/ece95bbc.pdf']"
+    },
+    {
+     "q": "What is my gas bill?",
+     "s": 51.792,
+     "first_s": 51.792,
+     "model_s": 51.706,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The gas bill for the period March 2025 was Rs. 5,558, and for the period October 2026 it was PKR 8400. The latest bill for the period December 2025 was Rs. 5,558. The answer is Rs. 5,558.",
+     "query": null,
+     "sources": [
+      [
+       "Documents/old/90c2b896.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "citations wrong: ['Documents/old/90c2b896.pdf']"
+     ],
+     "citations": "wrong: ['Documents/old/90c2b896.pdf']"
+    },
+    {
+     "q": "How much do I owe for gas?",
+     "s": 8.663,
+     "first_s": 8.663,
+     "model_s": 8.637,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "No matching documents found.",
+     "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "amount_due",
+      "op": "outstanding",
+      "filters": {
+       "holder": null,
+       "provider": "gas",
+       "year": 2023,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "citations no sources"
+     ],
+     "citations": "no sources"
+    },
+    {
+     "q": "What is the amount on my latest gas bill?",
+     "s": 63.231,
+     "first_s": 63.231,
+     "model_s": 63.171,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The latest gas bill amount for Bilal Ahmed is Rs. 5,558, as shown in the statement dated 05 Dec 2025 [3].",
+     "query": null,
+     "sources": [
+      [
+       "Documents/old/ece95bbc.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "citations wrong: ['Documents/old/ece95bbc.pdf']"
+     ],
+     "citations": "wrong: ['Documents/old/ece95bbc.pdf']"
+    },
+    {
+     "q": "How much is the gas bill I need to pay?",
+     "s": 12.564,
+     "first_s": 12.562,
+     "model_s": 12.386,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "45,088.61 in total, from 9 documents. 4 of the values used need review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "current_charges",
+      "op": "sum",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Backup/Metro Gas Sep 2026.pdf",
+       1
+      ],
+      [
+       "Bills/Metro Gas Oct 2026.pdf",
+       1
+      ],
+      [
+       "Desktop/scan_3591.pdf",
+       1
+      ],
+      [
+       "Downloads/9f5d83e4.pdf",
+       1
+      ],
+      [
+       "Downloads/download (14).pdf",
+       1
+      ],
+      [
+       "Downloads/Scan 27.pdf",
+       1
+      ],
+      [
+       "WhatsApp Images/IMG-20261105-WA0412.jpg",
+       1
+      ],
+      [
+       "Documents/old/90c2b896.pdf",
+       1
+      ],
+      [
+       "Documents/old/ece95bbc.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Backup/Metro Gas Sep 2026.pdf",
+      "Bills/Metro Gas Oct 2026.pdf",
+      "Desktop/scan_3591.pdf",
+      "Downloads/9f5d83e4.pdf",
+      "Downloads/download (14).pdf",
+      "Downloads/Scan 27.pdf",
+      "WhatsApp Images/IMG-20261105-WA0412.jpg",
+      "Documents/old/90c2b896.pdf",
+      "Documents/old/ece95bbc.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      141,
+      286,
+      361,
+      400
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "missing 8,400",
+      "a larger total in the answer: 45,088.61",
+      "citations wrong: ['Backup/Metro Gas Sep 2026.pdf', 'Desktop/scan_3591.pdf', 'Downloads/9f5d83e4.pdf', 'Downloads/download (14).pdf', 'Downloads/Scan 27.pdf', 'Documents/old/90c2b896.pdf', 'Documents/old/ece95bbc.pdf']"
+     ],
+     "citations": "wrong: ['Backup/Metro Gas Sep 2026.pdf', 'Desktop/scan_3591.pdf', 'Downloads/9f5d83e4.pdf', 'Downloads/download (14).pdf', 'Downloads/Scan 27.pdf', 'Documents/old/90c2b896.pdf', 'Documents/old/ece95bbc.pdf']"
+    }
+   ],
+   "conflict": [
+    {
+     "q": "When does Zainab Malik's ID card expire?",
+     "s": 4.936,
+     "first_s": 4.936,
+     "model_s": 4.906,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2029-05-06 (scan_6405.pdf), from the newest document (2029-05-06). 1 of the values used needs review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "expiry_date",
+      "op": "latest",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Downloads/scan_6405.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Downloads/scan_6405.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      295
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "conflict not shown",
+      "citations wrong: ['Downloads/scan_6405.pdf']"
+     ],
+     "citations": "wrong: ['Downloads/scan_6405.pdf']"
+    },
+    {
+     "q": "What is the expiry date on Zainab Malik's national identity card?",
+     "s": 31.876,
+     "first_s": 31.876,
+     "model_s": 31.834,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The expiry date on Zainab Malik's national identity card is 03Mar2028 [1].",
+     "query": null,
+     "sources": [
+      [
+       "Desktop/PXL_20190101_186672.jpg",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "conflict not shown"
+     ],
+     "citations": "ok"
+    },
+    {
+     "q": "When was Zainab Malik's identity card issued?",
+     "s": 5.465,
+     "first_s": 5.465,
+     "model_s": 5.418,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2019-05-06 (scan_6405.pdf), from the newest document (2029-05-06). 1 of the values used needs review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "issue_date",
+      "op": "latest",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Downloads/scan_6405.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Downloads/scan_6405.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      294
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "conflict not shown",
+      "citations wrong: ['Downloads/scan_6405.pdf']"
+     ],
+     "citations": "wrong: ['Downloads/scan_6405.pdf']"
+    },
+    {
+     "q": "Until when is Zainab Malik's CNIC valid?",
+     "s": 8.127,
+     "first_s": 8.127,
+     "model_s": 8.093,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2029-05-06 (scan_6405.pdf), from the newest document (2029-05-06). 1 of the values used needs review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "expiry_date",
+      "op": "latest",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Downloads/scan_6405.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Downloads/scan_6405.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      295
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "conflict not shown",
+      "citations wrong: ['Downloads/scan_6405.pdf']"
+     ],
+     "citations": "wrong: ['Downloads/scan_6405.pdf']"
+    },
+    {
+     "q": "Zainab Malik ID card expiry date?",
+     "s": 12.823,
+     "first_s": 12.823,
+     "model_s": 12.672,
+     "chat_calls": 1,
+     "embed_calls": 0,
+     "route": "facts",
+     "answer": "2029-05-06 (scan_6405.pdf), from the newest document (2029-05-06). 1 of the values used needs review.",
+     "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "expiry_date",
+      "op": "latest",
+      "filters": {
+       "holder": null,
+       "provider": null,
+       "year": null,
+       "month": null,
+       "date_from": null,
+       "date_to": null,
+       "period": null
+      }
+     },
+     "sources": [
+      [
+       "Downloads/scan_6405.pdf",
+       1
+      ]
+     ],
+     "counted": [
+      "Downloads/scan_6405.pdf"
+     ],
+     "skipped": [],
+     "unreviewed": [
+      295
+     ],
+     "conflicts": [],
+     "pass": false,
+     "why": [
+      "conflict not shown",
+      "citations wrong: ['Downloads/scan_6405.pdf']"
+     ],
+     "citations": "wrong: ['Downloads/scan_6405.pdf']"
+    }
+   ],
+   "written": [
+    {
+     "q": "How long do the brownies bake, and at what temperature?",
+     "s": 59.362,
+     "first_s": 59.359,
+     "model_s": 59.312,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The brownies bake at 175\u00b0C for 25 minutes [1].",
+     "query": null,
+     "sources": [
+      [
+       "Desktop/file_1814.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "How do I find the eigenvalues of a matrix?",
+     "s": 34.419,
+     "first_s": 34.419,
+     "model_s": 34.375,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The eigenvalues of a matrix can be found by solving the characteristic equation det(A - \u03bbI) = 0, as stated in Passage [1].",
+     "query": null,
+     "sources": [
+      [
+       "Documents/old/download (14).pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "How much notice must be given to end the tenancy agreement?",
+     "s": 79.554,
+     "first_s": 79.554,
+     "model_s": 79.511,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The notice period for ending a tenancy agreement is one month in writing, as stated in the agreements [1], [2], and [3].",
+     "query": null,
+     "sources": [
+      [
+       "Documents/old/Print_2025-03-01.pdf",
+       1
+      ],
+      [
+       "Desktop/CamScanner 03-01-2024 17.45.pdf",
+       1
+      ],
+      [
+       "WhatsApp Images/IMG-20250903-WA0341.jpg",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "What does the Voltix UPS warranty not cover?",
+     "s": 61.171,
+     "first_s": 61.171,
+     "model_s": 61.107,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The Voltix UPS warranty does not cover damage from misuse, power surges, or unauthorized repair [1].",
+     "query": null,
+     "sources": [
+      [
+       "Desktop/CamScanner 08-30-2025 15.14.pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    },
+    {
+     "q": "When does the weekly team sync meeting happen?",
+     "s": 44.811,
+     "first_s": 44.811,
+     "model_s": 44.712,
+     "chat_calls": 2,
+     "embed_calls": 1,
+     "route": "search",
+     "answer": "The weekly team sync meeting happens every Monday at 09:30 - 10:00 [1].",
+     "query": null,
+     "sources": [
+      [
+       "Desktop/download (6).pdf",
+       1
+      ]
+     ],
+     "counted": [],
+     "skipped": [],
+     "unreviewed": [],
+     "conflicts": [],
+     "pass": true,
+     "why": [],
+     "citations": "ok"
+    }
+   ]
+  },
+  "rejudged": "answers re-judged after the total check was made stricter (a larger total in the answer fails)"
+ },
+ "mcp": {
+  "conditions": {
+   "builds": [],
+   "battery": 1,
+   "cpu": 48,
+   "free_commit_kb": 7551388,
+   "ac_line": 0,
+   "charge": 47,
+   "mains": false,
+   "at": "2026-11-27 21:09:04"
+  },
+  "command": [
+   "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\backend\\.venv\\Scripts\\python.exe",
+   "-m",
+   "sniff.mcp_server"
+  ],
+  "server_source": "E:\\E\\FAST\\Semester 7\\GenAI\\sniff-wt\\desktop\\backend\\sniff\\__init__.py",
+  "pass": false,
+  "checks": {
+   "refused_while_off": {
+    "pass": true,
+    "reason_shown_to_agent": false,
+    "reply": "[TextContent(type='text', text='Error executing tool list_documents', annotations=None, meta=None)]"
+   },
+   "allow_list_types_and_fields": {
+    "pass": true,
+    "documents": 52,
+    "hidden_types_seen": [],
+    "fields_outside_list": []
+   },
+   "search_text_only_for_full_types": {
+    "pass": true,
+    "hits": 0
+   },
+   "hidden_type_answer_withheld": {
+    "pass": true,
+    "answer": "Withheld: the answer would use documents or fields this agent is not allowed to read."
+   },
+   "allowed_answer_correct": {
+    "pass": false,
+    "answer": "Withheld: the answer would use documents or fields this agent is not allowed to read."
+   },
+   "id_numbers_masked": {
+    "pass": false,
+    "values": [
+     "\u2022\u2022L-3075",
+     "\u2022\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022\u202296-9",
+     "\u2022\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022\u202296-9",
+     "\u2022\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022\u202279-9",
+     "KHI-\u2022\u2022-\u2022\u20225642",
+     "ISB-\u2022\u2022-\u2022\u20224238",
+     "\u2022\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022\u202248-1",
+     "EMP-27986"
+    ]
+   },
+   "every_call_logged": {
+    "pass": true,
+    "calls": 19,
+    "logged": 19,
+    "refused_logged": 1
+   }
+  },
+  "ms": {
+   "list_documents": {
+    "n": 7,
+    "p50": 29.6,
+    "p95": 381.2,
+    "min": 24.3,
+    "max": 381.2
+   },
+   "search_documents": {
+    "n": 6,
+    "p50": 48.1,
+    "p95": 562.7,
+    "min": 41.2,
+    "max": 562.7
+   },
+   "ask": {
+    "n": 6,
+    "p50": 36821.5,
+    "p95": 58143.6,
+    "min": 7207.2,
+    "max": 58143.6
+   }
+  },
+  "memory_mb": {
+   "backend": 334,
+   "chat": 2236,
+   "embed": 77,
+   "total": 2948,
+   "mcp 63492": 302
+  }
+ },
+ "changes": {
+  "conditions": {
+   "builds": [],
+   "battery": 1,
+   "cpu": 31,
+   "free_commit_kb": 7992736,
+   "ac_line": 0,
+   "charge": 61,
+   "mains": false,
+   "at": "2026-11-27 20:57:40"
+  },
+  "method": "time from the disk change until the API shows it (search in bm25 mode for text, /documents for paths); the folder is watched with POST /watch",
+  "new": {
+   "s": {
+    "n": 5,
+    "p50": 27.947,
+    "p95": 29.205,
+    "min": 23.566,
+    "max": 29.205
+   },
+   "runs": [
+    {
+     "s": 28.893,
+     "model_s": 24.372,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 27.947,
+     "model_s": 24.537,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 29.205,
+     "model_s": 26.079,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 23.566,
+     "model_s": 20.589,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 27.836,
+     "model_s": 24.592,
+     "chat_calls": 2,
+     "embed_calls": 1
+    }
+   ]
+  },
+  "edit": {
+   "s": {
+    "n": 5,
+    "p50": 22.666,
+    "p95": 26.721,
+    "min": 21.193,
+    "max": 26.721
+   },
+   "runs": [
+    {
+     "s": 21.193,
+     "model_s": 20.836,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 22.666,
+     "model_s": 22.285,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 22.305,
+     "model_s": 21.936,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 25.814,
+     "model_s": 25.4,
+     "chat_calls": 2,
+     "embed_calls": 1
+    },
+    {
+     "s": 26.721,
+     "model_s": 26.437,
+     "chat_calls": 2,
+     "embed_calls": 1
+    }
+   ]
+  },
+  "rename": {
+   "s": {
+    "n": 5,
+    "p50": 3.421,
+    "p95": 3.61,
+    "min": 3.286,
+    "max": 3.61
+   },
+   "runs": [
+    {
+     "s": 3.435,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.421,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.61,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.326,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.286,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    }
+   ]
+  },
+  "copy": {
+   "s": {
+    "n": 5,
+    "p50": 3.45,
+    "p95": 4.553,
+    "min": 3.344,
+    "max": 4.553
+   },
+   "runs": [
+    {
+     "s": 4.553,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.687,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.45,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.439,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    },
+    {
+     "s": 3.344,
+     "model_s": 0,
+     "chat_calls": 0,
+     "embed_calls": 0
+    }
+   ]
+  },
+  "delete_copy_kept": {
+   "s": {
+    "n": 5,
+    "p50": 3.09,
+    "p95": 3.686,
+    "min": 2.847,
+    "max": 3.686
+   },
+   "runs": [
+    {
+     "s": 3.686,
+     "still_found_by_search": true
+    },
+    {
+     "s": 2.847,
+     "still_found_by_search": true
+    },
+    {
+     "s": 2.877,
+     "still_found_by_search": true
+    },
+    {
+     "s": 3.321,
+     "still_found_by_search": true
+    },
+    {
+     "s": 3.09,
+     "still_found_by_search": true
+    }
+   ]
+  },
+  "delete_last": {
+   "s": {
+    "n": 5,
+    "p50": 3.345,
+    "p95": 4.314,
+    "min": 2.969,
+    "max": 4.314
+   },
+   "runs": [
+    {
+     "s": 4.314
+    },
+    {
+     "s": 3.366
+    },
+    {
+     "s": 3.345
+    },
+    {
+     "s": 2.969
+    },
+    {
+     "s": 3.336
+    }
+   ]
+  },
+  "rename_model_calls": 0,
+  "copy_model_calls": 0,
+  "new_under_target": 0
+ },
+ "badinput": {
+  "conditions": {
+   "builds": [],
+   "battery": 1,
+   "cpu": 40,
+   "free_commit_kb": 7199692,
+   "ac_line": 0,
+   "charge": 50,
+   "mains": false,
+   "at": "2026-11-27 21:06:19"
+  },
+  "backend_alive": true,
+  "settled_s": 6.258,
+  "watch_error": "PermissionError: [Errno 13] Permission denied: 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\locked.pdf'",
+  "files": {
+   "corrupt.pdf": {
+    "in_index": true,
+    "status": "error",
+    "error": "FileDataError: Failed to open file 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf.",
+    "expected": "error",
+    "pass": true
+   },
+   "empty.pdf": {
+    "in_index": true,
+    "status": "error",
+    "error": "EmptyFileError: Cannot open empty file: filename='E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'.",
+    "expected": "error",
+    "pass": true
+   },
+   "protected.pdf": {
+    "in_index": false,
+    "status": null,
+    "error": null,
+    "expected": "error",
+    "pass": false
+   },
+   "large.pdf": {
+    "in_index": false,
+    "status": null,
+    "error": null,
+    "expected": "indexed",
+    "pass": false
+   },
+   "budget.xlsx": {
+    "in_index": false,
+    "status": null,
+    "error": null,
+    "expected": "ignored",
+    "pass": true
+   },
+   "locked.pdf": {
+    "in_index": false,
+    "status": null,
+    "error": null,
+    "expected": "error",
+    "pass": false
+   }
+  },
+  "first_seen_s": {
+   "corrupt.pdf": 4.58,
+   "empty.pdf": 4.58
+  },
+  "after_unlock": {
+   "corrupt.pdf": {
+    "status": "error",
+    "error": "FileDataError: Failed to open file 'E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\corrupt.pdf' as type pdf."
+   },
+   "empty.pdf": {
+    "status": "error",
+    "error": "EmptyFileError: Cannot open empty file: filename='E:\\\\E\\\\FAST\\\\Semester 7\\\\GenAI\\\\.cache\\\\acceptance\\\\docs\\\\Bad\\\\empty.pdf'."
+   },
+   "protected.pdf": {
+    "status": "error",
+    "error": "ValueError: document closed or encrypted"
+   },
+   "large.pdf": {
+    "status": "indexed",
+    "error": null
+   },
+   "budget.xlsx": {
+    "status": null,
+    "error": null
+   },
+   "locked.pdf": {
+    "status": "indexed",
+    "error": null
+   }
+  },
+  "overview_errors_after_unlock": 3,
+  "locked_indexed_after_unlock_without_event": null,
+  "locked_indexed_after_touch_s": 4.445,
+  "bad_folder_removed_s": 3.458,
+  "pass": false
+ },
+ "startup_indexed": {
+  "exe": "E:/E/FAST/Semester 7/GenAI/.cache/acceptance/bin/sniff-backend.exe",
+  "index_had_files": true,
+  "runs": [
+   {
+    "s": 6.285,
+    "conditions": {
+     "builds": [],
+     "battery": 1,
+     "cpu": 60,
+     "free_commit_kb": 8060700,
+     "ac_line": 0,
+     "charge": 49,
+     "mains": false,
+     "at": "2026-11-27 21:07:50"
+    }
+   },
+   {
+    "s": 5.916,
+    "conditions": {
+     "builds": [],
+     "battery": 1,
+     "cpu": 100,
+     "free_commit_kb": 7607724,
+     "ac_line": 0,
+     "charge": 49,
+     "mains": false,
+     "at": "2026-11-27 21:08:02"
+    }
+   },
+   {
+    "s": 4.974,
+    "conditions": {
+     "builds": [],
+     "battery": 1,
+     "cpu": 45,
+     "free_commit_kb": 7604148,
+     "ac_line": 0,
+     "charge": 49,
+     "mains": false,
+     "at": "2026-11-27 21:08:12"
+    }
+   },
+   {
+    "s": 5.062,
+    "conditions": {
+     "builds": [],
+     "battery": 1,
+     "cpu": 52,
+     "free_commit_kb": 7637532,
+     "ac_line": 0,
+     "charge": 48,
+     "mains": false,
+     "at": "2026-11-27 21:08:22"
+    }
+   },
+   {
+    "s": 5.641,
+    "conditions": {
+     "builds": [],
+     "battery": 1,
+     "cpu": 46,
+     "free_commit_kb": 7435712,
+     "ac_line": 0,
+     "charge": 48,
+     "mains": false,
+     "at": "2026-11-27 21:08:32"
+    }
+   }
+  ],
+  "s": {
+   "n": 5,
+   "p50": 5.641,
+   "p95": 6.285,
+   "min": 4.974,
+   "max": 6.285
+  },
+  "note": "from process start until GET /index/status answers"
+ }
+}
