@@ -72,6 +72,12 @@
   }
 }
 
+/* the first-run download screen (views/Setup.tsx) uses Tailwind colour classes; these give them the launcher's colours */
+@theme inline {
+  --color-muted: var(--text-3); --color-accent: var(--accent); --color-bg: var(--on-accent); --color-line: var(--line); --color-danger: var(--warn);
+}
+html.desktop body:has(#root > div:not(.stage)) { background: var(--bg-solid); }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { min-height: 100vh; font: 400 14px/20px var(--fb); color: var(--text); background: var(--desk); background-attachment: fixed; -webkit-font-smoothing: antialiased; }

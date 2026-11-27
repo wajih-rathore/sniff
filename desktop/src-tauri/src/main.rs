@@ -9,13 +9,14 @@ use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Manager, PhysicalPosition, RunEvent, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, LogicalSize, Manager, PhysicalPosition, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
 
@@ -151,19 +152,50 @@ fn reminders(app: AppHandle) {
     }
 }
 
-/// Centred across the screen, with its middle at a third of the screen height.
-fn place(w: &WebviewWindow) {
-    let monitor = w.current_monitor().ok().flatten().or_else(|| w.primary_monitor().ok().flatten());
-    if let (Some(m), Ok(size)) = (monitor, w.outer_size()) {
-        let x = m.position().x + (m.size().width as i32 - size.width as i32) / 2;
-        let y = m.position().y + (m.size().height as i32 / 3 - size.height as i32 / 2).max(0);
-        let _ = w.set_position(PhysicalPosition::new(x, y));
-    }
+/// The launcher on the monitor it is on, in logical pixels: width min(880, 92%) and height cap min(540, 80%) of the
+/// work area (the screen without the taskbar). The frontend uses the same cap (screen.availHeight).
+fn limits(w: &WebviewWindow) -> Option<(tauri::Monitor, f64, f64)> {
+    let m = w.current_monitor().ok().flatten().or_else(|| w.primary_monitor().ok().flatten())?;
+    let (s, wa) = (m.scale_factor(), *m.work_area());
+    let width = (wa.size.width as f64 / s * 0.92).floor().min(880.0);
+    let max_h = (wa.size.height as f64 / s * 0.8).floor().min(540.0);
+    Some((m, width, max_h))
+}
+
+/// Size the window to its content (never past the cap) and centre it in the work area, its top where a window of the
+/// full cap would have its middle a third of the way down; so it grows downwards and never leaves the work area.
+fn place(w: &WebviewWindow, height: Option<f64>) {
+    let Some((m, width, max_h)) = limits(w) else { return };
+    let (s, wa) = (m.scale_factor(), *m.work_area());
+    let h = height.unwrap_or_else(|| w.inner_size().map(|p| p.height as f64 / s).unwrap_or(max_h)).clamp(60.0, max_h);
+    let _ = w.set_size(LogicalSize::new(width, h));
+    let x = wa.position.x + ((wa.size.width as f64 - width * s) / 2.0).round() as i32;
+    let y = wa.position.y + ((wa.size.height as f64 - max_h * s) / 3.0).round() as i32;
+    let _ = w.set_position(PhysicalPosition::new(x, y));
+}
+
+/// The frontend reports its content height after every change; the window follows it.
+#[tauri::command]
+fn fit_window(window: WebviewWindow, height: f64) {
+    place(&window, Some(height));
+}
+
+static BACKDROP: AtomicBool = AtomicBool::new(false); // platform::backdrop(): the window has a see-through backdrop
+
+/// "see-through", or "solid" when there is no see-through backdrop (Linux) or Windows transparency effects are off
+/// (Settings, Personalization, Colors); the frontend then paints an opaque background.
+#[tauri::command]
+fn backdrop() -> String {
+    let mut reg = Command::new("reg"); // only on Windows; elsewhere it does not start and nothing is switched off
+    reg.args(["query", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "/v", "EnableTransparency"]);
+    platform::prepare(&mut reg);
+    let off = reg.output().is_ok_and(|o| String::from_utf8_lossy(&o.stdout).contains("0x0"));
+    if BACKDROP.load(Ordering::Relaxed) && !off { "see-through" } else { "solid" }.to_string()
 }
 
 fn show(w: &WebviewWindow) {
     *SHOWN_AT.lock().unwrap() = Some(Instant::now());
-    place(w);
+    place(w, None);
     let _ = w.show();
     let _ = w.unminimize();
     let _ = w.set_focus();
@@ -285,7 +317,7 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .manage(Children::default())
         .manage(Hotkey(Mutex::new(SHORTCUT.to_string())))
-        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, get_hotkey, open_ics, hotkey_note])
+        .invoke_handler(tauri::generate_handler![open_file, reveal, hide_window, set_autostart, autostart_enabled, set_hotkey, get_hotkey, open_ics, hotkey_note, fit_window, backdrop])
         .setup(|app| {
             let _ = fs::create_dir_all(home().join("logs"));
             let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
@@ -337,7 +369,7 @@ fn main() {
             std::thread::spawn(move || reminders(handle));
 
             if let Some(w) = app.get_webview_window("main") {
-                platform::backdrop(&w);
+                BACKDROP.store(platform::backdrop(&w), Ordering::Relaxed);
                 // started at sign-in (--hidden): stay in the tray until the shortcut is pressed
                 if !std::env::args().any(|a| a == "--hidden") {
                     show(&w);
