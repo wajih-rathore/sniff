@@ -38,6 +38,11 @@ const ago = (iso: string) => {
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000))
   return m < 1 ? 'just now' : m < 60 ? `${plural(m, 'minute', 'minutes')} ago` : m < 1440 ? `${plural(Math.round(m / 60), 'hour', 'hours')} ago` : `${plural(Math.round(m / 1440), 'day', 'days')} ago`
 }
+/** The snippet from just before the first word of the query, so the match is what fits on the line. */
+const around = (text: string, q: string) => {
+  const i = Math.min(...words(q).map((w) => text.toLowerCase().indexOf(w)).filter((x) => x >= 0), Infinity)
+  return i > 12 && i < Infinity ? '…' + text.slice(text.lastIndexOf(' ', i - 2) + 1) : text
+}
 /** The query's words in bold inside a title, as the mockup marks "Metro Gas". */
 function bold(text: string, q: string) {
   const w = words(q).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -109,6 +114,7 @@ export default function Launcher() {
   const [ans, setAns] = useState<Answer | null>(null)
   const [stream, setStream] = useState('')
   const [asking, setAsking] = useState(false)
+  const [starting, setStarting] = useState(false) // the chat model is loading: the first written answer waits for it
   const [details, setDetails] = useState(false)
   const [xOpen, setXOpen] = useState<Record<string, boolean>>({})
   // review
@@ -217,10 +223,12 @@ export default function Launcher() {
   }
   const ask = (text: string) => {
     const id = ++seq.current
-    setScreen('answer'); setQuestion(text); setAns(null); setStream(''); setAsking(true); setDetails(false); setXOpen({}); setErr(''); setPanel(false); setPreview(false); setSel(0)
-    api.askStream(text, (t) => id === seq.current && setStream((s) => s + t))
+    setScreen('answer'); setQuestion(text); setAns(null); setStream(''); setAsking(true); setStarting(false); setDetails(false); setXOpen({}); setErr(''); setPanel(false); setPreview(false); setSel(0)
+    // Nothing arrives while the chat model loads (seconds on a cold start), so ask the back end whether it is loading.
+    const poll = window.setInterval(() => api.model().then((m) => id === seq.current && setStarting(m.starting), () => {}), 1500)
+    api.askStream(text, (t) => { if (id === seq.current) { clearInterval(poll); setStarting(false); setStream((s) => s + t) } })
       .then((a) => { if (id === seq.current) setAns(a) }, (e) => { if (id === seq.current) fail('answer')(e) })
-      .finally(() => { if (id === seq.current) setAsking(false) })
+      .finally(() => { clearInterval(poll); if (id === seq.current) { setAsking(false); setStarting(false) } })
   }
 
   /* ---------- search and empty state ---------- */
@@ -324,7 +332,8 @@ export default function Launcher() {
       right: ov.errors ? <St kind="warn">{ov.errors} not read</St> : queued ? <St kind="dim">Reading {queued}</St> : <St kind="ok">Up to date</St>,
       ctx: 'Folders and their status are in Settings', act: 'Open Settings', run: () => go('settings') },
     { id: 'types', tile: <Tile icon={LayoutGrid} tone="neutral" />, t: 'Documents by type',
-      m: Object.entries(ov.by_type).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n} ${typeName(t, n)}`).join(' · ') || 'None yet', ctx: 'Copies of a file are counted once' },
+      m: Object.entries(ov.by_type).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([t, n]) => `${n} ${typeName(t, n)}`).join(' · ')
+        + (Object.keys(ov.by_type).length > 4 ? `, and ${plural(Object.keys(ov.by_type).length - 4, 'more type', 'more types')}` : '') || 'None yet', ctx: 'Copies of a file are counted once' },
     { id: 'expiry', tile: <Tile icon={CalendarClock} tone="neutral" />, t: 'Upcoming expiries',
       m: expiring.length ? expiring.slice(0, 2).map((u) => `${label(typeName(u.doc_type))}, ${fmtDay(u.fact.value)}`).join(' · ') : 'Nothing expires in the next 90 days',
       right: expiring[0] && <span className="acc">{expiring[0].days_left === 0 ? 'today' : `next in ${plural(expiring[0].days_left, 'day', 'days')}`}</span>,
@@ -580,7 +589,7 @@ export default function Launcher() {
                   src={api.cropUrl(pv.src.file_id, pv.hit?.fact ? { fact_id: pv.hit.fact.id } : { page: pv.src.page, q: pv.hit ? query : '' })} />
                 <div className="pv-field">
                   <span className="l">{pv.hit?.fact ? label(pv.hit.fact.field) : pv.hit ? 'Text' : label(typeName(pv.type))}</span>
-                  <span className="v">{pv.hit?.fact ? show(pv.hit.fact) : pv.hit ? pv.hit.snippet : (pv.title as string)}</span>
+                  <span className="v">{pv.hit?.fact ? show(pv.hit.fact) : pv.hit ? around(pv.hit.snippet, query) : (pv.title as string)}</span>
                   <span className="src">{pv.src.name}, page {pv.hit?.fact?.page ?? pv.src.page}</span>
                 </div>
               </>
@@ -607,7 +616,8 @@ export default function Launcher() {
       <div className="main">
         {!details ? (
           <div className="ans" data-scroll style={{ flex: 1 }}>
-            {(h?.value || h?.alts || (asking && !stream && !ans)) && (
+            {starting && !stream && <p className="sent lead">Starting the model…</p>}
+            {(h?.value || h?.alts || (asking && !stream && !ans && !starting)) && (
               <div className="fig">
                 {h?.alts ? <span className="two">{h.alts.map((v, i) => <Fragment key={i}>{i > 0 && ' or '}<b>{v}</b></Fragment>)}: two files disagree on {shortTitle(alts[0].source)}.</span>
                   : h?.value ?? <span className="skel" style={{ width: 184, height: 28, verticalAlign: 'middle' }} />}
@@ -619,7 +629,7 @@ export default function Launcher() {
                 {sources.slice(0, 4).map((s, i) => (
                   <button key={i} type="button" tabIndex={-1} className="cite in" onClick={() => open(s)}
                     aria-label={conflictFiles.has(s.file_id) ? `Source ${i + 1}, two files disagree` : undefined}>
-                    <span className="num">{i + 1}</span><span>{shortTitle(s)}</span><span className="p">p. {s.page}</span>
+                    <span className="num">{i + 1}</span><span>{sources.some((x) => x !== s && x.title === s.title) ? s.name : shortTitle(s)}</span><span className="p">p. {s.page}</span>
                     {conflictFiles.has(s.file_id) && <I i={TriangleAlert} />}
                   </button>
                 ))}
@@ -679,7 +689,7 @@ export default function Launcher() {
     const n = ans?.counted.length || ans?.sources.length || 0
     live = !ans ? '' : h?.alts ? `Not final: ${h.alts.join(' or ')}. Two files disagree.` : `${h?.value ? h.value + '. ' : ''}${h?.sentence ?? ''}`
     foot = errFoot(
-      asking ? (stream ? 'Writing the answer' : 'Reading your documents')
+      asking ? (stream ? 'Writing the answer' : starting ? 'The model loads only when an answer needs it. The first one can take about 40 seconds' : 'Reading your documents')
       : details ? 'Esc returns to the answer'
       : !ans ? ''
       : alts.length ? 'The total is not final. Sniff does not choose between the two files.'

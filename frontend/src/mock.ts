@@ -101,9 +101,11 @@ function ask(question: string): Answer {
   return { ...none, question, route: 'search', answer: `${doc(h.file_id).title} mentions it on page 1: ${textOf(h.file_id).toLowerCase()} [1].`, sources: [src(h.file_id)] }
 }
 /** The streamed ask: a written (search) answer arrives word by word, a facts answer whole, as /ask/stream sends them. */
+let cold = true, loading = false // the first written answer waits for the chat model to load
 export async function mockStream(question: string, onToken: (t: string) => void): Promise<Answer> {
   const a = ask(question)
   if (a.route !== 'search') return delay(a, 700)
+  if (cold) { cold = false; loading = true; await delay(null, 3500); loading = false }
   await delay(null, 500)
   for (const [i, w] of a.answer.split(' ').entries()) { onToken((i ? ' ' : '') + w); await delay(null, 70) }
   return a
@@ -179,6 +181,7 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p === '/overview') return delay(overview())
   if (p === '/upcoming') return delay(upcoming())
   if (p === '/index/status') return delay({ queued: 0, running: false }, 50)
+  if (p === '/model') return delay({ ready: !loading, starting: loading }, 50)
   if (p === '/watch') {
     const folder = (body as { folder?: string } | undefined)?.folder ?? ''
     if (method === 'POST' && !watched.includes(folder)) { watched = [...watched, folder]; counts![folder] = { files: 0, errors: 0, waiting: 0 } }
