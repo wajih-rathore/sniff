@@ -22,7 +22,7 @@ from pathlib import Path
 from common import RESULTS, ROOT, jsonl, norm
 
 from sniff import ask, db, verify
-from sniff.ai import llm
+from sniff.ai import embed, llm
 
 DEV_DB = ROOT / ".sniff" / "dev-fixes.db"
 TODAY = date(2025, 12, 1)  # most dev documents are from 2025, so "this year", "next 3 months" and "next bill" mean something
@@ -98,21 +98,35 @@ def run(tag: str):
         calls.append(1)
         return chat(*a, **kw)
     llm.chat = counted
+    vectors, embed_query = [], embed.embed_query
+
+    def embedded(*a, **kw):  # search needs the small embedding model, not the chat model
+        vectors.append(1)
+        return embed_query(*a, **kw)
+    embed.embed_query = embedded
     rows = []
     for g in jsonl("ask_dev.jsonl"):
         calls.clear()
+        vectors.clear()
         t = time.perf_counter()
-        a = ask.ask(conn, g["q"], TODAY)
+        try:
+            a = ask.ask(conn, g["q"], TODAY)
+        except Exception as e:  # a model call that times out counts as a wrong answer; the run goes on
+            rows.append({"q": g["q"], "op": g["op"], "ok": False, "gold": g["answer"], "got": f"{type(e).__name__}: {e}",
+                         "model_calls": len(calls), "s": round(time.perf_counter() - t, 1)})
+            print(f"ERR [{g['op']}] {g['q']} -> {type(e).__name__}", flush=True)
+            continue
         rows.append({"q": g["q"], "op": g["op"], "ok": correct(a, g), "gold": g["answer"], "got": a.answer, "route": a.route,
-                     "parser": getattr(a, "parser", None), "model_calls": len(calls), "s": round(time.perf_counter() - t, 1),
+                     "parser": getattr(a, "parser", None), "model_calls": len(calls), "embed_calls": len(vectors), "s": round(time.perf_counter() - t, 1),
                      "query": a.query, "conflicts": len(a.conflicts), "ungrounded_numbers": getattr(a, "ungrounded_numbers", None)})
-        print(("OK  " if rows[-1]["ok"] else "BAD ") + f"[{g['op']}] {g['q']} -> {a.answer[:150]}")
+        print(("OK  " if rows[-1]["ok"] else "BAD ") + f"[{g['op']}] {g['q']} -> {a.answer[:150]}", flush=True)
     by_op = defaultdict(Counter)
     for r in rows:
         by_op[r["op"]]["n"] += 1
         by_op[r["op"]]["ok"] += r["ok"]
     summary = {"n": len(rows), "correct": sum(r["ok"] for r in rows), "by_op": {k: f"{v['ok']}/{v['n']}" for k, v in sorted(by_op.items())},
-               "parser": dict(Counter(str(r["parser"]) for r in rows)), "model_calls": sum(r["model_calls"] for r in rows),
+               "parser": dict(Counter(str(r.get("parser")) for r in rows)), "model_calls": sum(r["model_calls"] for r in rows),
+               "no_model_call": sum(r["model_calls"] == 0 for r in rows), "errors": sum("route" not in r for r in rows),
                "today": TODAY.isoformat(), "when": time.strftime("%Y-%m-%d %H:%M")}
     print(json.dumps(summary, indent=2))
     out = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}

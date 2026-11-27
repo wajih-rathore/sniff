@@ -86,6 +86,8 @@ NAME_FIELDS = set(ORG_FIELDS)
 
 ANSWER_PROMPT = """Answer the question using only the numbered passages from the user's documents.
 Cite passages like [1]. Keep it to one or two sentences.
+Copy every number and date exactly as the passages write it. Never add, subtract, multiply, divide, count or
+compare numbers yourself, and never give a total that is not written in a passage.
 If the passages do not contain the answer, reply exactly: NOT FOUND
 """ + llm.DATA_RULE
 
@@ -196,6 +198,8 @@ MAIN_FIELD = {"utility_bill": "amount_due", "receipt": "total_amount", "fee_vouc
               "transcript": "cgpa", "certificate": "title", "warranty_card": "warranty_until", "id_card": "expiry_date", "passport": "expiry_date"}
 SPENT = {"utility_bill": "current_charges"}  # what a total adds up, where it is not MAIN_FIELD (CALCULATIONS.md)
 COUNT = r"\bhow many\b|\bcount\b|\bnumber of\b"
+UNSUPPORTED = (r"\baverage\b|\bmean\b|\bdifference\b|\bdiffer\b|\b(?:go|goes|gone|went) (?:up|down)\b|\bincrease|\bdecrease|"
+               r"how much (?:more|less)|\bminus\b|\bsubtract|\bdivide|per ?cent|percentage|\bratio\b")
 OWE = r"\bowe\b|outstanding|unpaid|still (?:have to |need to )?pay|need to pay"
 NEXT = r"\bnext\b(?!\s+(?:\d|few|couple|day|week|month|year))|\bsoonest\b"
 SUM = r"\btotals?\b|\bsum\b|add(?:ed)? up|altogether|all together|\bin all\b|combined|\bspen[dt]\b|spending|paid into|went out|paid out"
@@ -356,10 +360,37 @@ def understand(conn: sqlite3.Connection, question: str, today: date) -> tuple[Ro
     return r, "model"
 
 
+def needs_calc(question: str) -> bool:
+    """A total, count, average or difference: only code may compute it, from facts. "How many eggs?" reads a page."""
+    q = question.lower()
+    return bool(re.search(UNSUPPORTED, q) or re.search(SUM, q)
+                or (re.search(COUNT, q) and (re.search(DOCS, q) or any(re.search(p, q) for _, p in TYPE_WORDS))))
+
+
+def cannot_calculate(conn, question: str) -> Answer:
+    """What a calculation the facts cannot answer gets instead of the model's arithmetic: why, and where to look."""
+    hits = search(conn, question, k=TOP)
+    pages = {h.file_id: h for h in hits}.values()
+    found = f" Documents that look related: {', '.join(h.name for h in pages)}." if hits else ""
+    return Answer(question=question, answer=CANT_CALC + found, route="none",
+                  sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in pages])
+
+
+CANT_CALC = ("This needs a calculation Sniff cannot do from the facts it has read, and the language model is not "
+             "allowed to do sums, so Sniff gives no number.")
+
+
 def ask(conn: sqlite3.Connection, question: str, today: date | None = None) -> Answer:
     today = today or date.today()
+    if re.search(UNSUPPORTED, question.lower()):  # averages and differences have no template: no model call at all
+        return cannot_calculate(conn, question).model_copy(update={"parser": "rules"})
     r, how = understand(conn, question, today)
-    a = answer_from_facts(conn, question, r, today) if valid(r) else answer_from_search(conn, question)
+    if valid(r):
+        a = answer_from_facts(conn, question, r, today)
+    elif needs_calc(question):
+        a = cannot_calculate(conn, question)
+    else:
+        a = answer_from_search(conn, question)
     a.parser = how
     return a
 
@@ -628,20 +659,47 @@ def _search_prompt(conn, question: str, k: int):
     ]
 
 
-def _search_answer(question: str, hits, text: str) -> Answer:
+DATES = r"\d{4}-\d{2}-\d{2}|\d{1,2}(?:st|nd|rd|th)?[\s-]?[A-Za-z]{3,9}[\s,-]+\d{4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}"
+NUMBER = r"\d[\d,]*(?:\.\d+)?"
+
+
+def ungrounded(text: str, given: str) -> list[str]:
+    """Numbers and dates in a written answer that are not in the text the model was given. A date counts as the same
+    date in any format ("15 Oct 2026" = "2026-10-15"); a number as the same value ("5,400" = "5400.00")."""
+    def dates(s):
+        return {d for m in re.findall(DATES, s) if (d := verify.parse_date(m.replace(",", " ")))}
+
+    def nums(s):
+        return {float(n.replace(",", "")) for n in re.findall(NUMBER, s)}
+    have_dates, have_nums, out = dates(given), nums(given), []
+    body = re.sub(r"\[\d+\]", " ", text)  # citation marks
+    for m in re.findall(DATES, body):
+        if d := verify.parse_date(m.replace(",", " ")):
+            out += [m] if d not in have_dates else []
+            body = body.replace(m, " ", 1)
+    return out + [n for n in re.findall(NUMBER, body) if float(n.replace(",", "")) not in have_nums]
+
+
+def _search_answer(question: str, hits, text: str, given: str) -> Answer:
     if "NOT FOUND" in text:
         return Answer(question=question, answer=NOT_FOUND, route="none")
     cited = {int(n) for n in re.findall(r"\[(\d+)\]", text) if 0 < int(n) <= len(hits)} or {1}
     used = [hits[i - 1] for i in sorted(cited)]
-    return Answer(question=question, answer=text, route="search",
+    bad = ungrounded(text, given)
+    for n in dict.fromkeys(bad):  # the model wrote a number the passages do not have (a sum, a guess): say so next to it
+        text = re.sub(rf"(?<![\d.,\[]){re.escape(n)}(?![\d,]|\.\d)", f"{n} {UNGROUNDED}", text)
+    return Answer(question=question, answer=text, route="search", ungrounded_numbers=bad,
                   sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in used])
+
+
+UNGROUNDED = "(not in your documents)"
 
 
 def answer_from_search(conn, question: str, k: int = TOP) -> Answer:
     hits, messages = _search_prompt(conn, question, k)
     if not hits:
         return Answer(question=question, answer=NOT_FOUND, route="none")
-    return _search_answer(question, hits, llm.chat(messages))
+    return _search_answer(question, hits, llm.chat(messages), messages[-1]["content"])
 
 
 def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = None):
@@ -663,4 +721,4 @@ def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = Non
             continue
         yield "token", text[sent:]
         sent = len(text)
-    yield "answer", _search_answer(question, hits, llm.clean(text)).model_copy(update={"parser": how})
+    yield "answer", _search_answer(question, hits, llm.clean(text), messages[-1]["content"]).model_copy(update={"parser": how})

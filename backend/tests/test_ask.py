@@ -219,3 +219,52 @@ def test_model_output_is_checked_against_the_question(docs, monkeypatch):
     assert a.parser == "model" and a.answer == "2027-01-10 (id_ali.jpg)."
     f = a.query["filters"]
     assert f["year"] is None and f["provider"] is None and f["holder"] == "ali khan"  # invented year and name dropped, the dropped name put back
+
+
+# ---------- no arithmetic on the search path ----------
+def text_doc(conn, path, text):
+    fid = conn.execute("INSERT INTO files(path, doc_type, status) VALUES (?, 'other', 'indexed')", (path,)).lastrowid
+    conn.execute("INSERT INTO chunks(file_id, page, text) VALUES (?, 1, ?)", (fid, text))
+    conn.commit()
+
+
+def test_a_total_the_facts_cannot_answer_is_not_left_to_the_model(docs, monkeypatch):
+    from sniff.ai import llm
+    text_doc(docs, "C:/d/trip.txt", "Trip costs: hotel 12000, train 3500, food 4200.")
+    monkeypatch.setattr(llm, "chat_json", lambda messages, model: Route(route="search"))  # the router gives up
+    monkeypatch.setattr(llm, "chat", no_model)  # and no model may write a sum
+    a = ask.ask(docs, "What did the trip cost in total?", today=TODAY)
+    assert a.route == "none" and a.answer.startswith(ask.CANT_CALC) and "trip.txt" in a.answer and a.sources[0].name == "trip.txt"
+
+
+@pytest.mark.parametrize("question", ["What is the average of my electricity bills?",
+                                      "How much did the electricity bill go up from January to February 2026?"])
+def test_averages_and_differences_are_refused_without_any_model_call(docs, monkeypatch, question):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", no_model)
+    monkeypatch.setattr(llm, "chat", no_model)
+    a = ask.ask(docs, question, today=TODAY)
+    assert a.route == "none" and a.answer.startswith(ask.CANT_CALC) and a.parser == "rules"
+
+
+def test_reading_a_count_off_a_page_is_not_a_calculation():
+    assert not ask.needs_calc("How many eggs go into the brownies?")
+    assert ask.needs_calc("How many receipts do I have?") and ask.needs_calc("What did I spend on fuel?")
+
+
+def test_numbers_the_passages_do_not_have_are_flagged(conn, monkeypatch):
+    from sniff.ai import llm
+    text_doc(conn, "C:/d/gas.txt", "Metro Gas bill. Current charges Rs. 5,400. Late payment surcharge 9,072. Due date 15-10-2026.")
+    seen = []
+    monkeypatch.setattr(llm, "chat", lambda messages, **kw: seen.append(messages) or
+                        "You pay PKR 5400.00 + PKR 9072.00 = PKR 14472.00 [1], due on 15 October 2026 [1].")
+    a = ask.answer_from_search(conn, "How much is the gas bill?")
+    assert "Never add, subtract" in seen[0][0]["content"]  # the prompt forbids sums
+    assert a.ungrounded_numbers == ["14472.00"]
+    assert a.answer == f"You pay PKR 5400.00 + PKR 9072.00 = PKR 14472.00 {ask.UNGROUNDED} [1], due on 15 October 2026 [1]."
+
+
+def test_ungrounded_compares_values_not_spelling():
+    given = "Paid 1,250.50 on 2026-03-05 for 3 items [page 2]"
+    assert ask.ungrounded("It was Rs. 1250.50 on 5 March 2026 for 3 items [1].", given) == []
+    assert ask.ungrounded("It was 1,300 on 6 March 2026.", given) == ["6 March 2026", "1,300"]

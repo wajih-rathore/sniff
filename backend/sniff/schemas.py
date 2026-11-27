@@ -273,6 +273,7 @@ class Answer(BaseModel):
     unreviewed: list[Fact] = []  # facts used that still need review
     conflicts: list[Conflict] = []
     parser: Literal["rules", "model"] | None = None  # who turned the question into a query: code's rules or the LLM router
+    ungrounded_numbers: list[str] = []  # numbers in a written answer that are not in the passages it was given
 
 
 class Document(BaseModel):

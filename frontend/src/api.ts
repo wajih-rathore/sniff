@@ -36,6 +36,8 @@ export type Answer = {
   skipped_duplicates: Source[]
   unreviewed: Fact[]
   conflicts: Conflict[]
+  parser?: 'rules' | 'model' | null // who read the question: code's rules or the model router
+  ungrounded_numbers?: string[] // numbers in a written answer that are not in its passages
 }
 export type Document = {
   id: number
