@@ -70,7 +70,8 @@ def search_documents(query: str, k: int = 5) -> list[dict]:
     """Search the user's indexed documents by meaning and keywords. Returns file, page and a short snippet."""
     gate("search_documents", {"query": query, "k": k})
     with closing(db.connect()) as conn:
-        hits = [h for h in search(conn, query, k=k * 4) if text_allowed(h.doc_type)][:k]  # fetch extra: hidden types drop out
+        guessed = db.guessed(conn)  # a guessed type counts as unclassified
+        hits = [h for h in search(conn, query, k=k * 4) if h.file_id not in guessed and text_allowed(h.doc_type)][:k]  # fetch extra: hidden types drop out
     log("search_documents", {"query": query, "k": k}, [h.file_id for h in hits])
     return [{"file": h.path, "page": h.page, "type": h.doc_type, "snippet": mask_ids(h.snippet)} for h in hits]
 
@@ -81,7 +82,7 @@ def ask(question: str) -> dict:
     gate("ask", {"question": question})
     with closing(db.connect()) as conn:
         a = ask_mod.ask(conn, question)
-        types = {r["id"]: r["doc_type"] for r in conn.execute("SELECT id, doc_type FROM files")}
+        types = {r["id"]: None if r["type_guessed"] else r["doc_type"] for r in conn.execute("SELECT id, doc_type, type_guessed FROM files")}
         ids = {s.file_id for s in a.sources + a.counted + a.skipped_duplicates} | {f.file_id for f in a.facts + a.unreviewed}
         if a.route == "search":  # the model read every passage search gave it, cited or not
             ids |= {h.file_id for h in search(conn, question, k=5)}
@@ -89,7 +90,8 @@ def ask(question: str) -> dict:
         else:
             hidden = ({types.get(i) for i in ids if not allowed(types.get(i))}
                       | {types.get(f.file_id) for f in a.facts + a.unreviewed if not allowed(types.get(f.file_id), f.field)}
-                      | {c.doc_type for c in a.conflicts if not allowed(c.doc_type, c.field)})
+                      | {c.doc_type for c in a.conflicts if not allowed(c.doc_type, c.field)}
+                      | {types.get(v.source.file_id) for c in a.conflicts for v in c.values if not allowed(types.get(v.source.file_id), c.field)})
         ok = not hidden
     out = {"answer": mask_ids(a.answer), "route": a.route, "sources": [f"{s.path} (page {s.page})" for s in a.sources]} if ok \
         else {"answer": withheld(hidden), "route": a.route, "sources": []}
@@ -108,7 +110,7 @@ def list_documents(doc_type: str | None = None) -> list[dict]:
         raise ToolError(f"{doc_type.replace('_', ' ').capitalize()} documents are hidden from agents in Sniff's settings.")
     with closing(db.connect()) as conn:
         rows = [r for r in conn.execute("SELECT * FROM files WHERE copy_of IS NULL AND (? IS NULL OR doc_type=?) ORDER BY path",
-                                        (doc_type, doc_type)) if allowed(r["doc_type"])]
+                                        (doc_type, doc_type)) if allowed(r["doc_type"]) and not r["type_guessed"]]
         out = [{"file": r["path"], "type": r["doc_type"],
                 "facts": {f["field"]: mask_ids(f["value"]) for f in conn.execute("SELECT field, value FROM facts WHERE file_id=?", (r["id"],))
                           if allowed(r["doc_type"], f["field"])}}

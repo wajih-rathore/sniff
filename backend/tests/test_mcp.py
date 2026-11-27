@@ -2,10 +2,11 @@
 import json
 
 import pytest
+from fastapi.testclient import TestClient
 from mcp.server.mcpserver.exceptions import ToolError
 
-from sniff import config, mcp_server
-from sniff.schemas import Answer, Fact, Hit, Source
+from sniff import api, config, mcp_server
+from sniff.schemas import Answer, Conflict, ConflictValue, Fact, Hit, Source
 
 
 @pytest.fixture(autouse=True)
@@ -76,6 +77,36 @@ def test_ask_withholds_answers_built_on_hidden_documents(docs, monkeypatch):
     assert "id card documents" in mcp_server.withheld({"id_card"})
     assert mcp_server.ask("bill?") == {"answer": "Your bill is 1200.", "route": "search", "sources": [f"C:/docs/{bill} (page 1)"]}
     assert mcp_server.ask("cnic?") == {"answer": mcp_server.withheld({"id_card"}), "route": "facts", "sources": []}
+
+
+def test_a_guessed_type_stays_hidden_until_a_person_confirms_it(docs, conn, monkeypatch):
+    card, bill = docs
+    conn.execute("UPDATE files SET type_guessed=1 WHERE id=? OR copy_of=?", (bill, bill))  # as scan.read_facts sets it
+    conn.commit()
+    assert mcp_server.list_documents() == [] and mcp_server.list_documents("utility_bill") == []
+    monkeypatch.setattr(mcp_server, "search", lambda conn, q, k: [hit(bill, "utility_bill", "Account 04112233344556")])
+    assert mcp_server.search_documents("account") == []
+    src = Source(file_id=bill, path="C:/docs/bill.pdf", name="bill.pdf", page=1)
+    answers = [Answer(question="q", answer="Your bill is 1200.", route="facts", sources=[src], facts=[fact(bill, "amount_due", "1200.0")]),
+               Answer(question="q", answer="1200 or 1300.", route="facts", conflicts=[Conflict(  # only a conflict names it
+                   doc_type="utility_bill", key="k", field="amount_due", values=[ConflictValue(value="1200.0", fact_id=1, status="verified", source=src)])])]
+    monkeypatch.setattr(mcp_server.ask_mod, "ask", lambda conn, q: answers.pop(0))
+    assert mcp_server.ask("bill?")["answer"] == mcp_server.withheld({None})
+    assert mcp_server.ask("bill?")["answer"] == mcp_server.withheld({None})
+
+    fid = conn.execute("SELECT id FROM facts WHERE file_id=? AND field='amount_due'", (bill,)).fetchone()[0]
+    assert TestClient(api.app).post(f"/facts/{fid}/approve").status_code == 200  # approving a fact confirms the type
+    assert [d["file"] for d in mcp_server.list_documents()] == ["C:/docs/bill.pdf"]
+    assert conn.execute("SELECT count(*) FROM files WHERE type_guessed").fetchone()[0] == 0  # its copy too
+
+
+def test_correcting_a_fact_confirms_a_guessed_type(docs, conn):
+    card, bill = docs
+    conn.execute("UPDATE files SET type_guessed=1 WHERE id=?", (bill,))
+    conn.commit()
+    fid = conn.execute("SELECT id FROM facts WHERE file_id=? AND field='amount_due'", (bill,)).fetchone()[0]
+    assert TestClient(api.app).patch(f"/facts/{fid}", json={"value": "1300"}).status_code == 200
+    assert conn.execute("SELECT type_guessed FROM files WHERE id=?", (bill,)).fetchone()[0] == 0
 
 
 def test_every_call_is_logged(docs, monkeypatch):

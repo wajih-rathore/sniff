@@ -142,16 +142,16 @@ def index_text(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
     a copy of it instead. Returns the document's id."""
     st = path.stat()
     row = conn.execute("SELECT id FROM files WHERE path=?", (str(path),)).fetchone()
-    same = conn.execute("SELECT id, doc_type FROM files WHERE sha256=? AND status='indexed' AND copy_of IS NULL AND path<>? ORDER BY id LIMIT 1",
-                        (sha, str(path))).fetchone()
+    same = conn.execute("SELECT id, doc_type, type_guessed FROM files WHERE sha256=? AND status='indexed' AND copy_of IS NULL AND path<>? "
+                        "ORDER BY id LIMIT 1", (sha, str(path))).fetchone()
     if same:  # exact copy in another folder: one document, several paths, facts stored once
         if row:
             db.release(conn, row["id"])
         conn.execute(
-            "INSERT INTO files(path, size, mtime, sha256, doc_type, indexed_at, status, copy_of) VALUES (?,?,?,?,?,?, 'indexed', ?) "
+            "INSERT INTO files(path, size, mtime, sha256, doc_type, type_guessed, indexed_at, status, copy_of) VALUES (?,?,?,?,?,?,?, 'indexed', ?) "
             "ON CONFLICT(path) DO UPDATE SET size=excluded.size, mtime=excluded.mtime, sha256=excluded.sha256, doc_type=excluded.doc_type, "
-            "indexed_at=excluded.indexed_at, status='indexed', error=NULL, copy_of=excluded.copy_of",
-            (str(path), st.st_size, st.st_mtime, sha, same["doc_type"], datetime.now().isoformat(timespec="seconds"), same["id"]),
+            "type_guessed=excluded.type_guessed, indexed_at=excluded.indexed_at, status='indexed', error=NULL, copy_of=excluded.copy_of",
+            (str(path), st.st_size, st.st_mtime, sha, same["doc_type"], same["type_guessed"], datetime.now().isoformat(timespec="seconds"), same["id"]),
         )
         db.log(conn, "copy", f"{path} = file {same['id']}")
         return same["id"]
@@ -173,7 +173,7 @@ def index_text(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
         conn.execute("INSERT OR REPLACE INTO queue(file_id, pages, boxes, added_at) VALUES (?,?,?,?)",
                      (file_id, json.dumps(pages), json.dumps(boxes), datetime.now().isoformat(timespec="seconds")))
     conn.execute(
-        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=NULL, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
+        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=NULL, type_guessed=0, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
         (st.st_size, st.st_mtime, sha, datetime.now().isoformat(timespec="seconds"),
          f"{missed} of {len(pieces)} chunks could not be embedded; keyword search still finds them" if missed else None, file_id),
     )
@@ -193,14 +193,15 @@ def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
         return False
     pages = [tuple(p) for p in json.loads(q["pages"])]
     boxes = {int(k): [tuple(b) for b in v] for k, v in json.loads(q["boxes"]).items()}  # JSON turned the keys into strings
-    doc_type, facts, ai_error = None, [], None
+    doc_type, facts, ai_error, guessed = None, [], None, False
     try:
         doc_type = typer.classify(conn, file_id, pages) or classify.classify(pages)
         guessed = doc_type is None
         doc_type = doc_type or typer.guess(conn, file_id)
         if doc_type in FACT_MODELS:
             facts = extract.extract(doc_type, pages, boxes, fill_gaps=not guessed)
-        if guessed:  # no model could sort it: the classifier's guess, so every fact waits for the user
+        if guessed:  # no model could sort it: the classifier's guess. Every fact waits for the user, and agents and AI
+            # providers treat the document as unclassified until the user approves or corrects one (files.type_guessed)
             facts = [f | {"status": "needs_review", "reason": "; ".join(filter(None, ("type guessed", f.get("reason"))))} for f in facts]
     except openai.APIConnectionError:
         raise
@@ -217,7 +218,7 @@ def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
             "INSERT INTO facts(file_id, field, value, value_type, page, verified, source_text, status, reason) VALUES (?,?,?,?,?,?,?,?,?)",
             (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"], status, f.get("reason")),
         )
-    conn.execute("UPDATE files SET doc_type=? WHERE id=? OR copy_of=?", (doc_type, file_id, file_id))
+    conn.execute("UPDATE files SET doc_type=?, type_guessed=? WHERE id=? OR copy_of=?", (doc_type, int(guessed and doc_type is not None), file_id, file_id))
     if ai_error:
         conn.execute("UPDATE files SET error=coalesce(error || '; ', '') || ? WHERE id=?", (ai_error, file_id))
     conn.execute("DELETE FROM queue WHERE id=?", (q["id"],))

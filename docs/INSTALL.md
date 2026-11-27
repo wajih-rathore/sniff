@@ -187,7 +187,9 @@ What a provider other than this laptop gets:
   a question, or the top passages for a written answer. Never a whole document: a document whose labels are not
   printed is not sent, and such a provider never sorts documents into types.
 - Never a document of a type hidden from agents by default (ID cards, passports, bank statements, offer letters,
-  transcripts and unclassified files), unless you allow that type in Settings > AI.
+  transcripts and unclassified files), unless you allow that type in Settings > AI. A document whose type the
+  classifier only guessed (AI off, see docs/EVAL.md) counts as unclassified, for agents too, until you approve or
+  correct one of its facts in review.
 - ID numbers are masked as for MCP: `35202-1234567-8` goes out as `•••••-•••••67-8`.
 - `GET /ai/preview?file_id=N` or `?question=...` returns exactly what would be sent. While AI is off it shows what a
   cloud provider would get. For a file not sorted into a type yet, it sorts it as the background worker will, and
