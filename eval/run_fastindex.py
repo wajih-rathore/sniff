@@ -3,8 +3,10 @@
     uv run python ../eval/run_fastindex.py prepare --split dev --synth <folder with labels.jsonl>
     uv run python ../eval/run_fastindex.py rules   --split dev     # rules-only fields, per type and field
     uv run python ../eval/run_fastindex.py types   --split dev     # classifier accuracy and abstain rate
+    uv run python ../eval/run_fastindex.py guess   --split dev     # where it abstains: is its top guess right?
     uv run python ../eval/run_fastindex.py window  --split dev     # gold values inside the candidate-line window
     uv run python ../eval/run_fastindex.py run --split dev --mode today|fast [--llm-url URL --llm-model NAME]
+    uv run python ../eval/run_fastindex.py run --split dev --mode off   # AI off, as on a new install: no model
 
 `prepare` runs phase 1 (read, OCR, chunk, embed) once per document into .sniff/fast-<split>.db, so the queue holds
 each document's pages and layout boxes. The other steps work from that copy and never read the files again; `run`
@@ -13,6 +15,7 @@ copies it and times phase 2 (type and facts) per document, which is the model ti
 import argparse
 import base64
 import json
+import os
 import shutil
 import sqlite3
 import time
@@ -184,10 +187,29 @@ def types(split: str) -> None:
     save(f"fastindex_types_{split}", out, fails)
 
 
+def guesses(split: str, floors=(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)) -> None:
+    """The documents the classifier abstains on: how often its top guess is right at each confidence floor. A guess of
+    "other" counts as no guess: such a document stays unclassified either way."""
+    ds, x = typed_docs(split)
+    rows = []
+    for d, v in zip(ds, x):
+        text = "\n".join(t for _, t in d["pages"])
+        probs = typer.probabilities(v)
+        if typer.decide(probs, typer.CLASSES, text, typer.THRESHOLD) is None:
+            top = int(np.argmax(probs))
+            rows.append({"file": d["file"], "format": d["format"], "gold": d["type"], "guess": typer.CLASSES[top],
+                         "p": round(float(probs[top]), 3), "rules": typer.rule_type(text)})
+    at = lambda f: [r for r in rows if r["p"] >= f and r["guess"] != "other"]
+    out = {"split": split, "docs": len(ds), "abstained": len(rows), "top_guess_right": sum(r["guess"] == r["gold"] for r in rows),
+           "floors": {f: {"guessed": len(at(f)), "right": sum(r["guess"] == r["gold"] for r in at(f))} for f in floors}}
+    save(f"fastindex_guess_{split}", out, rows)
+
+
 def run(split: str, mode: str, name: str, limit: int | None = None) -> None:
     """Phase 2 on every prepared document, timed per document, through the real read_facts.
     today: the chat model classifies and reads every field from the whole document (the pipeline before this work).
     fast:  classifier first (model only on abstain), rules first (model only for missing required fields, on the window).
+    off:   AI off, as on a new install: the classifier and the rules only, no model call.
     Records the model calls, their tokens and llama-server's own timings, then scores type and fields."""
     from sniff import config
     from sniff.ai import classify, extract, llm, server
@@ -210,7 +232,10 @@ def run(split: str, mode: str, name: str, limit: int | None = None) -> None:
                       "prompt_ms": t.get("prompt_ms"), "gen_ms": t.get("predicted_ms")})
         return llm.clean(r.choices[0].message.content or "")
 
-    llm.chat = counted_chat
+    if mode == "off":
+        os.environ["SNIFF_AI"] = "off"  # overrides the saved provider (ai_settings.load)
+    else:
+        llm.chat = counted_chat
     if mode == "today":
         typer.classify = lambda conn, file_id, pages: None
         real = extract.extract
@@ -299,8 +324,8 @@ def save(name: str, out: dict, fails: list) -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["prepare", "rules", "train-types", "types", "window", "run"])
-    ap.add_argument("--mode", choices=["today", "fast"], default="fast")
+    ap.add_argument("step", choices=["prepare", "rules", "train-types", "types", "guess", "window", "run"])
+    ap.add_argument("--mode", choices=["today", "fast", "off"], default="fast")
     ap.add_argument("--llm-url", help="another OpenAI-compatible chat server, e.g. http://127.0.0.1:8092/v1")
     ap.add_argument("--llm-model", default="qwen3-1.7b")
     ap.add_argument("--limit", type=int)
@@ -317,9 +342,11 @@ if __name__ == "__main__":
         train_types(a.split if a.split != "dev" else "train")
     elif a.step == "types":
         types(a.split)
+    elif a.step == "guess":
+        guesses(a.split)
     elif a.step == "window":
         window_recall(a.split)
     elif a.step == "run":
         from common import use_llm
         use_llm(a.llm_url, a.llm_model)
-        run(a.split, a.mode, a.llm_model, a.limit)
+        run(a.split, a.mode, "ai-off" if a.mode == "off" else a.llm_model, a.limit)
