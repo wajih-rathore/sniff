@@ -31,6 +31,7 @@ const STATUS = {
   needs_review: ['needs review', 'text-warn', 'Check this value'],
   corrected: ['corrected', 'text-accent', 'You changed this value'],
   approved: ['approved', 'text-ok', 'You confirmed this value'],
+  superseded: ['not used', 'text-muted', 'You picked another copy\'s value'],
 } as const
 
 export const Status = ({ f }: { f: Fact }) => {
