@@ -1,9 +1,6 @@
-"""Turn a file into (page number, text) pairs. Pages with no text layer go through OCR."""
+"""Turn a file into (page number, text) pairs. Pages with no text layer go through OCR.
+The readers are imported when a file of their kind is read, not at start: an idle back end does not hold them."""
 from pathlib import Path
-
-import docx
-import pymupdf
-from pptx import Presentation
 
 from . import ocr
 
@@ -28,11 +25,15 @@ def read_layout(path: Path) -> tuple[list[tuple[int, str]], dict[int, list[tuple
 
 def _plain(path: Path, ext: str) -> list[tuple[int, str]]:
     if ext == ".docx":
+        import docx
+
         d = docx.Document(str(path))
         parts = [p.text for p in d.paragraphs]
         parts += [cell.text for t in d.tables for row in t.rows for cell in row.cells]
         return [(1, "\n".join(p for p in parts if p.strip()))]
     if ext == ".pptx":
+        from pptx import Presentation
+
         prs = Presentation(str(path))
         return [
             (i, "\n".join(sh.text_frame.text for sh in slide.shapes if sh.has_text_frame))
@@ -42,6 +43,8 @@ def _plain(path: Path, ext: str) -> list[tuple[int, str]]:
 
 
 def _pdf(path: Path):
+    import pymupdf
+
     pages, boxes = [], {}
     with pymupdf.open(str(path)) as doc:
         for i, page in enumerate(doc, 1):

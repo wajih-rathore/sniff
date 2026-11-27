@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
 
-import pymupdf
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response, StreamingResponse
@@ -226,6 +225,8 @@ def page_image(file_id: int, n: int, conn=Depends(get_conn)):
         raise HTTPException(404, "File not found on disk")
     p = paths[0]
     if p.suffix.lower() == ".pdf":
+        import pymupdf  # only when a page is shown, so an idle back end does not load it
+
         with pymupdf.open(str(p)) as doc:
             if not 1 <= n <= len(doc):
                 raise HTTPException(404, "No such page")

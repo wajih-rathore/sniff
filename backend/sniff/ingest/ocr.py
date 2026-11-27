@@ -1,6 +1,10 @@
 import math
+import threading
 from functools import lru_cache
 from pathlib import Path
+
+IDLE = 300.0  # seconds without OCR before its models are dropped (about 30 MB); loading them again takes about 4 s
+_timer: threading.Timer | None = None
 
 
 @lru_cache(1)
@@ -12,6 +16,12 @@ def _engine():
 
 def read(data: bytes) -> tuple[str, list[tuple[float, float, float, float, str]]]:
     """Text in reading order, plus each OCR box as (x0, y0, x1, y1, text) for the layout checks in verify.py."""
+    global _timer
+    if _timer:
+        _timer.cancel()
+    _timer = threading.Timer(IDLE, release)
+    _timer.daemon = True
+    _timer.start()
     result = _engine()(data)[0] or []
     # scans and photos are often tilted a few degrees; turn the boxes back so a label and its value share a row
     angles = sorted(math.atan2(b[1][1] - b[0][1], b[1][0] - b[0][0]) for b, _, _ in result if abs(b[1][0] - b[0][0]) > 3 * abs(b[3][1] - b[0][1]))
@@ -22,6 +32,11 @@ def read(data: bytes) -> tuple[str, list[tuple[float, float, float, float, str]]
         pts = [(x * cos + y * sin, -x * sin + y * cos) for x, y in b]
         boxes.append((min(p[0] for p in pts), min(p[1] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts), text))
     return join_lines(result), boxes
+
+
+def release() -> None:
+    """Drop the OCR models. The next image loads them again."""
+    _engine.cache_clear()
 
 
 def image_bytes(data: bytes) -> str:
