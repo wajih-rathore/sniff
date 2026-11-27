@@ -3,11 +3,11 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import {
   Ban, Bell, Bot, CalendarClock, CalendarPlus, Check, ChevronDown, ChevronRight, ClipboardCheck, Copy, ExternalLink, Eye, Files, Folder, FolderOpen, History,
-  Keyboard, LayoutGrid, ListX, Pencil, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
+  Cpu, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
 } from 'lucide-react'
 import {
-  api, type Answer, type Document, type Fact, type Hit, type McpLogEntry, type McpSettings, type Overview, type ReminderPreview, type ReviewItem, type Source, type UpcomingItem,
-  type WatchInfo,
+  api, type AiPreview, type AiProvider, type AiSave, type AiSettings, type Answer, type Document, type Fact, type Hit, type McpLogEntry, type McpSettings, type Overview,
+  type ReminderPreview, type ReviewItem, type Source, type UpcomingItem, type WatchInfo,
 } from '../api'
 import { label, money, plural, show, typeName } from '../ui'
 import { currency, fmtDay, headline } from './answer'
@@ -15,11 +15,17 @@ import { Act, Foot, I, Keys, St, Tile, Tog, type Toast } from './parts'
 import { inDesktop, native } from './native'
 
 type Screen = 'search' | 'answer' | 'review' | 'overview' | 'settings'
-type Level = 'top' | 'agent' | 'advanced' | 'log'
+type Level = 'top' | 'agent' | 'advanced' | 'log' | 'ai' | 'provider' | 'aipreview'
+const PARENT: Record<Level, Level> = { top: 'top', agent: 'top', advanced: 'top', log: 'agent', ai: 'top', provider: 'ai', aipreview: 'ai' }
+type AiField = 'base_url' | 'model' | 'key'
+const PROVIDERS: Record<AiProvider, [name: string, note: string]> = {
+  off: ['Off', 'Rules and code only'], anthropic: ['Anthropic', 'Claude, with your API key'],
+  openai: ['OpenAI-compatible', 'OpenAI, Groq, Gemini, Ollama and others'], local: ['This laptop', 'The bundled model. Nothing leaves this laptop'],
+}
 type Src = { file_id: number; path: string; name: string; page: number }
 type Item = { id: string; kind: 'file' | 'fold' | 'cmd' | 'add'; title: ReactNode; type?: string | null; icon?: LucideIcon; acc?: string; why: string; src?: Src; hit?: Hit; run?: () => void }
 type PAct = { icon: LucideIcon; name: string; keys?: string[]; run: () => void }
-type SRow = { id: string; head?: string; icon?: LucideIcon; tile?: ReactNode; t: string; m?: string; right?: ReactNode; chev?: boolean; add?: boolean
+type SRow = { id: string; head?: string; icon?: LucideIcon; tile?: ReactNode; t: string; m?: string; right?: ReactNode; chev?: boolean; add?: boolean; pl?: boolean // pl: a line of sent text
   ctx?: string; act?: string; run?: () => void; toggle?: () => void; on?: boolean }
 
 const EXPIRY = ['expiry_date', 'warranty_until', 'end_date']
@@ -131,6 +137,12 @@ export default function Launcher() {
   const [level, setLevel] = useState<Level>('top')
   const [mcp, setMcp] = useState<McpSettings | null>(null)
   const [log, setLog] = useState<McpLogEntry[] | null>(null)
+  const [ai, setAi] = useState<AiSettings | null>(null)
+  const [aiTest, setAiTest] = useState<'busy' | { ok: boolean; error?: string } | null>(null)
+  const [editing, setEditing] = useState<AiField | null>(null) // typing a base URL, model or key in the bar
+  const [aiPv, setAiPv] = useState<{ of: string; doc: boolean; r: AiPreview | null } | null>(null) // the preview of what is sent, and for what
+  const [pvDocs, setPvDocs] = useState<Document[] | null>(null)
+  const [pvOpen, setPvOpen] = useState<Record<string, boolean>>({}) // instructions shown in full
   const [hotkey, setHotkey] = useState('Alt+Shift+Space') // the desktop app's saved one replaces this on load
   const [capturing, setCapturing] = useState(false)
   const [hotkeyNote, setHotkeyNote] = useState<string | null>(null)
@@ -205,7 +217,7 @@ export default function Launcher() {
 
   /* ---------- screens ---------- */
   const go = (s: Screen) => {
-    setScreen(s); setSel(0); setQ(''); setPanel(false); setPreview(false); setErr(''); setEdit(null); setEditErr(''); setCapturing(false); setAdding(false)
+    setScreen(s); setSel(0); setQ(''); setPanel(false); setPreview(false); setErr(''); setEdit(null); setEditErr(''); setCapturing(false); setAdding(false); setEditing(null)
     if (s === 'search') loadRecent()
     if (s === 'review') { setQueue(null); api.review().then((l) => { setQueue(l); setTotal(l.length) }, fail('load the facts to review')) }
     if (s === 'overview') {
@@ -221,6 +233,7 @@ export default function Launcher() {
       api.watched().then(setWatch, fail('load the folders'))
       api.mcpSettings().then(setMcp, fail('load agent access'))
       api.mcpLog().then(setLog, () => setLog([]))
+      api.aiSettings().then(setAi, fail('load the AI settings'))
     }
     input.current?.focus()
   }
@@ -244,7 +257,7 @@ export default function Launcher() {
   const COMMANDS: [string, string, LucideIcon, Screen][] = [
     ['Overview', 'What is indexed, what expires, what needs checking', LayoutGrid, 'overview'],
     ['Review facts', 'One fact at a time, with its page', ClipboardCheck, 'review'],
-    ['Settings', 'Hotkey, folders and agent access', SlidersHorizontal, 'settings'],
+    ['Settings', 'Hotkey, folders, AI and agent access', SlidersHorizontal, 'settings'],
   ]
   const fileItem = (h: Hit): Item => ({
     id: `h${h.file_id}`, kind: 'file', title: bold(h.title || h.name, query), type: h.doc_type, hit: h,
@@ -373,7 +386,68 @@ export default function Launcher() {
     const c = watch?.counts?.[f]
     return !c ? null : c.errors ? <St kind="warn">{c.errors} not read</St> : c.waiting ? <St kind="dim">Reading {c.waiting}</St> : <St kind="ok">All read</St>
   }
-  const sub = (l: Level) => { setLevel(l); setSel(0); setQ(''); setErr('') }
+  const sub = (l: Level) => { setLevel(l); setSel(0); setQ(''); setErr(''); setEditing(null) }
+  // AI: each change saves at once, as in the rest of Settings. The key is typed into the bar and never shown again.
+  const remote = ai?.provider === 'anthropic' || ai?.provider === 'openai'
+  const saveAi = (patch: Partial<AiSave>, done?: string) => !ai ? Promise.resolve(false)
+    : api.saveAi({ provider: ai.provider, base_url: ai.base_url, model: ai.model, allow: ai.allow, ...patch })
+      .then((s) => { setAi(s); setAiTest(null); if (done) say(done); return true }, (e) => { fail('save')(e); return false })
+  const startEdit = (f: AiField) => { setEditing(f); setQ(f === 'key' || !ai ? '' : ai[f]); setErr('') }
+  const saveEdit = () => {
+    const f = editing, v = q.trim()
+    if (!f) return
+    saveAi(f === 'key' ? { key: v } : { [f]: v }, f === 'key' ? (v ? "Saved the key in the system's password store" : 'Removed the key') : `Saved the ${f === 'model' ? 'model' : 'base URL'}`)
+      .then((ok) => { if (ok) { setEditing(null); setQ('') } })
+  }
+  const runTest = () => { setAiTest('busy'); api.aiTest().then(setAiTest, (e) => setAiTest({ ok: false, error: msg(e) })) }
+  const openAiPreview = () => { sub('aipreview'); setAiPv(null); setPvOpen({}); api.recent(6).then(setPvDocs, () => setPvDocs([])) }
+  const loadPv = (o: { file_id: number } | { question: string }, of: string) => {
+    const doc = 'file_id' in o
+    setAiPv({ of, doc, r: null }); setSel(0); setPvOpen({}); setErr('')
+    api.aiPreview(o).then((r) => setAiPv({ of, doc, r }), (e) => { setAiPv(null); fail('make the preview')(e) })
+  }
+  const aiRows = (): SRow[] => !ai ? [] : [
+    { id: 'provider', icon: Sparkles, t: 'Provider', m: PROVIDERS[ai.provider][0], chev: true, act: 'Change', run: () => sub('provider'),
+      ctx: ai.provider === 'off' ? 'Search, facts and sums work without AI' : 'AI only fills gaps: fields the rules missed, and written answers' },
+    ...(ai.provider === 'openai' ? [{ id: 'base_url', icon: Link, t: 'Base URL', m: ai.base_url || 'Not set', right: ai.base_url ? undefined : <St kind="warn">Needed</St>,
+      act: 'Change', run: () => startEdit('base_url'), ctx: 'Such as https://api.openai.com/v1, or http://localhost:11434/v1 for Ollama' }] : []),
+    ...(remote ? [{ id: 'model', icon: Cpu, t: 'Model', m: ai.model || (ai.default_model ? `${ai.default_model}, the default` : 'Not set'),
+      right: ai.model || ai.default_model ? undefined : <St kind="warn">Needed</St>, act: 'Change', run: () => startEdit('model'),
+      ctx: ai.provider === 'anthropic' ? 'A small, fast model unless you name another' : 'The model name your endpoint expects' },
+    { id: 'key', icon: KeyRound, t: 'API key', m: ai.key_saved ? "In the system's password store" : ai.provider === 'openai' ? 'None. A local server needs none' : 'Not saved',
+      right: ai.key_saved ? <St kind="ok">Saved</St> : ai.provider === 'anthropic' ? <St kind="warn">Needed</St> : undefined,
+      act: ai.key_saved ? 'Replace' : 'Add', run: () => startEdit('key'), ctx: 'Sniff never shows the key again' }] : []),
+    ...(ai.provider !== 'off' ? [{ id: 'test', icon: PlugZap, t: 'Test the connection',
+      m: aiTest === 'busy' ? 'Testing…' : aiTest ? aiTest.error : 'Not tested yet',
+      right: aiTest && aiTest !== 'busy' ? (aiTest.ok ? <St kind="ok">Works</St> : <St kind="warn">Failed</St>) : undefined,
+      act: 'Test', run: runTest, ctx: 'Asks for one token. Nothing from your files is sent' }] : []),
+    { id: 'aipreview', icon: Eye, t: 'Preview what is sent', m: ai.provider === 'local' ? 'Nothing leaves this laptop' : 'For a question or a document',
+      chev: true, act: 'Open', run: openAiPreview, ctx: 'Shows exactly what would be sent, before anything is' },
+    ...(remote ? ai.hidden.map((t, i): SRow => {
+      const on = ai.allow.includes(t)
+      return { id: `h${t}`, head: i ? undefined : 'Sent only if you allow it', tile: <Tile type={t} size="xs" />, t: t === 'other' ? 'Unsorted files' : label(typeName(t, 2)),
+        m: on ? 'Sent, ID numbers masked' : 'Never sent', on, toggle: () => saveAi({ allow: on ? ai.allow.filter((x) => x !== t) : [...ai.allow, t] }),
+        ctx: 'Other types send only the lines near a missing field, with ID numbers masked' }
+    }) : []),
+  ]
+  const providerRows = (): SRow[] => (Object.keys(PROVIDERS) as AiProvider[]).filter((p) => p !== 'local' || ai?.local_available || ai?.provider === 'local')
+    .map((p) => ({ id: `p${p}`, icon: { off: Power, anthropic: Sparkles, openai: Link, local: Cpu }[p], t: PROVIDERS[p][0], m: PROVIDERS[p][1],
+      right: ai?.provider === p ? <St kind="ok">In use</St> : undefined, act: 'Use',
+      run: () => { saveAi({ provider: p, model: p === ai?.provider ? ai.model : '' }).then((ok) => ok && sub('ai')) } }))
+  const pvRows = (): SRow[] => {
+    if (!aiPv) return (pvDocs ?? []).map((d, i) => ({ id: `d${d.id}`, head: i ? undefined : 'Or pick a document', tile: <Tile type={d.doc_type} size="xs" />,
+      t: d.title || d.name, act: 'Preview', run: () => loadPv({ file_id: d.id }, d.title || d.name) }))
+    if (!aiPv.r) return []
+    if (!aiPv.r.calls.length) return [{ id: 'none', icon: Check, t: 'Nothing would be sent', m: aiPv.doc ? 'The rules read what it needs, or its type is kept back' : 'The rules and code answer it' }]
+    return aiPv.r.calls.flatMap((c, k) => c.messages.flatMap((m, j): SRow[] => {
+      const id = `c${k}m${j}`, ls = m.content.split('\n').filter((l) => l.trim()), head = j ? undefined : c.purpose.replace(/_/g, ' ')
+      const shown = ls.map((l, n): SRow => ({ id: `${id}l${n}`, head: m.role !== 'system' && !n ? head : undefined, t: l, pl: true }))
+      if (m.role !== 'system') return shown
+      return [{ id, head, icon: Bot, t: 'Instructions to the model', m: `${plural(ls.length, 'line', 'lines')}, none from your files`,
+        right: <I i={pvOpen[id] ? ChevronDown : ChevronRight} />, act: pvOpen[id] ? 'Hide' : 'Show', run: () => setPvOpen((o) => ({ ...o, [id]: !o[id] })) },
+      ...(pvOpen[id] ? shown : [])]
+    }))
+  }
   const sRows: SRow[] = level === 'top' ? [
     { id: 'hotkey', icon: Keyboard, t: 'Hotkey', m: capturing ? 'Press the new shortcut, or Esc to keep this one' : hotkeyNote ?? 'Opens Sniff from any app',
       right: <span className="keys"><Keys k={hotkey.split('+')} /></span>, act: 'Change', run: () => setCapturing(true) },
@@ -381,6 +455,7 @@ export default function Launcher() {
       m: watch?.counts?.[f] ? plural(watch.counts[f].files, 'file', 'files') : undefined, right: folderStatus(f), act: 'Show in File Explorer', run: () => reveal(f) })),
     { id: 'add', head: watch?.folders.length ? undefined : 'Folders', icon: Plus, t: 'Add folder…', add: true, act: 'Add', run: () => { setAdding(true); setQ('') } },
     { id: 'agent', head: 'More', icon: Bot, t: 'Agent access', m: mcp ? (mcp.enabled ? `On for ${plural(types.filter(allowed).length, 'document type', 'document types')}` : 'Off') : '', chev: true, act: 'Open', run: () => sub('agent') },
+    { id: 'ai', icon: Sparkles, t: 'AI', m: ai ? (ai.provider === 'off' ? 'Off' : PROVIDERS[ai.provider][0]) : '', chev: true, act: 'Open', run: () => sub('ai') },
     { id: 'advanced', icon: Wrench, t: 'Advanced', m: `Start with Windows: ${autostart ? 'on' : 'off'}`, chev: true, act: 'Open', run: () => sub('advanced') },
   ] : level === 'agent' ? [
     { id: 'mcp', icon: Bot, t: 'Let AI agents read Sniff',
@@ -391,7 +466,7 @@ export default function Launcher() {
     { id: 'log', icon: History, t: 'Access log', m: log?.length ? `Last request ${ago(log[0].time)}` : 'No agent has asked anything yet', chev: true, act: 'Open', run: () => sub('log') },
   ] : level === 'advanced' ? [
     { id: 'autostart', icon: Power, t: 'Start with Windows', m: autostart ? 'Sniff starts in the tray when you sign in' : 'Off', on: autostart, toggle: toggleAutostart },
-  ] : (log ?? []).map((l, i): SRow => ({ id: `l${i}`, icon: l.refused ? Ban : Bot, t: `${l.tool}: ${Object.values(l.args).map(String).join(', ')}`,
+  ] : level === 'ai' ? aiRows() : level === 'provider' ? providerRows() : level === 'aipreview' ? pvRows() : (log ?? []).map((l, i): SRow => ({ id: `l${i}`, icon: l.refused ? Ban : Bot, t: `${l.tool}: ${Object.values(l.args).map(String).join(', ')}`,
     m: l.refused ? `Refused, ${ago(l.time)}` : `${plural(l.ids.length, 'document', 'documents')}, ${ago(l.time)}` }))
   const listRows = screen === 'overview' ? oRows : screen === 'settings' ? sRows : []
   const filtered = (screen === 'overview' || (screen === 'settings' && level === 'top')) && query && !adding
@@ -424,6 +499,9 @@ export default function Launcher() {
     ] : []),
     ...(screen === 'review' && reviewSrc ? [{ icon: ExternalLink, name: `Open page ${reviewSrc.page}`, keys: ['Enter'], run: () => open(reviewSrc) }] : []),
     ...(screen === 'overview' && rCur?.id === 'expiry' ? remindActs(expiring[0]?.fact) : []),
+    ...(screen === 'settings' && level === 'ai' && rCur?.id === 'key' && ai?.key_saved ? [
+      { icon: X, name: 'Remove the key', run: () => { saveAi({ key: '' }, 'Removed the key') } },
+    ] : []),
     ...(screen === 'settings' && level === 'top' && rCur?.id.startsWith('w') ? [
       { icon: FolderOpen, name: 'Show in File Explorer', keys: ['Enter'], run: () => reveal(rCur.t) },
       { icon: ListX, name: 'Stop watching this folder', run: () => attempt(api.unwatch(rCur.t).then(setWatch), `Stopped watching ${rCur.t}`, Check, 'stop watching') },
@@ -488,7 +566,9 @@ export default function Launcher() {
     if (screen === 'search') { if (preview) setPreview(false); else if (q) setQ(''); else native.hide() }
     else if (screen === 'answer') { if (details) showDetails(false); else { setScreen('search'); setQ(question) } }
     else if (screen === 'settings' && adding) { setAdding(false); setQ('') }
-    else if (screen === 'settings' && level !== 'top') sub(level === 'log' ? 'agent' : 'top')
+    else if (screen === 'settings' && editing) { setEditing(null); setQ('') }
+    else if (screen === 'settings' && level === 'aipreview' && aiPv) { setAiPv(null); setSel(0); setQ('') }
+    else if (screen === 'settings' && level !== 'top') sub(PARENT[level])
     else go('search')
   }
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -530,20 +610,30 @@ export default function Launcher() {
         if (k === 'Enter' && query) { e.preventDefault(); attempt(api.watch(query).then((w) => { setWatch(w); setAdding(false); setQ('') }), `Watching ${query}`, Check, 'watch this folder') }
         return
       }
+      if (editing) {
+        if (k === 'Enter') { e.preventDefault(); saveEdit() }
+        return
+      }
       if (move(e, filtered.length, rAt, setSel)) return
-      if (k === 'Enter') { e.preventDefault(); (rCur?.run ?? rCur?.toggle)?.() }
+      if (k === 'Enter' && level === 'aipreview' && query && aiPv?.of !== query) { e.preventDefault(); loadPv({ question: query }, query) }
+      else if (k === 'Enter') { e.preventDefault(); (rCur?.run ?? rCur?.toggle)?.() }
       else if (k === ' ' && rCur?.toggle && (level !== 'top' || !query)) { e.preventDefault(); rCur.toggle() }
-      else if (k === 'Backspace' && screen === 'settings' && level !== 'top') { e.preventDefault(); sub(level === 'log' ? 'agent' : 'top') }
+      else if (k === 'Backspace' && screen === 'settings' && level !== 'top' && readOnly) { e.preventDefault(); sub(PARENT[level]) }
     }
   }
 
   /* ---------- render ---------- */
-  const readOnly = screen === 'review' || (screen === 'settings' && level !== 'top') || capturing
+  const readOnly = screen === 'review' || (screen === 'settings' && level !== 'top' && level !== 'aipreview' && !editing) || capturing
+  const FIELD = { base_url: 'Base URL', model: 'Model', key: 'API key' }
   const chip: [LucideIcon, string] | null = screen === 'review' ? [ClipboardCheck, 'Review'] : screen === 'overview' ? [LayoutGrid, 'Overview']
-    : screen === 'settings' ? (adding ? [Plus, 'Add folder'] : level === 'agent' ? [Bot, 'Agent access'] : level === 'advanced' ? [Wrench, 'Advanced'] : level === 'log' ? [History, 'Access log'] : [SlidersHorizontal, 'Settings'])
+    : screen === 'settings' ? (adding ? [Plus, 'Add folder'] : editing ? [Pencil, FIELD[editing]] : level === 'agent' ? [Bot, 'Agent access'] : level === 'advanced' ? [Wrench, 'Advanced']
+      : level === 'log' ? [History, 'Access log'] : level === 'ai' ? [Sparkles, 'AI'] : level === 'provider' ? [Sparkles, 'AI provider'] : level === 'aipreview' ? [Eye, 'What AI gets']
+      : [SlidersHorizontal, 'Settings'])
     : null
   const placeholder = screen === 'search' ? 'Search files or ask a question…' : screen === 'overview' ? 'Filter…'
-    : screen === 'settings' && adding ? 'Type a folder path, then press Enter' : screen === 'settings' && level === 'top' ? 'Filter settings…' : ''
+    : screen === 'settings' && adding ? 'Type a folder path, then press Enter' : screen === 'settings' && level === 'top' ? 'Filter settings…'
+    : editing === 'key' ? 'Paste the key, then press Enter' : editing ? `Type the ${FIELD[editing].toLowerCase()}, then press Enter`
+    : level === 'aipreview' && screen === 'settings' ? 'Type a question, then press Enter' : ''
   const loading = (screen === 'search' && busy) || (screen === 'answer' && asking)
   const listId = `list-${screen}`
   const activeId = screen === 'search' && cur ? `o-${cur.id}` : (screen === 'overview' || screen === 'settings') && rCur ? `o-${rCur.id}` : undefined
@@ -552,6 +642,7 @@ export default function Launcher() {
     <div className="bar">
       {chip ? <span className="chip"><I i={chip[0]} />{chip[1]}</span> : <I i={Search} />}
       <input ref={input} className="q" autoFocus spellCheck={false} autoComplete="off" value={screen === 'review' ? '' : q} readOnly={readOnly}
+        type={editing === 'key' && screen === 'settings' ? 'password' : 'text'}
         placeholder={placeholder} onChange={(e) => { setQ(e.target.value); setListMode(false); if (screen === 'answer') setScreen('search') }}
         role="combobox" aria-expanded={screen !== 'answer' && screen !== 'review'} aria-controls={listId} aria-activedescendant={activeId}
         aria-label={chip ? chip[1] : 'Search files or ask a question'} />
@@ -766,7 +857,7 @@ export default function Launcher() {
         {filtered.map((r, i) => (
           <Fragment key={r.id}>
             {r.head && <div className="sh">{r.head}</div>}
-            <div className={`${orow ? 'orow' : 'srow'}${r.add ? ' add' : ''}`} role="option" id={`o-${r.id}`} aria-selected={i === rAt}
+            <div className={`${orow ? 'orow' : 'srow'}${r.add ? ' add' : ''}${r.pl ? ' pl' : ''}`} role="option" id={`o-${r.id}`} aria-selected={i === rAt}
               onMouseMove={() => i !== rAt && setSel(i)} onClick={() => { setSel(i); if (!orow) (r.run ?? r.toggle)?.() }} onDoubleClick={() => orow && r.run?.()}>
               {r.tile ?? (r.icon && <I i={r.icon} />)}
               {orow ? <><span className="l">{r.t}</span><span className="v">{r.m}</span>{r.right ?? <span />}</>
@@ -778,10 +869,17 @@ export default function Launcher() {
         {!filtered.length && <div className="note">{(orow ? ov : true) ? (query ? 'Nothing matches.' : level === 'log' ? 'No agent has asked anything yet.' : 'Loading…') : 'Loading…'}</div>}
       </div>
     )
+    const where = aiPv?.r?.provider === 'off' ? 'AI is off, so nothing is sent. This is what a cloud provider would get'
+      : aiPv?.r?.leaves_laptop ? `Exactly this would go to ${PROVIDERS[aiPv.r.provider][0]}, with ID numbers masked` : 'This stays on this laptop'
+    const pvCtx = !aiPv?.r ? 'Type a question and press Enter, or pick a document' : aiPv.doc ? `${aiPv.of}. ${where}` : where
     const ctx = orow ? rCur?.ctx ?? '' : adding ? 'Sniff reads the folder now, then keeps it up to date'
-      : level === 'top' ? 'Changes save as you make them' : level === 'log' ? 'The last 50 agent requests. Backspace goes back' : 'Backspace goes back to Settings'
+      : editing === 'key' ? "It goes to the system's password store. Sniff never shows it again" : editing ? rCur?.ctx ?? ''
+      : level === 'aipreview' ? pvCtx : rCur?.ctx
+      ?? (level === 'top' ? 'Changes save as you make them' : level === 'log' ? 'The last 50 agent requests. Backspace goes back' : 'Backspace goes back to Settings')
     foot = errFoot(ctx, <>
       {adding ? <Act k={['Enter']} run={() => query && attempt(api.watch(query).then((w) => { setWatch(w); setAdding(false); setQ('') }), `Watching ${query}`, Check, 'watch this folder')}>Add</Act>
+        : editing ? <Act k={['Enter']} run={saveEdit}>Save</Act>
+        : level === 'aipreview' && query && aiPv?.of !== query ? <Act k={['Enter']} run={() => loadPv({ question: query }, query)}>Preview</Act>
         : rCur?.toggle ? <Act k={['Space']} run={rCur.toggle}>Turn {rCur.on ? 'off' : 'on'}</Act>
         : rCur?.run && rCur.act ? <Act k={['Enter']} run={rCur.run}>{rCur.act}</Act> : null}
       {actK}

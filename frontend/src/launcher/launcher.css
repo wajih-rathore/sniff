@@ -304,6 +304,10 @@ kbd + kbd { margin-left: 3px; }
 .srow .m { font: var(--sm); letter-spacing: .015em; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
 .srow.add .t { color: var(--text-2); }
 .srow .keys { display: flex; flex: none; }
+/* a line of the text an AI provider would get: wrapped, never cut, so the preview shows all of it */
+.srow.pl { height: auto; min-height: 28px; padding-block: 5px; padding-left: 20px; align-items: flex-start; }
+.srow.pl .t { white-space: pre-wrap; overflow-wrap: anywhere; font: var(--sm); letter-spacing: .015em; color: var(--text-2); }
+.srow.pl[aria-selected=true]::before { top: 6px; }
 
 @media (prefers-reduced-motion: reduce) {
   .win.show, .scr.anim-in, .cite.in, .panel, .pane.fade, .xbody, .ctx.toasting .toast { animation: fade 83ms linear; }
