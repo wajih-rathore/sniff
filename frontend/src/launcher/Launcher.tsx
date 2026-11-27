@@ -227,7 +227,12 @@ export default function Launcher() {
     // Nothing arrives while the chat model loads (seconds on a cold start), so ask the back end whether it is loading.
     const poll = window.setInterval(() => api.model().then((m) => id === seq.current && setStarting(m.starting), () => {}), 1500)
     api.askStream(text, (t) => { if (id === seq.current) { clearInterval(poll); setStarting(false); setStream((s) => s + t) } })
-      .then((a) => { if (id === seq.current) setAns(a) }, (e) => { if (id === seq.current) fail('answer')(e) })
+      .then((a) => { if (id === seq.current) setAns(a) }, (e) => {
+        if (id !== seq.current) return
+        // the openai client's message when nothing answers on the chat model's port
+        if (/APIConnectionError|Connection error/.test(msg(e))) setErr('The chat model is not running, so Sniff cannot answer this. Search works without it')
+        else fail('answer')(e)
+      })
       .finally(() => { clearInterval(poll); if (id === seq.current) { setAsking(false); setStarting(false) } })
   }
 
