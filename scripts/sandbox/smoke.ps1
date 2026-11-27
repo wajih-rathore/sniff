@@ -106,7 +106,8 @@ try {
     $t = [Diagnostics.Stopwatch]::StartNew()
     Invoke-RestMethod "$api/index" -Method Post -ContentType "application/json" -Body (@{ folder = $docs } | ConvertTo-Json) | Out-Null
     Start-Sleep 2
-    $st = Wait-Until { $s = Invoke-RestMethod "$api/index/status"; if (-not $s.running) { $s } } 3600
+    # running ends when the files are findable; queued reaches 0 when the background worker has read their facts
+    $st = Wait-Until { $s = Invoke-RestMethod "$api/index/status"; if (-not $s.running -and $s.queued -eq 0) { $s } } 3600
     $found = @(Invoke-RestMethod "$api/documents") | ForEach-Object { $_ } | ForEach-Object { @{ name = $_.name; type = $_.doc_type; facts = @($_.facts).Count } }
     Note "4_index" @{ seconds = [math]::Round($t.Elapsed.TotalSeconds, 1); files = $st.total; errors = $st.errors; documents = @($found); free_mb = Free-MB }
 

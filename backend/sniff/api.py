@@ -9,11 +9,11 @@ from pathlib import Path
 import pymupdf
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 from . import config, db, gcal, ics, mcp_settings, records, verify, watch
-from .ask import ask
+from .ask import ask, ask_stream
 from .ingest import readers, scan
 from .schemas import (ACTION_DATE_FIELDS, DOC_TYPES, EXPIRY_FIELDS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Document, Fact, Hit, MissingFields, Overview,
                       ReviewItem, UpcomingItem)
@@ -21,13 +21,16 @@ from .search import search
 
 STATUS = {"running": False, "done": 0, "total": 0, "current": None, "errors": 0, "watching": []}
 WATCHER = watch.Watcher(STATUS)
+WORKER = scan.FactsWorker()  # reads types and facts of new files in the background
 
 
 @asynccontextmanager
 async def lifespan(_):
     WATCHER.restore()  # folders watched before the last shutdown
+    WORKER.start()  # also finishes the queue left by the last run
     yield
     WATCHER.stop()
+    WORKER.stop()
 
 
 app = FastAPI(title="Sniff", lifespan=lifespan)
@@ -98,8 +101,8 @@ def index(req: IndexReq):
 
 
 @app.get("/index/status")
-def index_status():
-    return STATUS
+def index_status(conn=Depends(get_conn)):
+    return {**STATUS, "queued": scan.waiting(conn)}  # queued: files whose type and facts are not read yet
 
 
 @app.get("/watch")
@@ -125,24 +128,52 @@ def watch_remove(req: WatchReq):
 
 @app.get("/search", response_model=list[Hit])
 def search_route(q: str, k: int = 10, mode: str = "hybrid", conn=Depends(get_conn)):
+    WORKER.user_active()  # someone is typing: the background reading waits, so an answer gets the model at once
     return search(conn, q, k=k, mode=mode)
 
 
 @app.post("/ask", response_model=Answer)
 def ask_route(req: AskReq, conn=Depends(get_conn)):
+    WORKER.user_active()
     answer = ask(conn, req.question)
-    stale = [s.file_id for s in answer.sources if scan.is_stale(conn, s.file_id)]
-    if stale:  # a cited file changed after indexing: refresh it, then answer again
-        for fid in stale:
-            path = Path(conn.execute("SELECT path FROM files WHERE id=?", (fid,)).fetchone()["path"])
-            if path.exists():
-                scan.index_file(conn, path, scan.sha256(path))
-            else:
-                db.release(conn, fid)  # a copy in another folder keeps the document
-                conn.execute("DELETE FROM files WHERE id=?", (fid,))
-        conn.commit()
+    if _refresh_stale(conn, answer):
         answer = ask(conn, req.question)
     return answer
+
+
+@app.post("/ask/stream")
+def ask_stream_route(req: AskReq):
+    """/ask as server-sent events: "token" events while a search answer is being written, then one "answer" event with
+    the whole Answer, as /ask returns it. "error" if it fails."""
+    WORKER.user_active()
+
+    def events():
+        conn = db.connect()  # its own connection: the stream outlives the request handler
+        try:
+            for kind, item in ask_stream(conn, req.question):
+                WORKER.user_active()
+                if kind == "answer" and _refresh_stale(conn, item):
+                    item = ask(conn, req.question)
+                yield f"event: {kind}\ndata: {item.model_dump_json() if kind == 'answer' else json.dumps(item)}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps(f'{type(e).__name__}: {e}')}\n\n"
+        finally:
+            conn.close()
+    return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+
+def _refresh_stale(conn, answer: Answer) -> bool:
+    """A cited file changed after indexing: index it again, both phases now, so the answer can be asked again."""
+    stale = [s.file_id for s in answer.sources if scan.is_stale(conn, s.file_id)]
+    for fid in stale:
+        path = Path(conn.execute("SELECT path FROM files WHERE id=?", (fid,)).fetchone()["path"])
+        if path.exists():
+            scan.index_file(conn, path, scan.sha256(path))
+        else:
+            db.release(conn, fid)  # a copy in another folder keeps the document
+            conn.execute("DELETE FROM files WHERE id=?", (fid,))
+    conn.commit()
+    return bool(stale)
 
 
 def _facts(conn, file_id: int) -> list[Fact]:

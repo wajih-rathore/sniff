@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from . import records, verify
 from .ai import llm
 from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Source
-from .search import search
+from .search import STOP, search
 
 Op = Literal["list", "sum", "count", "min", "max", "next_expiring", "outstanding", "latest"]
 Period = Literal["this_year", "last_year", "this_month", "last_month", "next_30_days", "next_90_days"]
@@ -37,6 +37,24 @@ class Route(BaseModel):
     field: str | None = None
     op: Op | None = None
     filters: Filters = Filters()
+
+    @classmethod
+    def model_json_schema(cls, *args, **kw) -> dict:
+        """The schema llama-server holds the router's reply to: a key may be left out but never set to null. The model
+        writes about 9 tokens a second, and a reply that spells out seven null filters costs several seconds."""
+        return no_nulls(super().model_json_schema(*args, **kw))
+
+
+def no_nulls(schema):
+    if isinstance(schema, list):
+        return [no_nulls(s) for s in schema]
+    if not isinstance(schema, dict):
+        return schema
+    schema = {k: v for k, v in schema.items() if not (k == "default" and v is None)}
+    if "anyOf" in schema:
+        rest = [s for s in schema.pop("anyOf") if s != {"type": "null"}]
+        schema = {**schema, **rest[0]} if len(rest) == 1 else {**schema, "anyOf": rest}
+    return {k: no_nulls(v) for k, v in schema.items()}
 
 
 ROUTER_PROMPT = """You turn a question about a person's documents into a query. Do not answer it.
@@ -359,19 +377,80 @@ def _name(d: records.Doc) -> str:
 
 
 # ---------- search route (RAG) ----------
-def answer_from_search(conn, question: str, k: int = 5) -> Answer:
+# The model reads about 45 tokens a second on the laptop, so the prompt is kept small: the top 3 passages, each cut to
+# the sentences around the words of the question (about 100 tokens each).
+TOP, PASSAGE_WORDS, PIECE_WORDS = 3, 60, 20
+NOT_FOUND = "I couldn't find this in your documents."
+
+
+def passage(text: str, q: str, limit: int = PASSAGE_WORDS) -> str:
+    """The sentences around the best match for the question's words, at most `limit` words. Text with no sentence ends
+    (bills, receipts) is cut into pieces of 20 words instead. With no word in common, the start of the chunk."""
+    if len(text.split()) <= limit:
+        return text
+    units = []
+    for sentence in re.split(r"(?<=[.!?])\s+", text):
+        w = sentence.split()
+        units += [" ".join(w[i : i + PIECE_WORDS]) for i in range(0, len(w), PIECE_WORDS)]
+    terms = {t[:5] for t in re.findall(r"\w+", q.lower()) if t not in STOP and len(t) > 2}  # 5 letters: "insurance" finds "insured"
+    found = [terms & {w[:5] for w in re.findall(r"\w+", u.lower())} for u in units]
+    # a word in every sentence (the company's name in its own letter) says little about where the answer is
+    spread = {t: sum(t in f for f in found) for t in terms}
+    hits = [sum(1 / spread[t] for t in f) for f in found]
+    lo = hi = hits.index(max(hits))
+    size = len(units[lo].split())
+    grew = True
+    while grew:  # add the next sentence, then the one before, while they fit
+        grew = False
+        for j in (hi + 1, lo - 1):
+            if 0 <= j < len(units) and size + len(units[j].split()) <= limit:
+                size += len(units[j].split())
+                lo, hi, grew = min(lo, j), max(hi, j), True
+    return " ".join(units[lo : hi + 1])
+
+
+def _search_prompt(conn, question: str, k: int):
     hits = search(conn, question, k=k)
-    if not hits:
-        return Answer(question=question, answer="I couldn't find this in your documents.", route="none")
-    texts = [conn.execute("SELECT text FROM chunks WHERE id=?", (h.chunk_id,)).fetchone()["text"] for h in hits]
+    texts = [passage(conn.execute("SELECT text FROM chunks WHERE id=?", (h.chunk_id,)).fetchone()["text"], question) for h in hits]
     passages = "\n\n".join(f"[{i}] ({h.name}, page {h.page}) {t}" for i, (h, t) in enumerate(zip(hits, texts), 1))
-    text = llm.chat([
+    return hits, [
         {"role": "system", "content": ANSWER_PROMPT},
         {"role": "user", "content": f"{llm.fenced('PASSAGES', passages)}\n\nQuestion: {question}"},
-    ])
+    ]
+
+
+def _search_answer(question: str, hits, text: str) -> Answer:
     if "NOT FOUND" in text:
-        return Answer(question=question, answer="I couldn't find this in your documents.", route="none")
+        return Answer(question=question, answer=NOT_FOUND, route="none")
     cited = {int(n) for n in re.findall(r"\[(\d+)\]", text) if 0 < int(n) <= len(hits)} or {1}
     used = [hits[i - 1] for i in sorted(cited)]
     return Answer(question=question, answer=text, route="search",
                   sources=[Source(file_id=h.file_id, path=h.path, name=h.name, page=h.page) for h in used])
+
+
+def answer_from_search(conn, question: str, k: int = TOP) -> Answer:
+    hits, messages = _search_prompt(conn, question, k)
+    if not hits:
+        return Answer(question=question, answer=NOT_FOUND, route="none")
+    return _search_answer(question, hits, llm.chat(messages))
+
+
+def ask_stream(conn: sqlite3.Connection, question: str, today: date | None = None):
+    """ask() for the launcher: yields ("token", text) while a search answer is being written, then ("answer", Answer).
+    A facts answer is computed by code, so it comes in one piece."""
+    r = route(question)
+    if valid(r):
+        yield "answer", answer_from_facts(conn, question, r, today or date.today())
+        return
+    hits, messages = _search_prompt(conn, question, TOP)
+    if not hits:
+        yield "answer", Answer(question=question, answer=NOT_FOUND, route="none")
+        return
+    text, sent = "", 0
+    for delta in llm.chat_stream(messages):
+        text += delta
+        if "NOT FOUND".startswith(text.strip()):  # the reply may still turn out to be NOT FOUND: hold it back
+            continue
+        yield "token", text[sent:]
+        sent = len(text)
+    yield "answer", _search_answer(question, hits, llm.clean(text))

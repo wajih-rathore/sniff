@@ -223,6 +223,8 @@ class Hit(BaseModel):
     snippet: str
     score: float
     doc_type: str | None = None
+    reading: bool = False  # findable already; its type and facts are still in the queue
+
 
 
 class Fact(BaseModel):

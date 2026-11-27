@@ -1,10 +1,16 @@
 """Index a folder and keep the index in step with the disk: new, changed, renamed and deleted files."""
+import ctypes
 import hashlib
+import json
 import os
 import sqlite3
+import sys
 import threading
+import time
 from datetime import datetime
 from pathlib import Path
+
+import openai
 
 from .. import config, db
 from ..ai import classify, embed, extract
@@ -67,7 +73,7 @@ def _scan(conn, folder, ai, status) -> dict:
             counts["renamed"] += 1
         else:
             try:
-                index_file(conn, p, h, ai)
+                index_text(conn, p, h, ai)  # searchable now; the facts worker reads its type and facts later
                 counts["indexed"] += 1
             except Exception as e:  # one bad file must not stop the scan
                 conn.rollback()
@@ -75,6 +81,7 @@ def _scan(conn, folder, ai, status) -> dict:
                 counts["errors"] += 1
                 status["errors"] += 1
         conn.commit()
+        QUEUED.set()  # after the commit, so the worker's own connection sees the new queue row
         status["done"] += 1
 
     for r in gone.values():
@@ -88,8 +95,16 @@ def _scan(conn, folder, ai, status) -> dict:
 
 
 def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) -> int:
-    """Read, embed, classify and extract one file, then replace its rows in one transaction. A file with the same
-    bytes as one already indexed is recorded as a copy of it instead. Returns the document's id."""
+    """Both phases at once, for the evaluation and the answer refresh in /ask. The rows are the same as the queue makes."""
+    file_id = index_text(conn, path, sha, ai)
+    read_facts(conn, file_id)
+    return file_id
+
+
+def index_text(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) -> int:
+    """Phase 1, about a second: read, chunk and embed the file and replace its rows, so search finds it at once. Its type
+    and facts come later from the queue (read_facts). A file with the same bytes as one already indexed is recorded as
+    a copy of it instead. Returns the document's id."""
     st = path.stat()
     row = conn.execute("SELECT id FROM files WHERE path=?", (str(path),)).fetchone()
     same = conn.execute("SELECT id, doc_type FROM files WHERE sha256=? AND status='indexed' AND copy_of IS NULL AND path<>? ORDER BY id LIMIT 1",
@@ -109,15 +124,6 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
     pages, boxes = readers.read_layout(path)
     pieces = embed.fit(readers.chunk(pages))
     vectors = embed.embed([t for _, t in pieces]) if pieces else []
-    doc_type, facts, ai_error = None, [], None
-    if ai and pieces:
-        try:
-            doc_type = classify.classify(pages)
-            if doc_type in FACT_MODELS:
-                facts = extract.extract(doc_type, pages, boxes)
-        except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why
-            ai_error = f"{type(e).__name__}: {e}"[:500]
-
     if row:
         file_id = row["id"]
         db.release(conn, file_id)
@@ -127,21 +133,110 @@ def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
         cid = conn.execute("INSERT INTO chunks(file_id, page, text) VALUES (?,?,?)", (file_id, page, text)).lastrowid
         if vec is not None:  # refused by the embedding server: keyword search still finds the chunk
             conn.execute("INSERT INTO chunk_vec(chunk_id, embedding) VALUES (?,?)", (cid, vec.tobytes()))
+    missed = sum(v is None for v in vectors)
+    if ai and pieces:
+        conn.execute("INSERT OR REPLACE INTO queue(file_id, pages, boxes, added_at) VALUES (?,?,?,?)",
+                     (file_id, json.dumps(pages), json.dumps(boxes), datetime.now().isoformat(timespec="seconds")))
+    conn.execute(
+        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=NULL, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
+        (st.st_size, st.st_mtime, sha, datetime.now().isoformat(timespec="seconds"),
+         f"{missed} of {len(pieces)} chunks could not be embedded; keyword search still finds them" if missed else None, file_id),
+    )
+    db.log(conn, "indexed", str(path))
+    return file_id
+
+
+def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
+    """Phase 2: classify and extract one queued file from the pages saved in phase 1, and store its type and facts.
+    Returns False if the file is not queued (done, re-indexed or deleted meanwhile). If the chat server cannot be reached,
+    the error is raised and the file stays queued; any other model failure is recorded on the file, as before."""
+    q = conn.execute("SELECT * FROM queue WHERE file_id=?", (file_id,)).fetchone()
+    if not q:
+        return False
+    pages = [tuple(p) for p in json.loads(q["pages"])]
+    boxes = {int(k): [tuple(b) for b in v] for k, v in json.loads(q["boxes"]).items()}  # JSON turned the keys into strings
+    doc_type, facts, ai_error = None, [], None
+    try:
+        doc_type = classify.classify(pages)
+        if doc_type in FACT_MODELS:
+            facts = extract.extract(doc_type, pages, boxes)
+    except openai.APIConnectionError:
+        raise
+    except Exception as e:  # model output stayed invalid after retries: keep the file searchable, record why
+        ai_error = f"{type(e).__name__}: {e}"[:500]
+
+    if not conn.in_transaction:
+        conn.execute("BEGIN IMMEDIATE")  # hold the write lock from this check to the commit, so a re-index cannot slip in
+    if not conn.execute("SELECT 1 FROM queue WHERE id=?", (q["id"],)).fetchone():
+        return False  # the file changed or went away while the model read it; a new queue row is read next
     for f in facts:
         status = f.get("status") or ("verified" if f["verified"] else "needs_review")
         conn.execute(
             "INSERT INTO facts(file_id, field, value, value_type, page, verified, source_text, status, reason) VALUES (?,?,?,?,?,?,?,?,?)",
             (file_id, f["field"], f["value"], f["value_type"], f["page"], int(f["verified"]), f["source_text"], status, f.get("reason")),
         )
-    missed = sum(v is None for v in vectors)
-    embed_error = f"{missed} of {len(pieces)} chunks could not be embedded; keyword search still finds them" if missed else None
-    conn.execute(
-        "UPDATE files SET size=?, mtime=?, sha256=?, doc_type=?, indexed_at=?, status='indexed', error=?, copy_of=NULL WHERE id=?",
-        (st.st_size, st.st_mtime, sha, doc_type, datetime.now().isoformat(timespec="seconds"),
-         "; ".join(e for e in (embed_error, ai_error) if e) or None, file_id),
-    )
-    db.log(conn, "indexed", str(path))
-    return file_id
+    conn.execute("UPDATE files SET doc_type=? WHERE id=? OR copy_of=?", (doc_type, file_id, file_id))
+    if ai_error:
+        conn.execute("UPDATE files SET error=coalesce(error || '; ', '') || ? WHERE id=?", (ai_error, file_id))
+    conn.execute("DELETE FROM queue WHERE id=?", (q["id"],))
+    return True
+
+
+QUEUED = threading.Event()  # set when a scan has queued files, so the worker starts on them without waiting
+
+
+def waiting(conn: sqlite3.Connection) -> int:
+    return conn.execute("SELECT count(*) FROM queue").fetchone()[0]
+
+
+class FactsWorker:
+    """One background thread that reads types and facts for queued files, oldest first. It holds back while someone is
+    searching or asking (user_active), so the chat server is free for them, and retries later when the server is down."""
+
+    def __init__(self, idle: float = 3.0, retry: float = 10.0):
+        self.idle, self.retry = idle, retry
+        self.last_user = 0.0
+        self.stopping = threading.Event()
+        self.thread = None
+
+    def user_active(self) -> None:
+        self.last_user = time.monotonic()
+
+    def start(self) -> None:
+        if not self.thread:
+            self.stopping.clear()
+            self.thread = threading.Thread(target=self._run, daemon=True, name="facts-worker")
+            self.thread.start()
+
+    def stop(self) -> None:
+        self.stopping.set()
+        QUEUED.set()
+        if self.thread:
+            self.thread.join(5)
+        self.thread = None
+
+    def _run(self) -> None:
+        if sys.platform == "win32":  # below normal, like the Windows Search indexer
+            ctypes.windll.kernel32.SetThreadPriority(ctypes.windll.kernel32.GetCurrentThread(), -1)
+        conn = db.connect()
+        try:
+            while not self.stopping.is_set():
+                if (quiet := self.idle - (time.monotonic() - self.last_user)) > 0:
+                    self.stopping.wait(quiet)
+                    continue
+                QUEUED.clear()
+                row = conn.execute("SELECT file_id FROM queue ORDER BY id LIMIT 1").fetchone()
+                if not row:
+                    QUEUED.wait(5)
+                    continue
+                try:
+                    read_facts(conn, row["file_id"])
+                    conn.commit()
+                except Exception:  # server down or database busy: the file stays queued, try again later
+                    conn.rollback()
+                    self.stopping.wait(self.retry)
+        finally:
+            conn.close()
 
 
 def _mark_error(conn, path: Path, sha: str, st, err: Exception) -> None:

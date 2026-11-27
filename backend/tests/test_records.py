@@ -24,11 +24,12 @@ def count(conn, sql):
 
 
 # ---------- exact copies ----------
-def test_exact_copy_is_one_document(conn, tmp_path):
+def test_exact_copy_is_one_document(conn, tmp_path, drain):
     for d in ("a", "b"):
         (tmp_path / d).mkdir()
         (tmp_path / d / "bill.txt").write_text("Electricity bill for March. Amount due 1200.")
     counts = scan.scan(conn, tmp_path)
+    drain()
     assert counts["indexed"] == 2 and counts["errors"] == 0
     assert count(conn, "SELECT count(*) FROM files") == 2
     assert count(conn, "SELECT count(*) FROM files WHERE copy_of IS NOT NULL") == 1
@@ -38,11 +39,12 @@ def test_exact_copy_is_one_document(conn, tmp_path):
     assert len(docs) == 1 and len(docs[0]["paths"]) == 2
 
 
-def test_deleting_one_copy_keeps_the_document(conn, tmp_path):
+def test_deleting_one_copy_keeps_the_document(conn, tmp_path, drain):
     for d in ("a", "b"):
         (tmp_path / d).mkdir()
         (tmp_path / d / "bill.txt").write_text("Electricity bill. Amount due 1200.")
     scan.scan(conn, tmp_path)
+    drain()
     original = conn.execute("SELECT id, path FROM files WHERE copy_of IS NULL").fetchone()
     conn.execute("UPDATE facts SET status='corrected', value='1250.0'")  # a correction must survive
     conn.commit()
@@ -55,7 +57,7 @@ def test_deleting_one_copy_keeps_the_document(conn, tmp_path):
     assert len(search(conn, "electricity", mode="bm25")) == 1
 
 
-def test_copy_rename_and_change(conn, tmp_path):
+def test_copy_rename_and_change(conn, tmp_path, drain):
     (tmp_path / "a.txt").write_text("Electricity bill. Amount due 1200.")
     shutil.copy(tmp_path / "a.txt", tmp_path / "b.txt")
     scan.scan(conn, tmp_path)
@@ -64,6 +66,7 @@ def test_copy_rename_and_change(conn, tmp_path):
     assert count(conn, "SELECT count(*) FROM files WHERE copy_of IS NOT NULL") == 1
     (tmp_path / "c.txt").write_text("Gas bill, now a different document")  # a changed copy becomes its own document
     assert scan.scan(conn, tmp_path)["indexed"] == 1
+    drain()
     assert count(conn, "SELECT count(*) FROM files WHERE copy_of IS NOT NULL") == 0
     assert count(conn, "SELECT count(DISTINCT file_id) FROM facts") == 2
 

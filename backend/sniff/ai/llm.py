@@ -16,7 +16,17 @@ def client() -> OpenAI:
 
 def chat(messages: list[dict], **kw) -> str:
     r = client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, **kw)
-    text = r.choices[0].message.content or ""
+    return clean(r.choices[0].message.content or "")
+
+
+def chat_stream(messages: list[dict], **kw):
+    """The same reply as chat(), as pieces of text while the model writes them."""
+    for chunk in client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, stream=True, **kw):
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
+
+
+def clean(text: str) -> str:
     return re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
 
 

@@ -38,14 +38,15 @@ def search(conn: sqlite3.Connection, q: str, k: int = 10, mode: str = "hybrid") 
     hits: dict[int, Hit] = {}  # best chunk per file
     for cid, score in sorted(scores.items(), key=lambda x: -x[1]):
         row = conn.execute(
-            "SELECT c.file_id, c.page, c.text, f.path, f.doc_type FROM chunks c JOIN files f ON f.id=c.file_id WHERE c.id=?",
+            "SELECT c.file_id, c.page, c.text, f.path, f.doc_type, EXISTS(SELECT 1 FROM queue q WHERE q.file_id=c.file_id) AS reading "
+            "FROM chunks c JOIN files f ON f.id=c.file_id WHERE c.id=?",
             (cid,),
         ).fetchone()
         if not row or row["file_id"] in hits:
             continue
         hits[row["file_id"]] = Hit(
             chunk_id=cid, file_id=row["file_id"], path=row["path"], name=Path(row["path"]).name, page=row["page"],
-            snippet=snippet(row["text"], q), score=round(score, 5), doc_type=row["doc_type"],
+            snippet=snippet(row["text"], q), score=round(score, 5), doc_type=row["doc_type"], reading=bool(row["reading"]),
         )
         if len(hits) == k:
             break

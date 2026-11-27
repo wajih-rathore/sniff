@@ -47,3 +47,15 @@ def add_doc(conn):
         conn.commit()
         return fid
     return add
+
+
+@pytest.fixture
+def drain(conn):
+    """Read the type and facts of every queued file now, as the background worker would."""
+    from sniff.ingest import scan
+
+    def run():
+        while row := conn.execute("SELECT file_id FROM queue ORDER BY id LIMIT 1").fetchone():
+            scan.read_facts(conn, row["file_id"])
+            conn.commit()
+    return run

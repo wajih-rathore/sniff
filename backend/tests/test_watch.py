@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from sniff import api, watch
+from sniff.ingest import scan
 
 
 def wait_for(cond, seconds=8):
@@ -23,8 +24,11 @@ def rows(conn):
 @pytest.fixture
 def watcher(conn):
     w = watch.Watcher({"running": False}, debounce=0.3, poll=0.05)
+    facts = scan.FactsWorker(idle=0)  # reads the types the asserts below look at
+    facts.start()
     yield w
     w.stop()
+    facts.stop()
 
 
 def test_relevant_ignores_temp_and_partial_files():
@@ -41,8 +45,8 @@ def test_create_modify_rename_delete(conn, tmp_path, watcher):
 
     f.write_text("Electricity bill for March. Amount due 1200.")
     assert wait_for(lambda: len(rows(conn)) == 1), "new file was not indexed"
+    assert wait_for(lambda: next(iter(rows(conn).values()))["doc_type"] == "utility_bill"), "facts worker did not read the type"
     old = next(iter(rows(conn).values()))
-    assert old["doc_type"] == "utility_bill"
 
     f.write_text("Lecture notes on transformers and attention.")
     assert wait_for(lambda: rows(conn).get(str(f.resolve())) and rows(conn)[str(f.resolve())]["doc_type"] == "other"), "edit was not re-indexed"
@@ -123,16 +127,15 @@ def test_watch_endpoints(conn, tmp_path, monkeypatch):
 
 def test_index_and_watcher_scan_do_not_overlap(conn, tmp_path, monkeypatch):
     """/index starts while the watcher's scan of the same new files is due: the second waits, each file is indexed once."""
-    from sniff.ingest import scan
     calls = []
-    real = scan.index_file
+    real = scan.index_text
 
     def slow(conn, path, sha, ai=True):
         calls.append(path.name)
         time.sleep(0.5)  # long enough for the two scans to overlap if nothing stopped them
         return real(conn, path, sha, ai)
 
-    monkeypatch.setattr(scan, "index_file", slow)
+    monkeypatch.setattr(scan, "index_text", slow)
     api.STATUS.update(running=False, indexing=False)
     w = watch.Watcher(api.STATUS, debounce=0.3, poll=0.05)
     monkeypatch.setattr(api, "WATCHER", w)

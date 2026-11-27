@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS reminders(
 CREATE TABLE IF NOT EXISTS watched(folder TEXT PRIMARY KEY, added_at TEXT);  -- folders kept in step live; read again on restart
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);  -- JSON values, e.g. key "mcp"
 CREATE TABLE IF NOT EXISTS actions(id INTEGER PRIMARY KEY, ts TEXT, kind TEXT, payload TEXT);
+-- files that are searchable but whose type and facts are not read yet (scan.read_facts); a table, so a restart resumes
+CREATE TABLE IF NOT EXISTS queue(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,  -- never reused: read_facts checks its row is still the same one
+  file_id INTEGER UNIQUE NOT NULL,
+  pages TEXT NOT NULL,                  -- JSON [page, text] pairs, as read in phase 1, so phase 2 does not read the file again
+  boxes TEXT NOT NULL,                  -- JSON layout boxes per page, for the checks in verify.py
+  added_at TEXT
+);
 """
 
 MIGRATIONS = [("files", "copy_of", "INTEGER"), ("facts", "status", "TEXT NOT NULL DEFAULT 'needs_review'"), ("facts", "reason", "TEXT")]
@@ -86,6 +94,7 @@ def delete_file_data(conn: sqlite3.Connection, file_id: int) -> None:
     conn.execute("DELETE FROM chunk_vec WHERE chunk_id IN (SELECT id FROM chunks WHERE file_id=?)", (file_id,))
     conn.execute("DELETE FROM chunks WHERE file_id=?", (file_id,))
     conn.execute("DELETE FROM facts WHERE file_id=?", (file_id,))
+    conn.execute("DELETE FROM queue WHERE file_id=?", (file_id,))
 
 
 def release(conn: sqlite3.Connection, file_id: int) -> None:
@@ -97,5 +106,6 @@ def release(conn: sqlite3.Connection, file_id: int) -> None:
         return
     conn.execute("UPDATE chunks SET file_id=? WHERE file_id=?", (heir["id"], file_id))
     conn.execute("UPDATE facts SET file_id=? WHERE file_id=?", (heir["id"], file_id))
+    conn.execute("UPDATE queue SET file_id=? WHERE file_id=?", (heir["id"], file_id))
     conn.execute("UPDATE files SET copy_of=NULL WHERE id=?", (heir["id"],))
     conn.execute("UPDATE files SET copy_of=? WHERE copy_of=?", (heir["id"], file_id))

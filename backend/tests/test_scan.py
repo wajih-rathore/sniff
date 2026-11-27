@@ -9,14 +9,15 @@ def count(conn, table):
     return conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
 
 
-def test_index_then_search(conn, tmp_path):
+def test_index_then_search(conn, tmp_path, drain):
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "a.txt").write_text("Electricity bill for March. Amount due 1200.")
     (tmp_path / "docs" / "b.txt").write_text("Lecture notes on transformers and attention.")
     counts = scan.scan(conn, tmp_path / "docs")
     assert counts["indexed"] == 2 and counts["errors"] == 0
     hits = search(conn, "electricity", mode="bm25")
-    assert hits[0].name == "a.txt"
+    assert hits[0].name == "a.txt" and hits[0].reading  # findable before its facts are read
+    drain()
     types = dict(conn.execute("SELECT path, doc_type FROM files").fetchall())
     assert sorted(types.values()) == ["other", "utility_bill"]
     assert count(conn, "facts") == 1  # only the bill gets facts
