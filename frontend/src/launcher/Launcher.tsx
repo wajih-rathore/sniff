@@ -167,7 +167,8 @@ export default function Launcher() {
     native.autostart().then(setAutostart, () => {})
     api.calendarStatus().then((s) => setGoogle(s.connected), () => setGoogle(false)) // no answer: offer only the .ics file
     native.hotkey().then(setHotkey, () => {})
-    native.backdrop().then((b) => document.documentElement.classList.toggle('solid', b === 'solid'))
+    native.hotkeyNote().then(setHotkeyNote, () => {})
+    native.backdrop().then((b) => { document.documentElement.dataset.backdrop = b }) // 'solid': no see-through backdrop here
     const sizes = () => { // in the desktop app the window is sized from the monitor's work area, which the webview calls screen.avail*
       if (inDesktop) document.documentElement.style.setProperty('--maxh', `${Math.min(540, Math.floor(window.screen.availHeight * 0.8))}px`)
     }
@@ -374,7 +375,7 @@ export default function Launcher() {
   }
   const sub = (l: Level) => { setLevel(l); setSel(0); setQ(''); setErr('') }
   const sRows: SRow[] = level === 'top' ? [
-    { id: 'hotkey', icon: Keyboard, t: 'Hotkey', m: capturing ? 'Press the new shortcut, or Esc to keep this one' : 'Opens Sniff from anywhere',
+    { id: 'hotkey', icon: Keyboard, t: 'Hotkey', m: capturing ? 'Press the new shortcut, or Esc to keep this one' : hotkeyNote ?? 'Opens Sniff from any app',
       right: <span className="keys"><Keys k={hotkey.split('+')} /></span>, act: 'Change', run: () => setCapturing(true) },
     ...(watch?.folders ?? []).map((f, i): SRow => ({ id: `w${f}`, head: i ? undefined : 'Folders', icon: Folder, t: f,
       m: watch?.counts?.[f] ? plural(watch.counts[f].files, 'file', 'files') : undefined, right: folderStatus(f), act: 'Show in File Explorer', run: () => reveal(f) })),
@@ -471,7 +472,7 @@ export default function Launcher() {
     if (e.key === 'Escape') return setCapturing(false)
     if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return
     if (!e.ctrlKey && !e.altKey && !e.metaKey) return setErr('Use Ctrl, Alt or Win together with a key')
-    const combo = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Win', e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key].filter(Boolean).join('+')
+    const combo = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Super', e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key].filter(Boolean).join('+')
     setCapturing(false)
     attempt(native.setHotkey(combo).then(() => setHotkey(combo)), `The hotkey is now ${combo}`, Check, `use ${combo}`)
   }
@@ -635,7 +636,7 @@ export default function Launcher() {
                   : h?.value ?? <span className="skel" style={{ width: 184, height: 28, verticalAlign: 'middle' }} />}
               </div>
             )}
-            <p className={`sent${streaming ? ' streaming lead' : ''}${h && !h.value && !h.alts ? ' lead' : ''}`}>{ans ? h?.sentence : stream}</p>
+            {!failed && <p className={`sent${streaming ? ' streaming lead' : ''}${h && !h.value && !h.alts ? ' lead' : ''}`}>{ans ? h?.sentence : stream}</p>}
             {sources.length > 0 && (
               <div className="cites">
                 {sources.slice(0, 4).map((s, i) => (
