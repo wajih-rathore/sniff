@@ -5,13 +5,19 @@ import numpy as np
 import pytest
 
 from sniff import config, db
-from sniff.ai import classify, embed, extract
+from sniff.ai import classify, embed, extract, server, typer
 
 
 def fake_vector(text: str) -> np.ndarray:
     seed = int(hashlib.md5(text.encode()).hexdigest()[:8], 16)
     v = np.random.default_rng(seed).standard_normal(config.EMBED_DIM).astype(np.float32)
     return v / np.linalg.norm(v)
+
+
+@pytest.fixture(autouse=True)
+def no_chat_server(monkeypatch):
+    """Tests never start, or even probe, the chat model server."""
+    monkeypatch.setattr(server, "ensure", lambda: None)
 
 
 @pytest.fixture
@@ -21,6 +27,7 @@ def conn(tmp_path, monkeypatch):
     monkeypatch.setattr(embed, "embed", lambda texts: [fake_vector(t) for t in texts])
     monkeypatch.setattr(embed, "embed_query", fake_vector)
     monkeypatch.setattr(embed, "tokens", lambda text: len(text.split()) + 2)  # no embedding server in tests
+    monkeypatch.setattr(typer, "classify", lambda conn, file_id, pages: None)  # fake vectors: the fake model decides the type
     monkeypatch.setattr(classify, "classify", lambda pages: "utility_bill" if any("bill" in t.lower() for _, t in pages) else "other")
     monkeypatch.setattr(extract, "extract", lambda doc_type, pages, boxes=None: [
         {"field": "amount_due", "value": "1200.0", "value_type": "money", "page": 1, "verified": True, "source_text": None}

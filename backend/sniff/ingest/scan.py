@@ -13,7 +13,7 @@ from pathlib import Path
 import openai
 
 from .. import config, db
-from ..ai import classify, embed, extract
+from ..ai import classify, embed, extract, typer
 from ..schemas import FACT_MODELS
 from . import readers
 
@@ -33,6 +33,8 @@ def iter_files(folder: Path):
 
 
 LOCK = threading.Lock()  # one scan at a time, whether it comes from /index or the watcher; the second one waits
+RETRY_AFTER = 30.0  # seconds before files another program held open are tried again
+_retries: dict[str, threading.Timer] = {}  # folder -> its pending retry, so they do not pile up
 
 
 def scan(conn: sqlite3.Connection, folder, ai: bool = True, status: dict | None = None) -> dict:
@@ -59,9 +61,18 @@ def _scan(conn, folder, ai, status) -> dict:
 
     counts = {"indexed": 0, "unchanged": 0, "renamed": 0, "removed": 0, "errors": 0}
     status.update(running=True, done=0, total=len(todo), current=None, errors=0)
+    locked = []
     for p in todo:
         status["current"] = str(p)
-        st, r, h = p.stat(), known.get(str(p)), sha256(p)
+        try:
+            st, r, h = p.stat(), known.get(str(p)), sha256(p)
+        except OSError as e:  # held open by another program (Windows will not share it), or gone meanwhile
+            _mark_error(conn, p, None, None, e)
+            locked.append(p)
+            counts["errors"] += 1
+            status["errors"] += 1
+            status["done"] += 1
+            continue
         if r and r["status"] == "indexed" and r["sha256"] == h:  # touched, content unchanged
             conn.execute("UPDATE files SET size=?, mtime=? WHERE id=?", (st.st_size, st.st_mtime, r["id"]))
             counts["unchanged"] += 1
@@ -78,6 +89,8 @@ def _scan(conn, folder, ai, status) -> dict:
             except Exception as e:  # one bad file must not stop the scan
                 conn.rollback()
                 _mark_error(conn, p, h, st, e)
+                if isinstance(e, PermissionError):  # locked while it was being read
+                    locked.append(p)
                 counts["errors"] += 1
                 status["errors"] += 1
         conn.commit()
@@ -91,7 +104,28 @@ def _scan(conn, folder, ai, status) -> dict:
         counts["removed"] += 1
     conn.commit()
     status.update(running=False, current=None)
+    if locked:
+        _retry_later(folder, ai)
     return counts
+
+
+def _retry_later(folder: Path, ai: bool) -> None:
+    """Scan the folder again in RETRY_AFTER seconds, for the files that were held open. An error row is never
+    skipped by the size and time check, so those files are read then; the rest is a quick check."""
+    if (t := _retries.get(str(folder))) and t.is_alive():
+        return
+
+    def run():
+        _retries.pop(str(folder), None)
+        conn = db.connect()
+        try:
+            scan(conn, folder, ai)
+        finally:
+            conn.close()
+
+    t = _retries[str(folder)] = threading.Timer(RETRY_AFTER, run)
+    t.daemon = True
+    t.start()
 
 
 def index_file(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) -> int:
@@ -148,6 +182,8 @@ def index_text(conn: sqlite3.Connection, path: Path, sha: str, ai: bool = True) 
 
 def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
     """Phase 2: classify and extract one queued file from the pages saved in phase 1, and store its type and facts.
+    The type comes from the classifier on the stored vectors when it is sure (typer), else from the chat model; the
+    fields come from rules first (extract). A confident "other" never reaches the model at all.
     Returns False if the file is not queued (done, re-indexed or deleted meanwhile). If the chat server cannot be reached,
     the error is raised and the file stays queued; any other model failure is recorded on the file, as before."""
     q = conn.execute("SELECT * FROM queue WHERE file_id=?", (file_id,)).fetchone()
@@ -157,7 +193,7 @@ def read_facts(conn: sqlite3.Connection, file_id: int) -> bool:
     boxes = {int(k): [tuple(b) for b in v] for k, v in json.loads(q["boxes"]).items()}  # JSON turned the keys into strings
     doc_type, facts, ai_error = None, [], None
     try:
-        doc_type = classify.classify(pages)
+        doc_type = typer.classify(conn, file_id, pages) or classify.classify(pages)
         if doc_type in FACT_MODELS:
             facts = extract.extract(doc_type, pages, boxes)
     except openai.APIConnectionError:
@@ -239,11 +275,12 @@ class FactsWorker:
             conn.close()
 
 
-def _mark_error(conn, path: Path, sha: str, st, err: Exception) -> None:
+def _mark_error(conn, path: Path, sha: str | None, st, err: Exception) -> None:
+    """Record why a file could not be indexed. `st` is None when the file could not even be opened."""
     conn.execute(
         "INSERT INTO files(path, size, mtime, sha256, status, error) VALUES (?,?,?,?, 'error', ?) "
         "ON CONFLICT(path) DO UPDATE SET size=excluded.size, mtime=excluded.mtime, sha256=excluded.sha256, status='error', error=excluded.error",
-        (str(path), st.st_size, st.st_mtime, sha, f"{type(err).__name__}: {err}"[:500]),
+        (str(path), st.st_size if st else None, st.st_mtime if st else None, sha, f"{type(err).__name__}: {err}"[:500]),
     )
     conn.commit()
 
