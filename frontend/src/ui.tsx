@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react'
-import { AlertTriangle, Check } from 'lucide-react'
 import type { Fact } from './api'
+import { CURRENCY } from './launcher/answer'
 
 export const label = (s: string) => s.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
 
@@ -10,47 +9,15 @@ export const money = (v: string) => {
   if (!m) return v
   const n = Number(m[2])
   const s = n.toLocaleString('en-US', Number.isInteger(n) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return m[1] ? `${m[1]} ${s}` : s
+  return m[1] ? `${m[1]}\u00a0${s}` : s
 }
-// shortcut: facts store the number only, so the currency comes from the line the value was read from ("Current Charges
-// Rs. 5,558"); move to a currency field if the back end adds one.
-const CURRENCY = /\b(PKR|Rs\.?|USD|EUR|GBP)(?=[\s\d])|[$€£]/
 export const show = (f: Pick<Fact, 'value' | 'value_type'> & { source_text?: string | null }) => {
   if (f.value_type !== 'money') return f.value
   const c = /^[\d.-]+$/.test(f.value.trim()) && f.source_text?.match(CURRENCY)?.[0]
   return money(c ? `${c} ${f.value}` : f.value)
 }
 
-export const Tag = ({ children }: { children: ReactNode }) => (
-  <span className="whitespace-nowrap rounded border border-line px-1.5 py-px text-[11px] text-muted">{children}</span>
-)
-
-// verified: on the page, next to its label, passes the rules. The rest come from the review screen.
-const STATUS = {
-  verified: ['verified', 'text-ok', 'Found on the page next to its label, and it passes the field rules'],
-  needs_review: ['needs review', 'text-warn', 'Check this value'],
-  corrected: ['corrected', 'text-accent', 'You changed this value'],
-  approved: ['approved', 'text-ok', 'You confirmed this value'],
-  superseded: ['not used', 'text-muted', 'You picked another copy\'s value'],
-} as const
-
-export const Status = ({ f }: { f: Fact }) => {
-  const [text, color, title] = STATUS[f.status]
-  return (
-    <span className={`inline-flex items-center gap-0.5 whitespace-nowrap text-[11px] ${color}`} title={f.reason ?? title}>
-      {f.status === 'needs_review' ? <AlertTriangle size={12} /> : <Check size={12} />} {text}
-    </span>
-  )
-}
-
-export function Highlight({ text, q }: { text: string; q: string }) {
-  const words = q.split(/\s+/).filter((w) => w.length > 1).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-  if (!words.length) return <>{text}</>
-  return (
-    <>
-      {text.split(new RegExp(`\\b(${words.join('|')})`, 'gi')).map((p, i) =>
-        i % 2 ? <b key={i} className="font-semibold text-fg">{p}</b> : p,
-      )}
-    </>
-  )
-}
+// Type names as people say them: "ID card", "utility bills".
+export const typeName = (t: string | null | undefined, n = 1) =>
+  (t === 'id_card' ? 'ID card' : !t || t === 'other' ? 'other file' : t.replace(/_/g, ' ')) + (n === 1 ? '' : 's')
+export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`

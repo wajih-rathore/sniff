@@ -1,116 +1,128 @@
-// Fixtures for every endpoint, used when VITE_MOCK=1. Dates are relative to today so Upcoming always looks current.
-import type { Answer, Document, Fact, Hit, McpLogEntry, McpSettings, Overview, UpcomingItem, WatchInfo } from './api'
-import { label, money } from './ui'
+// Fixtures for every endpoint, used when VITE_MOCK=1. Fictional people and companies, the same as the design mockup.
+// Expiry dates are relative to today so the overview always looks current.
+import type { Answer, Document, Fact, Hit, McpLogEntry, McpSettings, Overview, Source, UpcomingItem, WatchInfo } from './api'
 
 const day = 86_400_000
 const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString().slice(0, 10)
 
 let fid = 0
-const F = (file_id: number, field: string, value: string, value_type: Fact['value_type'], page = 1, verified = true): Fact => ({
-  id: ++fid, file_id, field, value, value_type, page, verified,
-  status: verified ? 'verified' : 'needs_review', reason: verified ? null : 'not next to its label', source_text: null,
+type Spec = [field: string, value: string, type?: Fact['value_type'], source_text?: string, reason?: string]
+const F = (file_id: number, [field, value, value_type = 'text', source_text, reason]: Spec): Fact => ({
+  id: ++fid, file_id, field, value, value_type, page: 1, verified: !reason, status: reason ? 'needs_review' : 'verified', reason: reason ?? null, source_text: source_text ?? null,
 })
-
-// [id, name, doc_type, facts, page text]
-const base = 'C:\\Users\\hp\\Documents\\'
-const raw: [number, string, string, Fact[], string][] = [
-  [1, 'cnic_front.jpg', 'id_card', [
-    F(1, 'name', 'Ayesha Khan', 'text'), F(1, 'id_number', '35202-1234567-8', 'id'),
-    F(1, 'date_of_birth', '1999-04-12', 'date'), F(1, 'issue_date', '2019-03-02', 'date'),
-    F(1, 'expiry_date', iso(34), 'date', 1, false),
-  ], 'National Identity Card of Pakistan. Name Ayesha Khan. Identity Number 35202-1234567-8. Date of Expiry'],
-  [2, 'passport_scan.pdf', 'id_card', [
-    F(2, 'name', 'Ayesha Khan', 'text'), F(2, 'id_number', 'AB1234567', 'id'), F(2, 'expiry_date', iso(-12), 'date'),
-  ], 'Passport. Surname Khan. Given names Ayesha. Passport number AB1234567. Date of expiry'],
-  [3, 'lesco_bill_oct.pdf', 'utility_bill', [
-    F(3, 'provider', 'LESCO', 'text'), F(3, 'account_number', '04-11223-3344556', 'id'), F(3, 'billing_month', '2026-10', 'text'),
-    F(3, 'amount_due', '14820.00', 'money', 1), F(3, 'due_date', iso(6), 'date'),
-  ], 'LESCO electricity bill for October 2026. Units consumed 412. Total amount due 14820.00. Due date'],
-  [4, 'ptcl_bill_oct.pdf', 'utility_bill', [
-    F(4, 'provider', 'PTCL', 'text'), F(4, 'account_number', '042-99887766', 'id'), F(4, 'billing_month', '2026-10', 'text'),
-    F(4, 'amount_due', '3450.00', 'money'), F(4, 'due_date', iso(15), 'date'),
-  ], 'PTCL broadband invoice, October 2026. Amount due 3450.00. Please pay before the due date'],
-  [5, 'sngpl_bill_sep.pdf', 'utility_bill', [
-    F(5, 'provider', 'SNGPL', 'text'), F(5, 'billing_month', '2026-09', 'text'), F(5, 'amount_due', '2210.50', 'money', 1, false),
-    F(5, 'due_date', iso(-3), 'date'),
-  ], 'SNGPL gas bill September 2026. Payable within due date. Amount due 2210.50'],
-  [6, 'degree_bscs.pdf', 'certificate', [
-    F(6, 'holder_name', 'Ayesha Khan', 'text'), F(6, 'title', 'Bachelor of Science in Computer Science', 'text'),
-    F(6, 'institution', 'FAST National University', 'text'), F(6, 'issue_date', '2024-08-20', 'date'),
-  ], 'This is to certify that Ayesha Khan has been awarded the degree of Bachelor of Science in Computer Science by FAST National University'],
-  [7, 'laptop_receipt.pdf', 'receipt', [
-    F(7, 'merchant', 'Hafeez Centre Electronics', 'text'), F(7, 'date', '2026-02-14', 'date'),
-    F(7, 'total_amount', '219000.00', 'money'), F(7, 'warranty_until', iso(81), 'date', 2),
-  ], 'Hafeez Centre Electronics. Invoice for laptop, total 219000.00. Warranty valid for two years from the date of purchase'],
-  [8, 'lecture_notes_week5.pptx', 'other', [], 'Week 5: retrieval augmented generation. BM25 and dense retrieval are fused with reciprocal rank fusion'],
+const bill = (provider: string, month: string, date: string, cur: number, extra: Spec[] = []): Spec[] => [
+  ['provider', provider], ['billing_month', month], ['bill_date', date, 'date'], ['current_charges', String(cur), 'money', `Current Charges Rs. ${cur.toLocaleString('en-US')}`], ...extra,
 ]
+const BILLS = 'D:\\Documents\\Bills\\', SCANS = 'D:\\Scans\\'
+// [id, path, type, title, facts, page text, hours since it was read]
+const raw: [number, string, string, string, Spec[], string, number][] = [
+  [1, BILLS + 'ece95bbc.pdf', 'utility_bill', 'Metro Gas, utility bill, Nov 2025', bill('Metro Gas Ltd', '2025-11', '2025-12-05', 5558, [
+    ['account_number', 'MG-6421-9595', 'id'], ['due_date', '2025-12-25', 'date'], ['tax', '277.9', 'money', 'GST 5% Rs. 277.90'],
+    ['amount_due', '6302.67', 'money', 'Payable after due date Rs. 6,302.67', "found next to 'Payable after due date', not an 'Amount Due' label; amount due is not current charges + previous balance (+ tax)"]]),
+  'METRO GAS LTD Monthly gas statement. Customer Zainab Malik. Current charges 140 hm3', 1],
+  [2, BILLS + '4a7d0c51.pdf', 'utility_bill', 'Metro Gas, utility bill, Oct 2025', bill('Metro Gas Ltd', '2025-10', '2025-11-04', 4446.4), 'METRO GAS LTD Monthly gas statement October', 30],
+  [3, BILLS + 'b2e8f913.pdf', 'utility_bill', 'Metro Gas, utility bill, Sep 2025', bill('Metro Gas Ltd', '2025-09', '2025-10-03', 3811.2), 'METRO GAS LTD Monthly gas statement September', 31],
+  [4, BILLS + '61c0aa7e.pdf', 'utility_bill', 'Metro Gas, utility bill, Aug 2025', bill('Metro Gas Ltd', '2025-08', '2025-09-04', 3612.7), 'METRO GAS LTD Monthly gas statement August', 32],
+  [5, BILLS + 'd93f2b06.pdf', 'utility_bill', 'Metro Gas, utility bill, Jul 2025', bill('Metro Gas Ltd', '2025-07', '2025-08-05', 3731.8), 'METRO GAS LTD Monthly gas statement July', 33],
+  [6, BILLS + '90c2b896.pdf', 'utility_bill', 'Metro Gas, utility bill, Mar 2025', bill('Metro Gas Ltd', '2025-03', '2025-04-03', 6530.61), 'METRO GAS LTD Monthly gas statement March', 34],
+  [7, BILLS + '7b3e19a2.pdf', 'utility_bill', 'Northern Electric, utility bill, Nov 2025', bill('Northern Electric Supply Co.', '2025-11', '2025-12-02', 11240), 'Northern Electric Supply Co. Electricity bill. 520 kWh', 20],
+  [8, BILLS + 'NE bill Nov.pdf', 'utility_bill', 'Northern Electric, utility bill, Nov 2025', bill('Northern Electric Supply Co.', '2025-11', '2025-12-02', 11204), 'Northern Electric Supply Co. Electricity bill reprint', 35],
+  [9, BILLS + 'c5d1e7f0.pdf', 'utility_bill', 'Northern Electric, utility bill, Oct 2025', bill('Northern Electric Supply Co.', '2025-10', '2025-11-03', 11633), 'Northern Electric Supply Co. Electricity bill. 575 kWh', 36],
+  [10, BILLS + 'e8a24b9d.pdf', 'utility_bill', 'Northern Electric, utility bill, Sep 2025', bill('Northern Electric Supply Co.', '2025-09', '2025-10-02', 12280), 'Northern Electric Supply Co. Electricity bill. 610 kWh', 37],
+  [11, SCANS + 'id-card-zainab.pdf', 'id_card', 'Zainab Malik, ID card', [['name', 'Zainab Malik'], ['id_number', '35201-5554321-2', 'id'],
+    ['expiry_date', iso(68), 'date', 'Date of Expiry', "found next to 'Date of Issue', not a 'Date of Expiry' label"]], 'National identity card. Name Zainab Malik', 70],
+  [12, SCANS + 'bright-pharmacy.jpg', 'receipt', 'Bright Pharmacy, receipt', [['merchant', 'Bright Pharmacy'],
+    ['total_amount', '1840', 'money', 'Total Rs. 1,840', 'the total is not the sum of the items']], 'BRIGHT PHARMACY cash memo. Paracetamol, vitamin D', 40],
+  [13, BILLS + 'cityline-mixer.pdf', 'warranty_card', 'Cityline, warranty card', [['product', 'Hand mixer'], ['brand', 'Cityline'], ['warranty_until', iso(43), 'date']],
+    'Cityline hand mixer warranty card. Valid until', 41],
+  [15, SCANS + 'passport-zainab.pdf', 'passport', 'Zainab Malik, passport', [['name', 'Zainab Malik'], ['passport_number', 'AK4410272', 'id'], ['expiry_date', '2026-08-08', 'date']],
+    'Islamic Republic passport. Surname Malik. Given names Zainab', 42],
+]
+const photo: Source = { file_id: 14, path: SCANS + 'scan_0412.jpg', name: 'scan_0412.jpg', page: 1, title: 'scan_0412.jpg' } // a phone photo of bill 1
 
-const docs: Document[] = raw.map(([id, name, doc_type, facts]) => ({
-  id, path: base + name, name, doc_type, indexed_at: new Date(Date.now() - id * 3_600_000).toISOString(), status: 'indexed', facts,
-  paths: [base + name], near_duplicates: [], pages: 1,
+const docs: Document[] = raw.map(([id, path, doc_type, title, specs, , hours]) => ({
+  id, path, name: path.split('\\').pop()!, doc_type, title, indexed_at: new Date(Date.now() - hours * 3_600_000).toISOString(), status: 'indexed',
+  facts: specs.map((s) => F(id, s)), paths: [path], near_duplicates: [], pages: 1,
 }))
+const doc = (id: number) => docs.find((d) => d.id === id)!
 const allFacts = docs.flatMap((d) => d.facts)
-
+const src = (id: number): Source => ({ file_id: id, path: doc(id).path, name: doc(id).name, page: 1, title: doc(id).title })
+const textOf = (id: number) => raw.find((r) => r[0] === id)![5]
 const delay = <T>(v: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(v), ms))
 
+const STOP = new Set(['the', 'my', 'of', 'for', 'in', 'how', 'much', 'were', 'was', 'is', 'what', 'when', 'do', 'does', 'i'])
+const words = (q: string) => q.toLowerCase().split(/\W+/).filter((w) => w.length > 1 && !STOP.has(w))
+const has = (text: string, w: string) => new RegExp(`\\b${w}`, 'i').test(text)
 function search(q: string): Hit[] {
-  const words = q.toLowerCase().replace(/[?]/g, '').split(/\s+/).filter((w) => w.length > 1)
-  return raw
-    .map(([id, name, doc_type, , text]) => {
-      const hay = (name + ' ' + text).toLowerCase()
-      const score = words.filter((w) => hay.includes(w)).length / Math.max(words.length, 1)
-      return { file_id: id, path: base + name, name, page: 1, snippet: text, score, doc_type } as Hit
-    })
-    .filter((h) => h.score > 0)
-    .sort((a, b) => b.score - a.score)
+  const ws = words(q)
+  const hit = (d: Document, match: Hit['match'], match_reason: string, fact: Fact | null = null): Hit => ({
+    file_id: d.id, path: d.path, name: d.name, page: 1, snippet: textOf(d.id), score: 1, doc_type: d.doc_type, title: d.title,
+    date: d.facts.find((f) => ['bill_date', 'date'].includes(f.field))?.value ?? null, match, match_reason, fact,
+  })
+  const strong: Hit[] = []
+  for (const d of docs) {
+    const f = d.facts.find((x) => ws.some((w) => has(x.value, w)))
+    if (f) strong.push(hit(d, 'fact', `Matches the ${f.field === 'provider' ? 'provider name' : f.field.replace(/_/g, ' ')} on page 1`, f))
+    else if (ws.some((w) => has(textOf(d.id), w))) strong.push(hit(d, 'text', 'Matches the text on page 1'))
+  }
+  // matched by meaning: other documents of the same kind
+  const kinds = new Set(strong.map((h) => h.doc_type))
+  const weak = docs.filter((d) => kinds.has(d.doc_type) && !strong.some((h) => h.file_id === d.id) && d.id !== 8)
+    .map((d) => hit(d, 'meaning', 'Matched by meaning, not by the words you typed'))
+  return [...strong.filter((h) => h.file_id !== 8), ...weak].slice(0, 10)
 }
 
+let picked: number | null = null // the Northern Electric copy the user chose
 function ask(question: string): Answer {
-  const none = { counted: [], skipped_duplicates: [], unreviewed: [], conflicts: [] }
-  const src = (ids: number[]) => ids.map((id) => ({ file_id: id, path: docs[id - 1].path, name: docs[id - 1].name, page: 1 }))
-  const pick = (field: string) => allFacts.filter((f) => f.field === field)
-  if (/expir|renew|valid/i.test(question)) {
-    const f = pick('expiry_date').filter((x) => x.file_id === 1)
-    return { ...none, question, route: 'facts', answer: `Your national ID card expires on ${f[0].value}, in 34 days.`, sources: src([1]), counted: src([1]), unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'id_card', field: 'expiry_date', op: 'next_expiring', filters: {} } }
+  const none = { counted: [], skipped_duplicates: [], unreviewed: [], conflicts: [], alternatives: [], facts: [], query: null }
+  if (/bill|total|how much|spent|utility/i.test(question)) {
+    const gas = doc(1).facts.find((f) => f.field === 'current_charges')!
+    const [ne1, ne2] = [7, 8].map((id) => doc(id).facts.find((f) => f.field === 'current_charges')!)
+    const total = (ne: Fact) => (Number(gas.value) + Number(ne.value)).toLocaleString('en-US')
+    const sides = [ne1, ne2]
+    const base = { ...none, question, route: 'facts' as const, skipped_duplicates: [photo] }
+    if (picked) {
+      const ne = sides.find((f) => f.id === picked)!
+      return { ...base, answer: `${total(ne)} in total, from 2 documents. Counted current charges, not amount due, so unpaid amounts carried from one bill to the next are not counted twice.`,
+        sources: [src(1), src(ne.file_id)], counted: [src(1), src(ne.file_id)], facts: [gas, ne] }
+    }
+    const conflict = { doc_type: 'utility_bill', key: 'provider Northern Electric Supply Co., account_number NE-0457-3381, billing_month 2025-11', field: 'current_charges',
+      values: sides.map((f) => ({ value: f.value, fact_id: f.id, status: f.status, source: src(f.file_id) })) }
+    return { ...base, sources: [src(1), src(7)], counted: [src(1), src(7), src(8)], facts: [gas, ne1, ne2], conflicts: [conflict],
+      answer: `Copies of one record disagree, so Sniff has not picked one. ${sides.map((f) => `If ${doc(f.file_id).name} is right: ${total(f)} in total, from 2 documents.`).join(' ')} Pick the right copy to settle it.`,
+      alternatives: sides.map((f) => ({ source: src(f.file_id), answer: `${total(f)} in total, from 2 documents.`, key: conflict.key, fact_id: f.id })) }
   }
-  if (/bill|total|spent|paid|owe|amount/i.test(question)) {
-    const f = pick('amount_due')
-    const total = f.reduce((s, x) => s + Number(x.value), 0).toFixed(2)
-    const s = src([...new Set(f.map((x) => x.file_id))])
-    // a phone photo of the LESCO bill is skipped as a copy; a reprint of the SNGPL bill disagrees on the amount
-    const photo = { file_id: 9, path: base + 'Downloads\\lesco_bill_oct_photo.jpg', name: 'lesco_bill_oct_photo.jpg', page: 1 }
-    const sngpl = f.find((x) => x.file_id === 5)!
-    const conflicts = [{ doc_type: 'utility_bill', key: 'SNGPL, 2026-09', field: 'amount_due', values: [
-      { value: sngpl.value, fact_id: sngpl.id, status: sngpl.status, source: s.find((x) => x.file_id === 5)! },
-      { value: '2201.50', fact_id: 999, status: 'verified' as const, source: { file_id: 10, path: base + 'Downloads\\sngpl_sep_reprint.pdf', name: 'sngpl_sep_reprint.pdf', page: 1 } },
-    ] }]
-    return { ...none, question, route: 'facts', answer: `${money(total)} in total, from ${s.length} documents.`, sources: s, counted: s, skipped_duplicates: [photo], conflicts, unreviewed: f.filter((x) => !x.verified), facts: f, query: { doc_type: 'utility_bill', field: 'amount_due', op: 'sum', filters: {} } }
+  if (/expir|renew|valid/i.test(question)) {
+    const f = doc(11).facts.find((x) => x.field === 'expiry_date')!
+    return { ...none, question, route: 'facts', answer: `${doc(11).name}: expiry date ${f.value}, in 68 days.`, sources: [src(11)], counted: [src(11)], facts: [f], unreviewed: [f] }
   }
   const h = search(question)[0]
-  if (!h) return { ...none, question, route: 'none', answer: 'I could not find this in your documents.', sources: [], facts: [], query: null }
-  return { ...none, question, route: 'search', answer: h.snippet + '.', sources: src([h.file_id]), facts: [], query: null }
+  if (!h) return { ...none, question, route: 'none', answer: 'I could not find this in your documents.', sources: [] }
+  return { ...none, question, route: 'search', answer: `${doc(h.file_id).title} mentions it on page 1: ${textOf(h.file_id).toLowerCase()} [1].`, sources: [src(h.file_id)] }
+}
+/** The streamed ask: a written (search) answer arrives word by word, a facts answer whole, as /ask/stream sends them. */
+export async function mockStream(question: string, onToken: (t: string) => void): Promise<Answer> {
+  const a = ask(question)
+  if (a.route !== 'search') return delay(a, 700)
+  await delay(null, 500)
+  for (const [i, w] of a.answer.split(' ').entries()) { onToken((i ? ' ' : '') + w); await delay(null, 70) }
+  return a
 }
 
-function upcoming(days = 90): UpcomingItem[] {
-  const names = ['expiry_date', 'due_date', 'warranty_until']
-  return allFacts
-    .filter((f) => names.includes(f.field))
-    .map((fact) => {
-      const d = docs[fact.file_id - 1]
-      const days_left = Math.round((Date.parse(fact.value) - Date.now()) / day) + (fact.value === iso(0) ? 0 : 1)
-      return { fact, document: d.name, path: d.path, doc_type: d.doc_type, days_left, reminder_status: null, conflict: null }
-    })
-    .filter((u) => u.days_left <= days)
-    .sort((a, b) => a.days_left - b.days_left) // as the back end returns them
+function upcoming(): UpcomingItem[] {
+  return allFacts.filter((f) => ['expiry_date', 'due_date', 'warranty_until'].includes(f.field))
+    .map((fact) => ({ fact, document: doc(fact.file_id).name, path: doc(fact.file_id).path, doc_type: doc(fact.file_id).doc_type,
+      days_left: Math.round((Date.parse(fact.value) - Date.parse(iso(0))) / day), reminder_status: null, conflict: null }))
+    .filter((u) => u.days_left >= -30 && u.days_left <= 90).sort((a, b) => a.days_left - b.days_left)
 }
-
 function overview(): Overview {
   const by_type: Record<string, number> = {}
-  for (const d of docs) by_type[d.doc_type ?? 'other'] = (by_type[d.doc_type ?? 'other'] ?? 0) + 1
+  for (const d of docs.filter((d) => d.id !== 8)) by_type[d.doc_type!] = (by_type[d.doc_type!] ?? 0) + 1
   const ex = upcoming().filter((u) => u.fact.field !== 'due_date' && u.days_left >= 0)
   const within = (n: number) => ex.filter((u) => u.days_left <= n).length
-  return { total_files: docs.length, documents: docs.length, by_type, exact_copies: 0, near_duplicates: 0, expiring: { '30': within(30), '60': within(60), '90': within(90) },
-    missing_required: [], needs_review: allFacts.filter((f) => f.status === 'needs_review').length, conflicts: 1, errors: 0 } // the SNGPL reprint in the bills answer
+  return { total_files: 15, documents: 13, by_type, exact_copies: 1, near_duplicates: 1, expiring: { '30': within(30), '60': within(60), '90': within(90) },
+    missing_required: [{ file_id: 12, name: 'Bright Pharmacy receipt', doc_type: 'receipt', fields: ['date'] }],
+    needs_review: allFacts.filter((f) => f.status === 'needs_review').length, conflicts: picked ? 0 : 1, errors: 0 }
 }
 
 // MCP settings, as GET/PUT /mcp/settings keeps them
@@ -129,63 +141,61 @@ const FIELDS: Record<string, string[]> = {
   fee_voucher: ['student_name', 'registration_number', 'institution', 'semester', 'amount', 'issue_date', 'due_date'],
   other: [],
 }
-let mcp: McpSettings = {
-  enabled: false, env_override: false, fields: FIELDS,
-  allow: Object.fromEntries(Object.keys(FIELDS).filter((t) => !['passport', 'bank_statement', 'offer_letter', 'transcript', 'id_card'].includes(t)).map((t) => [t, ['*']])),
-}
+let mcp: McpSettings = { enabled: true, env_override: false, fields: FIELDS,
+  allow: { utility_bill: FIELDS.utility_bill.filter((f) => f !== 'account_number'), receipt: FIELDS.receipt } }
 const ago = (min: number) => new Date(Date.now() - min * 60_000).toISOString().slice(0, 19)
 const mcpLog: McpLogEntry[] = [
-  { time: ago(3), tool: 'search_documents', args: { query: 'electricity bill october' }, ids: [3, 4] },
+  { time: ago(2), tool: 'search_documents', args: { query: 'gas bill november' }, ids: [1] },
   { time: ago(4), tool: 'ask', args: { question: 'When does my passport expire?' }, ids: [] },
-  { time: ago(9), tool: 'list_upcoming', args: { days: 30 }, ids: [3, 4] },
-  { time: ago(1440), tool: 'search_documents', args: { query: 'degree certificate' }, ids: [], refused: true },
+  { time: ago(1440), tool: 'search_documents', args: { query: 'id card' }, ids: [], refused: true },
 ]
-// The title POST /reminders builds (api.py _reminder_title).
-const VERB: Record<string, string> = { expiry_date: 'expires', due_date: 'payment due', warranty_until: 'warranty ends', end_date: 'ends' }
-function preview(file_id: number, field: string) {
-  const f = allFacts.find((x) => x.file_id === file_id && x.field === field)
-  if (!f || !VERB[f.field]) throw new Error('This fact is not a date Sniff can remind you about')
-  const d = docs[f.file_id - 1]
-  const who = d.facts.find((x) => ['name', 'holder_name', 'provider', 'merchant', 'institution'].includes(x.field))
-  return { fact_id: f.id, title: `${label(d.doc_type ?? 'document')} ${VERB[f.field]}${who ? ` (${who.value})` : ''}`, date: f.value,
-    description: `From ${d.name}, page ${f.page}. Added by Sniff.`, status: f.status, reviewed: f.status !== 'needs_review' }
-}
 
-let watched: string[] = ['C:\\Users\\you\\Documents\\Bills']
-let watchLast: WatchInfo['last'] = { folder: watched[0], at: new Date(Date.now() - 90_000).toISOString().slice(0, 19), indexed: 1, unchanged: 0, renamed: 0, removed: 0, errors: 0 }
+let watched = ['D:\\Documents\\Bills', 'D:\\Scans']
+const counts: WatchInfo['counts'] = { 'D:\\Documents\\Bills': { files: 11, errors: 0, waiting: 0 }, 'D:\\Scans': { files: 4, errors: 0, waiting: 0 } }
 
 export async function mock(method: string, path: string, body?: unknown): Promise<unknown> {
   const url = new URL(path, 'http://x')
   const p = url.pathname
   if (p === '/search') return delay(search(url.searchParams.get('q') ?? ''), 120)
-  if (p === '/ask') return delay(ask((body as { question: string }).question), 900)
-  if (p.startsWith('/documents/')) return delay(docs.find((d) => d.id === Number(p.split('/')[2])))
-  if (p === '/review') return delay(allFacts.filter((f) => f.status === 'needs_review').map((fact) => ({ fact, document: docs[fact.file_id - 1].name, path: docs[fact.file_id - 1].path, doc_type: docs[fact.file_id - 1].doc_type })))
+  if (p === '/ask') return delay(ask((body as { question: string }).question), 700)
+  if (p === '/conflicts/pick') { picked = (body as { fact_id: number }).fact_id; return delay([], 120) }
+  if (p === '/documents' && url.searchParams.get('recent'))
+    return delay([...docs].sort((a, b) => b.indexed_at!.localeCompare(a.indexed_at!)).slice(0, Number(url.searchParams.get('recent'))), 80)
+  if (p.startsWith('/documents/')) return delay(doc(Number(p.split('/')[2])))
+  if (p === '/review') return delay(allFacts.filter((f) => f.status === 'needs_review').map((fact) => {
+    const d = doc(fact.file_id)
+    return { fact, document: d.name, path: d.path, doc_type: d.doc_type, title: d.title }
+  }))
   if (p.startsWith('/facts/')) {
     const f = allFacts.find((x) => x.id === Number(p.split('/')[2]))
     if (!f) throw new Error('Fact not found')
-    if (method === 'PATCH') Object.assign(f, { value: (body as { value: string }).value, status: 'corrected', reason: null })
-    else Object.assign(f, { status: 'approved', reason: null })
+    if (method === 'PATCH') {
+      const v = (body as { value: string }).value.replace(/[^\d.-]/g, '')
+      if (f.value_type === 'money' && !v) throw new Error(`Could not read a money from '${(body as { value: string }).value}'`)
+      Object.assign(f, { value: f.value_type === 'money' ? v : (body as { value: string }).value, status: 'corrected', reason: null })
+    } else Object.assign(f, { status: 'approved', reason: null })
     return delay({ ...f }, 120)
   }
   if (p === '/overview') return delay(overview())
-  if (p === '/upcoming') return delay(upcoming(Number(url.searchParams.get('days') ?? 90)))
+  if (p === '/upcoming') return delay(upcoming())
+  if (p === '/index/status') return delay({ queued: 0, running: false }, 50)
   if (p === '/watch') {
     const folder = (body as { folder?: string } | undefined)?.folder ?? ''
-    if (method === 'POST' && !watched.includes(folder)) watched = [...watched, folder]
-    if (method === 'DELETE') {
-      if (!watched.includes(folder)) throw new Error('This folder is not being watched')
-      watched = watched.filter((f) => f !== folder)
-    }
-    return delay({ folders: watched, last: watchLast, error: null } satisfies WatchInfo, 80)
+    if (method === 'POST' && !watched.includes(folder)) { watched = [...watched, folder]; counts![folder] = { files: 0, errors: 0, waiting: 0 } }
+    if (method === 'DELETE') watched = watched.filter((f) => f !== folder)
+    return delay({ folders: watched, last: null, error: null, counts } satisfies WatchInfo, 80)
   }
   if (p === '/mcp/settings') {
     if (method === 'PUT') mcp = { ...mcp, ...(body as Pick<McpSettings, 'enabled' | 'allow'>) }
     return delay(mcp, 80)
   }
   if (p === '/mcp/log') return delay(mcpLog)
-  if (p === '/calendar/status') return delay({ connected: true })
-  if (p === '/reminders/preview') { const b = body as { file_id: number; field: string }; return delay(preview(b.file_id, b.field), 80) }
-  if (p === '/open' || p === '/reminders') return delay({ ok: true }, p === '/reminders' ? 600 : 50)
+  if (p === '/calendar/status') return delay({ connected: false })
+  if (p === '/reminders/preview') {
+    const b = body as { file_id: number; field: string }, f = doc(b.file_id).facts.find((x) => x.field === b.field)!
+    return delay({ fact_id: f.id, title: `ID card expires (${doc(b.file_id).facts[0].value})`, date: f.value, description: `From ${doc(b.file_id).name}, page 1. Added by Sniff.`, status: f.status, reviewed: f.status !== 'needs_review' }, 80)
+  }
+  if (p === '/reminders') return delay({ status: 'created' }, 400)
+  if (p === '/open') return delay({ ok: true }, 50)
   throw new Error(`mock: no fixture for ${method} ${path}`)
 }

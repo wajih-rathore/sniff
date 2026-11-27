@@ -17,8 +17,16 @@ export type Fact = {
   reason: string | null // why it needs review
   source_text: string | null
 }
-export type Hit = { file_id: number; path: string; name: string; page: number; snippet: string; score: number; doc_type: string | null }
-export type Source = { file_id: number; path: string; name: string; page: number }
+export type Hit = {
+  file_id: number; path: string; name: string; page: number; snippet: string; score: number; doc_type: string | null
+  reading?: boolean // findable already; its type and facts are still being read
+  title: string // "Metro Gas, utility bill, Nov 2025", from the facts; the file name when they give none
+  date: string | null // the document's own date, ISO
+  match: 'fact' | 'name' | 'text' | 'meaning' // meaning: vector search only, a weaker match
+  match_reason: string
+  fact: Fact | null // the fact holding the query's words
+}
+export type Source = { file_id: number; path: string; name: string; page: number; title?: string }
 export type Conflict = {
   doc_type: string
   key: string // what the documents share, e.g. "id_number 35202-1234567-1"
@@ -51,6 +59,7 @@ export type Document = {
   paths: string[] // every place this exact file is stored; the first is `path`
   near_duplicates: number[] // other documents holding the same record
   pages: number
+  title: string
 }
 export type UpcomingItem = {
   fact: Fact
@@ -61,7 +70,7 @@ export type UpcomingItem = {
   reminder_status: 'created' | null
   conflict: Conflict | null
 }
-export type ReviewItem = { fact: Fact; document: string; path: string; doc_type: string | null }
+export type ReviewItem = { fact: Fact; document: string; path: string; doc_type: string | null; title: string }
 export type Overview = {
   total_files: number
   documents: number
@@ -78,6 +87,7 @@ export type WatchInfo = {
   folders: string[]
   last: { folder: string; at: string; indexed: number; unchanged: number; renamed: number; removed: number; errors: number } | null
   error: string | null
+  counts?: Record<string, { files: number; errors: number; waiting: number }> // per folder; waiting: facts not read yet
 }
 export type McpSettings = {
   enabled: boolean
@@ -105,10 +115,48 @@ async function call<T>(method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', path
   return r.json()
 }
 
+// Mock mode has no pages: a plain strip of printed lines, the value outlined when there is one.
+const mockPage = (mark: boolean) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1190" height="595" viewBox="0 0 1190 595">
+<rect width="1190" height="595" fill="#fdfcf9"/><rect width="1190" height="14" fill="#b5461a"/>
+${[90, 150, 210, 270, 330, 390, 450, 510].map((y, i) => `<rect x="60" y="${y}" width="${[420, 300, 360, 520, 280, 340, 400, 260][i]}" height="18" rx="4" fill="#d9d6ce"/><rect x="${i % 2 ? 900 : 960}" y="${y}" width="${i % 2 ? 230 : 170}" height="18" rx="4" fill="#d9d6ce"/>`).join('')}
+${mark ? '<rect x="940" y="380" width="210" height="38" rx="4" fill="rgb(79 70 229 / .16)" stroke="rgb(79 70 229)" stroke-width="3"/>' : ''}</svg>`)
+
+// POST /ask/stream: server-sent events. "token" pieces arrive while a search answer is written, then one "answer".
+async function askStream(question: string, onToken: (text: string) => void): Promise<Answer> {
+  if (MOCK) return (await import('./mock')).mockStream(question, onToken)
+  const r = await fetch(BASE + '/ask/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }) })
+  if (!r.ok || !r.body) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`)
+  const reader = r.body.pipeThrough(new TextDecoderStream()).getReader()
+  let buf = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) throw new Error('The answer stopped before it was finished')
+    buf += value
+    let end
+    while ((end = buf.indexOf('\n\n')) >= 0) { // one event: "event: <kind>" then "data: <json>"
+      const ev = buf.slice(0, end)
+      buf = buf.slice(end + 2)
+      const kind = /^event: (.*)$/m.exec(ev)?.[1]
+      const data = JSON.parse(/^data: (.*)$/m.exec(ev)?.[1] ?? 'null')
+      if (kind === 'token') onToken(data)
+      else if (kind === 'answer') return data as Answer
+      else if (kind === 'error') throw new Error(data)
+    }
+  }
+}
+
 const enc = encodeURIComponent
 export const api = {
   search: (q: string) => call<Hit[]>('GET', `/search?q=${enc(q)}&k=10`),
   ask: (question: string) => call<Answer>('POST', '/ask', { question }),
+  askStream,
+  pick: (key: string, fact_id: number) => call<Conflict[]>('POST', '/conflicts/pick', { key, fact_id }),
+  recent: (n: number) => call<Document[]>('GET', `/documents?recent=${n}`),
+  indexStatus: () => call<{ queued: number; running: boolean }>('GET', '/index/status'),
+  // A PNG strip of the page around a fact (or the query's words); the top of the page without either.
+  cropUrl: (file_id: number, o: { fact_id?: number; page?: number; q?: string }) =>
+    MOCK ? mockPage(o.fact_id != null)
+    : `${BASE}/documents/${file_id}/crop?${new URLSearchParams(Object.entries(o).filter(([, v]) => v != null && v !== '').map(([k, v]) => [k, String(v)]))}`,
   open: (file_id: number, page: number) => call<unknown>('POST', '/open', { file_id, page }),
   document: (id: number) => call<Document>('GET', `/documents/${id}`),
   correct: (fact_id: number, value: string) => call<Fact>('PATCH', `/facts/${fact_id}`, { value }),

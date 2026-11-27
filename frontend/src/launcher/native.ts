@@ -12,6 +12,10 @@ export const native = {
   openFile: (file_id: number, path: string, page: number) => (invoke ? invoke('open_file', { path, page }) : api.open(file_id, page)),
   reveal: (path: string) => (invoke ? invoke('reveal', { path }) : desktopOnly()),
   hide: () => (invoke ? invoke('hide_window') : Promise.resolve()),
+  // The window follows its content's height; the shell keeps it inside the monitor's work area.
+  fitWindow: (height: number) => (invoke ? invoke('fit_window', { height }) : Promise.resolve()),
+  // 'solid' when there is no see-through backdrop (Linux, or Windows transparency effects off); 'none' in a browser
+  backdrop: () => (invoke ? (invoke('backdrop') as Promise<string>) : Promise.resolve('none')),
   autostart: () => (invoke ? (invoke('autostart_enabled') as Promise<boolean>) : Promise.resolve(false)),
   setAutostart: (enabled: boolean) => (invoke ? invoke('set_autostart', { enabled }) : desktopOnly()),
   hotkey: () => (invoke ? (invoke('get_hotkey') as Promise<string>) : Promise.reject(new Error('desktop only'))),
