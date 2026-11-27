@@ -1,5 +1,6 @@
 // Sniff desktop shell: a launcher window shown and hidden by a global shortcut, a tray icon, reminders as Windows
-// notifications, and the child processes it starts and stops (the FastAPI back end and two llama-server model servers).
+// notifications, and the child processes it starts and stops (the FastAPI back end and the embedding llama-server).
+// The chat model server is not started here: the back end starts it when a model call needs it and stops it when idle.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::collections::HashMap;
@@ -112,13 +113,11 @@ fn spawn(app: &AppHandle, name: &str, exe: &Path, args: &[&str]) {
 
 /// Reuse a model server that already answers on its port. Otherwise start the bundled llama-server, with the
 /// flags scripts/dev.ps1 uses, as soon as its model file is on disk (on first run the download screen puts it there).
+/// Only the small embedding server runs all the time; the back end owns the chat server (backend/sniff/ai/server.py).
 fn model_servers(app: AppHandle, llama: PathBuf) {
     let models = home().join("models");
-    let servers = [
-        ("chat-server", 8080u16, "qwen3-1.7b-q4_k_m.gguf", "--jinja --reasoning-budget 0 -c 8192"),
-        ("embed-server", 8081u16, "all-minilm-l6-v2.gguf", "--embedding -c 2048 -b 2048 -ub 2048"),
-    ];
-    let mut waiting = [true, true];
+    let servers = [("embed-server", 8081u16, "all-minilm-l6-v2.gguf", "--embedding -c 2048 -b 2048 -ub 2048")];
+    let mut waiting = [true];
     while waiting.contains(&true) {
         for (i, (name, port, model, flags)) in servers.iter().enumerate() {
             if !waiting[i] {

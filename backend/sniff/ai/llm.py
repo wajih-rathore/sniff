@@ -7,6 +7,7 @@ from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
 from .. import config
+from . import server
 
 
 @lru_cache(1)
@@ -15,15 +16,17 @@ def client() -> OpenAI:
 
 
 def chat(messages: list[dict], **kw) -> str:
-    r = client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, **kw)
+    with server.using():  # starts the chat server if it is not running
+        r = client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, **kw)
     return clean(r.choices[0].message.content or "")
 
 
 def chat_stream(messages: list[dict], **kw):
     """The same reply as chat(), as pieces of text while the model writes them."""
-    for chunk in client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, stream=True, **kw):
-        if chunk.choices and chunk.choices[0].delta.content:
-            yield chunk.choices[0].delta.content
+    with server.using():
+        for chunk in client().chat.completions.create(model=config.LLM_MODEL, messages=messages, temperature=0, stream=True, **kw):
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
 
 def clean(text: str) -> str:

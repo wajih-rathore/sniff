@@ -1,7 +1,7 @@
 """Entry point of the desktop build (frozen with PyInstaller): the API on 127.0.0.1, plus the first-run model download.
 
-The desktop app (desktop/src-tauri) starts this with SNIFF_HOME set, and starts llama-server itself once the model
-files are on disk. The download screen (frontend/src/views/Setup.tsx) reads GET /setup and starts POST /setup/download.
+The desktop app (desktop/src-tauri) starts this with SNIFF_HOME set, and starts the embedding llama-server once the
+model files are on disk. The chat model server is started by this back end only when a model call needs it (ai/server.py). The download screen (frontend/src/views/Setup.tsx) reads GET /setup and starts POST /setup/download.
 Imports are absolute so PyInstaller can run this file as the main script.
 """
 import hashlib
@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 import uvicorn
 
 from sniff import config
+from sniff.ai import server
 from sniff.api import app
 
 PORT = 8765  # same as desktop/src-tauri/src/main.rs and frontend/src/api.ts
@@ -86,7 +87,8 @@ def setup():
     for name, (_, _, size) in MODELS.items():
         dest, part = config.MODELS_DIR / name, config.MODELS_DIR / (name + ".part")
         models.append({"name": name, "size": size, "have": size if dest.exists() else part.stat().st_size if part.exists() else 0})
-    return {"servers": answers(config.LLM_URL) and answers(config.EMBED_URL), "ready": all((config.MODELS_DIR / n).exists() for n in MODELS),
+    chat = answers(config.LLM_URL) or server.can_start()  # the chat server starts on the first model call
+    return {"servers": chat and answers(config.EMBED_URL), "ready": all((config.MODELS_DIR / n).exists() for n in MODELS),
             "folder": str(config.MODELS_DIR), "models": models, **STATE}
 
 
