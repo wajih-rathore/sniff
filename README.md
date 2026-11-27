@@ -4,7 +4,7 @@ Sniff is a desktop app that indexes the documents on your laptop (PDFs, Office f
 
 Reading, OCR, the models, the index and the answers all run on the laptop. Two optional features send data out; see [What leaves the laptop](#what-leaves-the-laptop).
 
-AI-4009 Generative AI term project (FAST-NUCES). The build plan is in [docs/PLAN.md](docs/PLAN.md) and the evaluation in [docs/EVAL.md](docs/EVAL.md).
+Sniff started as a term project for the Generative AI course (AI-4009) at FAST-NUCES. How it is evaluated is in [docs/EVAL.md](docs/EVAL.md).
 
 ## How it works
 
