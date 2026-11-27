@@ -167,8 +167,8 @@ def docs(conn, add_doc):
     return conn
 
 
-def run(conn, monkeypatch, r: Route):
-    monkeypatch.setattr(ask, "route", lambda q: r)
+def run(conn, monkeypatch, r: Route):  # the calculation for a given query, however the question was read
+    monkeypatch.setattr(ask, "understand", lambda conn, q, today: (r, "model"))
     return ask.ask(conn, "question", today=TODAY)
 
 

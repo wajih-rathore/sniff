@@ -191,7 +191,15 @@ FIELD_WORDS = [  # the first whose field the type has; "expiry" is the type's ow
     (r"\bjobs?\b|positions?|\broles?\b", "position"), (r"nationality", "nationality"), (r"\bborn\b|birth", "date_of_birth"),
     (r"\bissued?\b", "issue_date"), (r"\bstart|\bjoin", "start_date"), (r"certificates?|courses?|degrees?|diplomas?", "title"),
     (DUE, "due_date"), (EXPIRES, "expiry"),
+    # names and other text fields last: "the Orchard Bank balance" asks for the balance, not the bank
+    (r"landlord|owner", "landlord"), (r"tenant", "tenant"), (r"insurer|insurance company", "insurer"), (r"employer", "employer"),
+    (r"\bbrand\b|\bmaker\b|manufacturer", "brand"), (r"\bproduct\b|\bappliance\b", "product"), (r"programme|program", "program"),
+    (r"semester|\bterm\b|session", "semester"), (r"address", "property_address"), (r"\bshop\b|\bstore\b|merchant", "merchant"),
+    (r"provider|company", "provider"), (r"which bank", "bank"), (r"institution|university|college|school", "institution"),
+    (r"\bwho\b|\bwhose\b|\bname\b", "who"),
 ]
+WHO = {"id_card": "name", "passport": "name", "certificate": "holder_name", "transcript": "student_name", "fee_voucher": "student_name",
+       "offer_letter": "candidate_name", "insurance_policy": "insured_name", "tenancy_agreement": "tenant"}  # "who" means this field
 # the value a question means when it names no field: "How much is my gas bill?", "List my HomeEase receipts"
 MAIN_FIELD = {"utility_bill": "amount_due", "receipt": "total_amount", "fee_voucher": "amount", "insurance_policy": "premium",
               "tenancy_agreement": "monthly_rent", "offer_letter": "monthly_salary", "bank_statement": "closing_balance",
@@ -206,7 +214,7 @@ SUM = r"\btotals?\b|\bsum\b|add(?:ed)? up|altogether|all together|\bin all\b|com
 PAID = r"how much (?:did|have|do) (?:i|we) (?:pay|paid)"
 LATEST = r"\blatest\b|\bnewest\b|most recent|\bcurrent(?:ly)?\b|\bnow\b|\blast (?!\d|few|day|week|month|year)"
 LIST = r"^\s*(?:list|show)\b|\blist\b|\bshow\b|\bwhich\b|\bwhat are\b|\bwhat \w+ (?:do|does|did|has|have) \w+ (?:have|got|been)\b"
-LOOKUP = r"how much (?:is|was)|what(?:'s| is| was)"
+LOOKUP = r"how much (?:is|was)|what(?:'s| is| was)|\bwho\b|\bwhen\b|\bwhere\b"
 DOCS = r"documents?|files?|things?|items?"
 # words in company names that say nothing about which company: "insurance" must not pick one insurer
 GENERIC = {"ltd", "limited", "pvt", "private", "company", "inc", "the", "and", "for", "bank", "insurance", "assurance", "takaful",
@@ -291,6 +299,8 @@ def field_for(q: str, doc_type: str | None) -> str | None:
     for pattern, field in FIELD_WORDS:
         if not re.search(pattern, q):
             continue
+        if field == "who":
+            field = WHO.get(doc_type)
         if field == "expiry":
             if doc_type is None:
                 return "warranty_until" if re.search(r"warrant", q) else "expiry_date"
@@ -350,6 +360,11 @@ def understand(conn: sqlite3.Connection, question: str, today: date) -> tuple[Ro
     code found in the question are put back."""
     if r := rules(conn, question, today):
         return r, "rules"
+    q = question.lower()
+    found = names(conn, question)
+    if found is not None and not (found.get("holder") or found.get("provider") or needs_calc(question)
+                                  or any(re.search(p, q) for _, p in TYPE_WORDS) or any(re.search(p, q) for p, _ in FIELD_WORDS)):
+        return Route(route="search"), "rules"  # no type, name, field or sum in it: a question about what a page says
     r = route(question)
     if r.route == "facts" and (found := names(conn, question)):
         f = r.filters

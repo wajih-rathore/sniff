@@ -23,8 +23,8 @@ def docs(conn, add_doc):
     return conn
 
 
-def run(conn, monkeypatch, r: Route):
-    monkeypatch.setattr(ask, "route", lambda q: r)
+def run(conn, monkeypatch, r: Route):  # the calculation for a given query, however the question was read
+    monkeypatch.setattr(ask, "understand", lambda conn, q, today: (r, "model"))
     return ask.ask(conn, "question", today=TODAY)
 
 
@@ -268,3 +268,21 @@ def test_ungrounded_compares_values_not_spelling():
     given = "Paid 1,250.50 on 2026-03-05 for 3 items [page 2]"
     assert ask.ungrounded("It was Rs. 1250.50 on 5 March 2026 for 3 items [1].", given) == []
     assert ask.ungrounded("It was 1,300 on 6 March 2026.", given) == ["6 March 2026", "1,300"]
+
+
+def test_a_question_about_what_a_page_says_skips_the_router(docs, monkeypatch):
+    from sniff.ai import llm
+    text_doc(docs, "C:/d/brownies.txt", "Chocolate brownies. 3 eggs, 200 g dark chocolate. Bake at 175 C for 25 minutes.")
+    monkeypatch.setattr(llm, "chat_json", no_model)  # no type, name, field or sum in the question: nothing for the router to do
+    monkeypatch.setattr(llm, "chat", lambda messages, **kw: "3 eggs [1].")
+    a = ask.ask(docs, "How many eggs go into the brownies?", today=TODAY)
+    assert a.route == "search" and a.parser == "rules" and a.answer == "3 eggs [1]." and not a.ungrounded_numbers
+
+
+def test_who_questions_read_the_person_field(docs, monkeypatch):
+    from sniff.ai import llm
+    monkeypatch.setattr(llm, "chat_json", no_model)
+    a = ask.ask(docs, "Whose ID card expires on 5 December 2026?", today=TODAY)  # an expiry: lists the dates, with the files
+    assert "id_sara.jpg" in a.answer and a.parser == "rules"
+    a = ask.ask(docs, "Who is on my newest ID card?", today=TODAY)
+    assert a.answer == "Ali Khan (id_ali.jpg), from the newest document (2027-01-10)." and a.parser == "rules"

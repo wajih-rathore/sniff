@@ -15,7 +15,7 @@ ELEC = {"provider": "Northern Electric Supply Co.", "account_number": "ELC-1"}
 
 
 def run(conn, monkeypatch, **route):
-    monkeypatch.setattr(ask, "route", lambda q: Route(route="facts", **route))
+    monkeypatch.setattr(ask, "understand", lambda conn, q, today: (Route(route="facts", **route), "model"))
     return ask.ask(conn, "question", today=TODAY)
 
 
