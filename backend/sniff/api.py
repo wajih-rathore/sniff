@@ -8,10 +8,12 @@ from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 from . import ai_settings, config, db, gcal, ics, mcp_settings, records, titles, verify, watch
@@ -45,6 +47,13 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://tauri.localhost", "htt
 # A DNS-rebinding page reaches 127.0.0.1 under its own host name; refuse every host but this machine's.
 # "testserver" is the host FastAPI's TestClient uses.
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
+
+
+@app.exception_handler(RequestValidationError)
+def invalid_request(request: Request, e: RequestValidationError):
+    """FastAPI's 422 without the rejected input: it can be an API key (PUT /ai/settings without a provider)."""
+    return JSONResponse({"detail": jsonable_encoder([{k: v for k, v in err.items() if k != "input"} for err in e.errors()])}, 422)
+
 
 EVAL_DIR = config.ROOT / "eval" / "results"
 REMINDER_TITLES = {"expiry_date": "expires", "due_date": "payment due", "warranty_until": "warranty ends", "end_date": "ends"}

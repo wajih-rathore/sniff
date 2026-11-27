@@ -106,6 +106,11 @@ def test_the_key_never_follows_a_new_address(conn, sent):
     assert client.get("/ai/settings").json()["key_saved"] is False
 
 
+def test_a_rejected_request_does_not_echo_the_key(conn, store):
+    r = TestClient(api.app).put("/ai/settings", json={"key": KEY})  # no provider
+    assert r.status_code == 422 and r.json()["detail"][0]["loc"] == ["body", "provider"] and KEY not in r.text
+
+
 def test_without_a_password_store_the_key_is_not_saved_anywhere(conn):
     # conftest.py selects keyring's "fail" backend: a system without a store
     r = TestClient(api.app).put("/ai/settings", json={"provider": "anthropic", "key": KEY})
