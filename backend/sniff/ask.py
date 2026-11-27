@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from . import records, verify
 from .ai import llm
-from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Answer, Conflict, Source
+from .schemas import EXPIRY_FIELDS, FACT_MODELS, FIELDS, HOLDER_FIELDS, ORG_FIELDS, Alternative, Answer, Conflict, Source
 from .search import STOP, search
 
 Op = Literal["list", "sum", "count", "min", "max", "next_expiring", "outstanding", "latest"]
@@ -455,12 +455,14 @@ def _squash(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", s.lower())  # OCR drops spaces: "OmarFarooq", "ORCHARDBANKLTD"
 
 
-def keep(d: records.Doc, r: Route, today: date) -> bool:
+def keep(d: records.Doc, r: Route, today: date, copies: list[records.Doc] = ()) -> bool:
+    """Does this document pass the filters? A name passes if any copy of the record has it: OCR may have misread it
+    on the copy that is kept ("HAMZAKHAN"). Dates are checked on the document itself."""
     f = r.filters
     people = [h for h in HOLDER_FIELDS if h in FIELDS[d.doc_type]] or NAME_FIELDS  # bills and receipts have no person
-    if f.holder and not any(named(f.holder, d.get(h)) for h in people):
+    if f.holder and not any(named(f.holder, x.get(h)) for x in (d, *copies) for h in people):
         return False
-    if f.provider and not any(named(f.provider, d.get(n)) for n in NAME_FIELDS):
+    if f.provider and not any(named(f.provider, x.get(n)) for x in (d, *copies) for n in NAME_FIELDS):
         return False
     if rng := date_range(f, today):
         field = asked_field(r, d.doc_type)
@@ -473,23 +475,61 @@ def keep(d: records.Doc, r: Route, today: date) -> bool:
 
 
 def answer_from_facts(conn, question: str, r: Route, today: date) -> Answer:
-    docs = records.load(conn, r.doc_type)
-    res = records.resolve([d for d in docs if keep(d, r, today)])
-    res.conflicts = records.resolve(docs).conflicts  # before filtering, as /upcoming does: a misread name ("HAMZAKHAN") must not hide one
-    query, note = r.model_dump(), ""
+    """Duplicates are folded first, then the filters run. Copies of one record that disagree (a conflict) are never
+    both counted and never decided by code: the answer is computed once per copy, and if the results differ the answer
+    gives each one, as alternatives, until the user picks the right copy."""
+    res = records.resolve(records.load(conn, r.doc_type))
+    query = r.model_dump()
+    copies: dict[int, list[records.Doc]] = {}
+    for dup, rep in res.skipped:
+        copies.setdefault(rep.id, []).append(dup)
+    for side in res.disputed:
+        for d in side:
+            copies.setdefault(d.id, []).extend(x for x in side if x is not d)
+    ok = lambda d: keep(d, r, today, copies.get(d.id, []))
+    disputed = {d.id for side in res.disputed for d in side}
+    base = [d for d in res.kept if d.id not in disputed]
+    touched = [side for side in res.disputed if any(ok(d) for d in side)]
+    if not touched:
+        return _finish(question, *_compute(r, [d for d in base if ok(d)], today), query, res)
+    runs = []  # (side, chosen copy, used, text, note)
+    for side in touched:
+        for d in side:
+            # shortcut: when two disputed records meet in one answer, the other one stays at its most trusted copy
+            chosen = [d] + [other[0] for other in touched if other is not side]
+            runs.append((side, d, *_compute(r, [x for x in base + chosen if ok(x)], today)))
+    if len({tuple(sorted((fr["field"], fr["value"]) for _, fr in used)) for _, _, used, _, _ in runs}) == 1:
+        return _finish(question, *runs[0][2:], query, res)  # the conflict does not change this answer
+    used = list({fr["id"]: (d, fr) for _, _, u, _, _ in runs for d, fr in u}.values())
+    text = "Copies of one record disagree, so Sniff has not picked one. " + " ".join(
+        f"If {_name(d)} is right: {t + n if t else 'nothing matches.'}" for _, d, _, t, n in runs) + " Pick the right copy to settle it."
+    a = _finish(question, used, text, "", query, res)
+    fields = {fr["field"] for _, fr in used}
+    for side, d, _, t, n in runs:
+        c = next((c for c in res.conflicts if c.field in fields and any(v.source.file_id == d.id for v in c.values)), None)             or next(c for c in res.conflicts if any(v.source.file_id == d.id for v in c.values))
+        v = next(v for v in c.values if v.source.file_id == d.id)
+        a.alternatives.append(Alternative(source=records.source(d.id, d.path), answer=t + n if t else "No matching documents found.",
+                                          key=c.key, fact_id=v.fact_id))
+    return a
+
+
+def _compute(r: Route, kept: list[records.Doc], today: date):
+    """The result over these documents (one per record): the facts used, the answer text ("" if nothing matched) and
+    a note on how it was counted."""
+    note = ""
     if r.op == "outstanding":
-        used, text = _outstanding(res.kept)
+        used, text = _outstanding(kept)
     elif r.op == "latest" and not (r.doc_type == "bank_statement" and r.field == "closing_balance"):
-        used, text = _latest(res.kept, r.field)
+        used, text = _latest(kept, r.field)
     elif r.doc_type == "bank_statement" and r.field == "closing_balance" and r.op in ("sum", "latest"):
-        used, text = _balances(res.kept)
+        used, text = _balances(kept)
     else:
         field = r.field
-        accounts = {(d.get("provider"), d.get("account_number")) for d in res.kept}
-        if r.doc_type == "utility_bill" and r.op == "sum" and field == "amount_due" and len(res.kept) > len(accounts):
+        accounts = {(d.get("provider"), d.get("account_number")) for d in kept}
+        if r.doc_type == "utility_bill" and r.op == "sum" and field == "amount_due" and len(kept) > len(accounts):
             field = "current_charges"  # each amount_due repeats the last bill's unpaid amount: summing them counts it twice
             note = " Counted current charges, not amount due, so unpaid amounts carried from one bill to the next are not counted twice."
-        items = [(d, d.facts[f]) for d in res.kept if (f := field if r.doc_type else asked_field(r, d.doc_type)) and f in d.facts]
+        items = [(d, d.facts[f]) for d in kept if (f := field if r.doc_type else asked_field(r, d.doc_type)) and f in d.facts]
         used, text = items, ""
         if r.op == "count":
             text = f"{len(items)} documents."
@@ -502,15 +542,13 @@ def answer_from_facts(conn, question: str, r: Route, today: date) -> Answer:
             future = sorted((x for x in items if x[1]["value"] >= today.isoformat() and not (x[1]["field"] == "due_date" and x[0].get("payment_status") == "paid")),
                             key=lambda x: x[1]["value"])
             if not future:
-                return Answer(question=question, answer="Nothing upcoming; all matching dates have passed.", route="facts", query=query)
+                return [], "Nothing upcoming; all matching dates have passed.", ""
             d, fr = future[0]
             used, text = [future[0]], f"{_name(d)}: {fr['field'].replace('_', ' ')} {fr['value']}, in {(date.fromisoformat(fr['value']) - today).days} days."
         elif items:  # list
             used = sorted(items, key=lambda x: _sortable(x[1]))
             text = "; ".join(f"{_show(fr)} ({_name(d)})" for d, fr in used) + "."
-    if not text:
-        return Answer(question=question, answer="No matching documents found.", route="facts", query=query)
-    return _finish(question, text + note, query, used, res)
+    return used, text, note
 
 
 def _outstanding(kept: list[records.Doc]):
@@ -574,7 +612,10 @@ def _sum(items, field: str):
     return used, f"{_fmt(total)} in total, from {len(items)} documents."
 
 
-def _finish(question, text, query, used, res: records.Resolved) -> Answer:
+def _finish(question, used, text, note, query, res: records.Resolved) -> Answer:
+    if not text:
+        return Answer(question=question, answer="No matching documents found.", route="facts", query=query)
+    text += note
     used_ids = {d.id for d, _ in used}
     skipped = [dup for dup, kept in res.skipped if kept.id in used_ids]
     unreviewed = [records.fact(fr) for _, fr in used if fr["status"] == "needs_review"]

@@ -287,6 +287,26 @@ def conflicts(conn=Depends(get_conn)):
     return records.resolve(records.load(conn)).conflicts
 
 
+class PickReq(BaseModel):
+    key: str  # Conflict.key
+    fact_id: int  # the value the user says is right
+
+
+@app.post("/conflicts/pick", response_model=list[Conflict])
+def pick_conflict(req: PickReq, conn=Depends(get_conn)):
+    """The user's choice settles a conflict: the chosen fact is approved, the other copies' values of that field are
+    superseded, so later totals use the choice. Returns the conflicts still open."""
+    c = next((c for c in records.resolve(records.load(conn)).conflicts if c.key == req.key and any(v.fact_id == req.fact_id for v in c.values)), None)
+    if not c:
+        raise HTTPException(404, "No open conflict with this key has that fact as one of its values")
+    others = [v.fact_id for v in c.values if v.fact_id != req.fact_id]
+    conn.execute("UPDATE facts SET status='approved', reason=NULL WHERE id=?", (req.fact_id,))
+    conn.executemany("UPDATE facts SET status='superseded', reason=? WHERE id=?", [(f"The user chose fact {req.fact_id} instead", i) for i in others])
+    db.log(conn, "conflict_pick", json.dumps({"key": req.key, "field": c.field, "chosen": req.fact_id, "superseded": others}))
+    conn.commit()
+    return records.resolve(records.load(conn)).conflicts
+
+
 @app.get("/overview", response_model=Overview)
 def overview(conn=Depends(get_conn)):
     files = conn.execute("SELECT status, doc_type, copy_of FROM files").fetchall()

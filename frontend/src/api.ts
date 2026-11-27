@@ -4,7 +4,7 @@ export const DESKTOP = '__TAURI_INTERNALS__' in window && !import.meta.env.DEV
 export const BASE: string = import.meta.env.VITE_API ?? (DESKTOP ? 'http://127.0.0.1:8765' : 'http://127.0.0.1:8000')
 export const MOCK = import.meta.env.VITE_MOCK === '1'
 
-export type FactStatus = 'verified' | 'needs_review' | 'corrected' | 'approved'
+export type FactStatus = 'verified' | 'needs_review' | 'corrected' | 'approved' | 'superseded' // superseded: the user chose another copy's value
 export type Fact = {
   id: number
   file_id: number
@@ -36,6 +36,7 @@ export type Answer = {
   skipped_duplicates: Source[]
   unreviewed: Fact[]
   conflicts: Conflict[]
+  alternatives?: { source: Source; answer: string; key: string; fact_id: number }[] // the answer for each side of a conflict; POST /conflicts/pick {key, fact_id}
   parser?: 'rules' | 'model' | null // who read the question: code's rules or the model router
   ungrounded_numbers?: string[] // numbers in a written answer that are not in its passages
 }

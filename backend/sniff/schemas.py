@@ -9,7 +9,7 @@ DOC_TYPES: tuple[str, ...] = ("id_card", "utility_bill", "certificate", "receipt
                               "warranty_card", "offer_letter", "insurance_policy", "tenancy_agreement", "fee_voucher", "other")
 DocType = Literal[DOC_TYPES]  # type: ignore[valid-type]
 
-FactStatus = Literal["verified", "needs_review", "corrected", "approved"]
+FactStatus = Literal["verified", "needs_review", "corrected", "approved", "superseded"]  # superseded: the user chose another copy's value
 
 
 # ---------- fields per document type ----------
@@ -261,6 +261,14 @@ class Conflict(BaseModel):
     values: list[ConflictValue]
 
 
+class Alternative(BaseModel):
+    """One side of a conflict the answer depends on: what the answer is if this copy is right, and how to choose it."""
+    source: Source  # the copy taken as right
+    answer: str
+    key: str  # POST /conflicts/pick {key, fact_id} chooses this copy's value
+    fact_id: int
+
+
 class Answer(BaseModel):
     question: str
     answer: str
@@ -272,6 +280,7 @@ class Answer(BaseModel):
     skipped_duplicates: list[Source] = []  # near-duplicates left out so nothing is counted twice
     unreviewed: list[Fact] = []  # facts used that still need review
     conflicts: list[Conflict] = []
+    alternatives: list[Alternative] = []  # set when copies of one record disagree in a way that changes the answer
     parser: Literal["rules", "model"] | None = None  # who turned the question into a query: code's rules or the LLM router
     ungrounded_numbers: list[str] = []  # numbers in a written answer that are not in the passages it was given
 

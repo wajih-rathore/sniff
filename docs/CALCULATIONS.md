@@ -100,12 +100,14 @@ Decision: totals and lists include facts with status `needs_review`. Leaving the
 
 ## Conflicts
 
-Within a key, documents that disagree on a stable field are a conflict, for example one CNIC on two cards with different expiry dates. Neither value is picked:
+Within a key, documents that disagree on a stable field are a conflict, for example one CNIC on two cards with different expiry dates. Code never picks one (feedback point 9), and the two copies are never both counted:
 
-- both documents stay in counts and lists;
 - `GET /conflicts` returns the key, the field, and each value with its document, page and status;
-- an answer that uses the field fills `conflicts` and adds "Conflict: the expiry date for id_number ... is A in x.jpg but B in y.pdf. Check which is right.";
-- `/upcoming` attaches the conflict to the date it affects.
+- an answer that touches a conflict is computed once per copy, as if that copy were the right one. If the results are the same (the copies disagree on a field this answer does not use), the record is counted once and the answer is given normally. If they differ, the answer text says the copies disagree and gives each result ("If spring.pdf is right: 268,800 in total ... If spring_reissued.pdf is right: 274,400 in total ..."), and `Answer.alternatives` holds each result with the copy, the conflict key and the fact to pick;
+- `POST /conflicts/pick` with the conflict key and the chosen fact settles it: the chosen fact becomes `approved`, the other copies' values of that field become `superseded`. A superseded value no longer counts as a disagreement, so the copies become near-duplicates, the chosen value is the one every later total, list and reminder uses, and the other copy is listed as skipped. Each field is its own choice; if the user takes the amount from one copy and the due date from the other, the record keeps both choices;
+- `/upcoming` still lists the date of every copy, each with the conflict attached, until the user picks.
+
+If two disputed records meet in one answer, the alternatives vary one record at a time and keep the other at its most trusted copy, so not every combination is shown.
 
 Stable fields: every field of `id_card`, `certificate`, `passport`, `transcript`, `warranty_card`, `offer_letter`, `insurance_policy`, `tenancy_agreement` and `fee_voucher`. For bills and receipts every stable field is part of the key, so they never conflict (same key means near-duplicate). A bank statement's amounts are not stable, so two statements of the same account and period end can only conflict on `period_start`. Examples in the test data: a revised offer letter with a new joining date, a draft and a signed tenancy agreement with different end dates, a re-issued fee voucher with a new due date, and a travel policy extended to a later end date.
 
@@ -117,6 +119,7 @@ Stable fields: every field of `id_card`, `certificate`, `passport`, `transcript`
 | `skipped_duplicates` | near-duplicates left out |
 | `unreviewed` | facts used that still need review |
 | `conflicts` | conflicts on the field asked about |
+| `alternatives` | the answer for each copy of a disputed record, when they differ |
 | `facts`, `sources`, `query` | the facts used, their pages, and the template the router filled |
 
 ## Known limits
@@ -125,5 +128,5 @@ Stable fields: every field of `id_card`, `certificate`, `passport`, `transcript`
 - Two months of a flat-rate bill (same amount every month) are merged if one copy has no readable bill or due date at all.
 - A changed or renewed document with the same key and the same stable values is treated as a duplicate. For bills this means a corrected bill for the same month is folded into the first one; the more trusted copy wins.
 - Spending assumes `current_charges` includes tax, as on the bills we generate. The "tax outside current charges" case is handled by the rule above but is not in the test data yet.
-- Both sides of a conflict stay in sums. A re-issued fee voucher is therefore counted twice in a fee total until the user corrects or removes one; the answer shows the conflict.
+- Two copies of a bill or receipt with the same key never conflict: their money fields are not stable, so the more trusted copy is counted and the other is listed as skipped, even if an amount differs.
 - A bank balance below zero (an overdraft) fails the money rule and goes to review.
