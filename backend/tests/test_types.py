@@ -1,4 +1,4 @@
-"""The eight A4 document types: schema, field rules, cross-field rules, label checks, extraction parsing and the
+"""The eight newer document types (passport, transcript, ...): schema, field rules, cross-field rules, label checks, extraction parsing and the
 calculations on their facts. Pure code with fakes; no model server."""
 from datetime import date, timedelta
 

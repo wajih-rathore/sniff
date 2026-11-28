@@ -1,4 +1,4 @@
-"""Human ratings of search answers (A4: human evaluation; at least two raters, agreement reported).
+"""Human ratings of search answers (human evaluation; at least two raters, agreement reported).
 
     uv run python ../eval/ratings.py make                       # ask 60 search questions, write data/ratings/
     uv run python ../eval/ratings.py score                      # read data/ratings/rated_*.csv

@@ -1,5 +1,5 @@
 """Router (tool selection) and Ask (answer correctness, citations, abstention), overall and by question category,
-against keyword-rule routing and plain RAG without the facts table (feedback points 8 and 13).
+against keyword-rule routing and plain RAG without the facts table.
 
     uv run python ../eval/run_ask.py              # all questions in data/eval/ask.jsonl, on .sniff/eval.db
     uv run python ../eval/run_ask.py --limit 10   # a quick check (round-robin over categories)

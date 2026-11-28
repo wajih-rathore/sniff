@@ -1,4 +1,4 @@
-"""Prompt injection (A4: robustness and safety): how often does an instruction hidden in a document change what
+"""Prompt injection (robustness and safety): how often does an instruction hidden in a document change what
 Sniff stores or answers, and how accurate is it on the same documents without the instruction?
 
     uv run python ../data/injection/make_injection.py            # build the set first (120 files, deterministic)

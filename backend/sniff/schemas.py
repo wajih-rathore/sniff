@@ -73,7 +73,7 @@ FIELDS: dict[str, dict[str, Field]] = {
                                                          "Order Total", "Total Paid", "Total Amount"), True),
         "warranty_until": Field("date", "the date the warranty ends, if any", ("Warranty", "Guarantee", "Valid until", "Warranty till", "expires")),
     },
-    # ---- the A4 types
+    # ---- the newer types (passport, transcript, bank statement, ... fee voucher)
     "passport": {
         "name": Field("text", "the passport holder's full name", ("Name", "Full Name", "Holder's Name"), True, True),
         "passport_number": Field("passport", "the passport number", ("Passport No", "Passport Number", "Passport #"), True, True),
