@@ -1,5 +1,5 @@
 """Document type (classification) and fact extraction per test set, against keyword and regex baselines,
-and the model comparison (feedback point 2).
+and the model comparison.
 
     uv run python ../eval/run_extraction.py                    # score the databases run_index.py made (test, hard, real)
     uv run python ../eval/run_extraction.py --sets test hard   # only some sets

@@ -1,4 +1,4 @@
-"""The evaluation report for the graders: one static HTML file from eval/results/*.json. No model, no JavaScript.
+"""The evaluation report: one static HTML file from eval/results/*.json. No model, no JavaScript.
 
     uv run python ../eval/report.py                                  # -> docs/eval-report.html
     uv run python ../eval/report.py --results DIR --out FILE

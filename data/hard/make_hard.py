@@ -1,4 +1,4 @@
-"""Harder copies of the synthetic test documents (feedback point 12), with labels.
+"""Harder copies of the synthetic test documents, with labels.
 
     cd backend && uv run python ../data/hard/make_hard.py            # seed 7, ~155 documents
     cd backend && uv run python ../data/hard/make_hard.py --limit 8  # quick check

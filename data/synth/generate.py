@@ -21,8 +21,8 @@ Label notes for the evaluators:
   photo, scan or PDF) and conflicts (one CNIC on two cards with different dates). Label rows say `duplicate_of` (the
   original file) and `duplicate_kind` ("exact" or "near"). Gold answers count each document once.
 - A few test records are incomplete on purpose: a field is not printed and its label is null.
-- The eight A4 types (passport, transcript, bank statement, warranty card, offer letter, insurance policy, tenancy
-  agreement, fee voucher) are built after the A3 set with their own random generators, so every A3 file keeps its bytes
+- The eight newer types (passport, transcript, bank statement, warranty card, offer letter, insurance policy, tenancy
+  agreement, fee voucher) are built after the original set with their own random generators, so every original file keeps its bytes
   and path. They add near-duplicates and exact copies, and four planned conflicts: a revised offer letter, a draft and a
   signed tenancy agreement, a re-issued fee voucher and an extended travel policy. Passport names are printed in capitals
   on one layout, like the ID cards.
@@ -952,9 +952,9 @@ def others(rng, keys, fmts):
     return out
 
 
-# ---------------------------------------------------------------- A4 types
-# The eight A4 types, plus a few more ID cards and "other" pages, are built after the A3 set with their own random
-# generators, so every A3 file and label stays exactly as it was. As before, code computes every total and date.
+# ---------------------------------------------------------------- the eight newer types
+# The eight newer types, plus a few more ID cards and "other" pages, are built after the original set with their own random
+# generators, so every original file and label stays exactly as it was. As before, code computes every total and date.
 WOMEN = {"Ayesha Khan", "Sara Khan", "Nusrat Khan", "Zainab Malik"}
 COLORS = [(.1, .25, .5), (.5, .1, .15), (.15, .4, .3), (.3, .2, .5), (.45, .3, .05)]
 
@@ -1850,7 +1850,7 @@ A4_TEST_OTHER = ["advert_job", "advert_rent", "outline_db", "notice_bank"]
 
 
 def build_a4(split, seed, used):
-    """The A4 types for one split. Own generator, so the A3 files above do not change."""
+    """The eight newer types for one split. Own generator, so the original files above do not change."""
     rng = random.Random(f"{seed}-{split}-a4")
     test = split == "test"
     hh = HOUSEHOLDS[split]
@@ -2458,7 +2458,7 @@ def draft_eval(T, seed):
     for r in [r for r in bought if sum(F(x, "merchant") == F(r, "merchant") and F(x, "date") == F(r, "date") for x in rcs) == 1][:4]:
         sd(f"What did I buy at {F(r, 'merchant')} on {day(F(r, 'date'))}?", r["meta"]["items"][0], "text", [r])
 
-    # ---- A4 types. Same rules: gold answers come from the labels, and each document counts once.
+    # ---- the eight newer types. Same rules: gold answers come from the labels, and each document counts once.
     newest = lambda rs, f: max(rs, key=lambda r: F(r, f))
     total = lambda rs, f: num(round(sum(F(r, f) for r in rs), 2))
     future = lambda rs, f: sorted((r for r in rs if F(r, f) and F(r, f) >= TODAY.isoformat()), key=lambda r: F(r, f))
@@ -2635,7 +2635,7 @@ def draft_eval(T, seed):
     assert groups[S1] >= 50 and groups[X] + groups[EW] + groups[DU] + groups[CF] >= 50 and groups[SE] + groups[UN] >= 50, groups
     assert len(A) >= 100 and min(groups[c] for c in (S1, X, EW, DU, CF, SE, UN)) >= 10, groups
 
-    # search queries for the A4 types, after the 60 above so those stay the same
+    # search queries for the eight newer types, after the 60 above so those stay the same
     tf = lambda t, f=lambda r: True: R(lambda r: r["type"] == t and f(r))
     for q, rel_ in [
             ("Ali's passport", tf("passport", lambda r: r["meta"]["person"] == "Ali Raza Khan")),
@@ -2702,7 +2702,7 @@ def self_check(recs, search, ask):
         print(" ", sp, "by format", dict(sorted(Counter(r["format"] for r in rs).items())))
     assert 65 <= len(dev) <= 85 and 360 <= len(test) <= 400, (len(dev), len(test))
     assert Counter(r["duplicate_kind"] for r in test) == {None: len(test) - 22, "near": 12, "exact": 10}, Counter(r["duplicate_kind"] for r in test)
-    for t in FIELDS:  # every type: 20+ test originals; each A4 type has typed and scanned or photographed copies in each split
+    for t in FIELDS:  # every type: 20+ test originals; each of the eight newer types has typed and scanned or photographed copies in each split
         assert sum(r["type"] == t and not r["duplicate_of"] for r in test) >= 20, t
         for rs in ((dev, test) if t not in ("id_card", "utility_bill", "certificate", "receipt") else ()):
             fm = {r["format"] for r in rs if r["type"] == t}

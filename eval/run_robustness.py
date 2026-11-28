@@ -1,4 +1,4 @@
-"""Robustness (A4): how much accuracy does Sniff lose when the same document is a photo, a low-resolution scan,
+"""Robustness: how much accuracy does Sniff lose when the same document is a photo, a low-resolution scan,
 handwriting or cut off? Each hard document is compared with its clean twin, the synthetic test document it was made from.
 
     uv run python ../eval/run_robustness.py

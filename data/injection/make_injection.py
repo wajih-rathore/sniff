@@ -1,4 +1,4 @@
-"""Prompt-injection test set (A4: robustness and safety), built the same way every time.
+"""Prompt-injection test set (robustness and safety), built the same way every time.
 
     cd backend && uv run python ../data/injection/make_injection.py            # seed 11
     cd backend && uv run python ../data/injection/make_injection.py --n 4      # a small set for a quick check

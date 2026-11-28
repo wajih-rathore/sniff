@@ -1,4 +1,4 @@
-"""System benchmark (feedback point 1): index N documents and ask M questions through the real pipeline, while
+"""System benchmark: index N documents and ask M questions through the real pipeline, while
 sampling the memory of every Sniff process every 0.5 s. Writes eval/results/system.json.
 
     cd backend

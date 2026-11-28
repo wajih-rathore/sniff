@@ -1,6 +1,6 @@
 """MCP server: lets Claude Code, Cursor and other agents look things up in Sniff instead of reading files.
 
-Limits (feedback point 10):
+Limits:
 - stdio only. There is no network port, so only the agent the user starts it from can call it.
 - Read-only. No tool writes to the database, the files or the calendar.
 - Off until the user turns it on (settings table, see mcp_settings.py). While off, every tool refuses and the call is logged.

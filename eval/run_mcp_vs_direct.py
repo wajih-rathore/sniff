@@ -1,4 +1,4 @@
-"""MCP tools or plain file reading? (feedback point 7, A4 agents and tool calling)
+"""MCP tools or plain file reading? (agents and tool calling)
 
 The same questions over the same documents, answered by the local chat model acting as a tool-using agent, in two
 conditions:
