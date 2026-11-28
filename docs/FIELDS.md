@@ -1,6 +1,6 @@
 # Document fields and rules
 
-This answers feedback points 3 and 4. It covers all 12 document types from the proposal. The fields are defined in `backend/sniff/schemas.py` (`FIELDS`), and the rules in `backend/sniff/verify.py`. This file is the readable copy; if they differ, the code is right and this file is out of date.
+It covers all 12 document types. The fields are defined in `backend/sniff/schemas.py` (`FIELDS`), and the rules in `backend/sniff/verify.py`. This file is the readable copy; if they differ, the code is right and this file is out of date.
 
 The model only copies each value as it is printed ("21.03.2003", "Rs. 4,320/-"). Code parses it, checks it and decides its status. No model does a date comparison or a sum.
 
@@ -251,7 +251,7 @@ No fields. These documents are indexed for search only.
 
 - The label lists come from the bills, cards and receipts we generate and wording common on local bills (Arrears, CNIC, Last date of payment). A real document that uses a label not in the list gets `needs_review`, not a wrong `verified`.
 - OCR misreads labels too ("Bom" for "Born"); the value then needs review even when it is right.
-- The 8 A4 types were checked only on generated documents (label check on gold values, no model). How well the model extracts them is measured after the merge.
+- The 8 newer types (passport, transcript, bank statement, warranty card, offer letter, insurance policy, tenancy agreement, fee voucher) were checked only on generated documents (label check on gold values, no model). How well the model extracts them is measured after the merge.
 - Two wrong values still pass the label check on generated typed PDFs: an employer name given as `position` (the letter says "the position of X at Employer", and "Position" is a label) and, on small warranty cards, any value in the first 3 rows given as `brand`.
 - The CGPA rule assumes a 4.0 scale. A transcript on a 5.0 or percentage scale needs review.
 - "Issue date is in the future" uses today's date, so it is the one rule whose result can change over time.

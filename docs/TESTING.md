@@ -189,7 +189,7 @@ What the wrong answers said:
 - "How much did I spend on gas in 2026?" went to search, and the model added numbers itself: "PKR 5400.00 + PKR
   9072.00 = PKR 14472.00" (the second number is the late-payment amount). "Add up my Metro Gas bills for 2026" gave
   "a total of PKR 17,400.00" with a December bill that does not exist. The electricity question was also summed by
-  the model, wrongly. The LLM doing arithmetic is what the rubric forbids.
+  the model, wrongly. The LLM doing arithmetic is what Sniff must not do; code does the arithmetic.
 - "What was my total gas spending this year?" and "How much do I owe for gas?": the router set the year to 2023, so
   "No matching documents found."
 - "How much is my gas bill?" and "How much is the gas bill I need to pay?": the sum of all 9 utility bills, 45,088.61.

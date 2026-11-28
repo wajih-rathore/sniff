@@ -1,6 +1,6 @@
 # Calculations, duplicates and conflicts
 
-This answers feedback points 5, 6 and 9. The code is in `backend/sniff/ask.py` (calculations), `backend/sniff/records.py` (duplicates and conflicts) and `backend/sniff/verify.py` (`spend`). Field names are in `FIELDS.md`.
+The code is in `backend/sniff/ask.py` (calculations), `backend/sniff/records.py` (duplicates and conflicts) and `backend/sniff/verify.py` (`spend`). Field names are in `FIELDS.md`.
 
 The model never calculates. A facts question becomes a fixed template: document type, field, operation (`list`, `sum`, `count`, `min`, `max`, `next_expiring`, `outstanding`, `latest`) and filters (person, provider, year, month, a date range, or a relative period).
 
@@ -67,7 +67,7 @@ The statement rule is `opening_balance + total_credits - total_debits = closing_
 
 **Money in and out** over a period is the sum of `total_credits` or `total_debits` over unique statements whose `period_end` is in the period.
 
-## Other A4 money fields
+## Other money fields
 
 `monthly_salary` (offer letter), `premium` (insurance), `monthly_rent` and `security_deposit` (tenancy) and `amount` (fee voucher) are plain amounts. Sum, min, max and list work on them as they do on receipts, using the date table above. `cgpa` is a number between 0 and 4; min, max and list work on it. Code does not multiply rent by months or split a premium across years: a premium counts in the year its cover starts.
 
@@ -102,7 +102,7 @@ Decision: totals and lists include facts with status `needs_review`. Leaving the
 
 ## Conflicts
 
-Within a key, documents that disagree on a stable field are a conflict, for example one CNIC on two cards with different expiry dates. Code never picks one (feedback point 9), and the two copies are never both counted:
+Within a key, documents that disagree on a stable field are a conflict, for example one CNIC on two cards with different expiry dates. Code never picks one, and the two copies are never both counted:
 
 - `GET /conflicts` returns the key, the field, and each value with its document, page and status;
 - an answer that touches a conflict is computed once per copy, as if that copy were the right one. If the results are the same (the copies disagree on a field this answer does not use), the record is counted once and the answer is given normally. If they differ, the answer text says the copies disagree and gives each result ("If spring.pdf is right: 268,800 in total ... If spring_reissued.pdf is right: 274,400 in total ..."), and `Answer.alternatives` holds each result with the copy, the conflict key and the fact to pick;
