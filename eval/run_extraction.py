@@ -21,7 +21,7 @@ from collections import Counter, defaultdict
 import baselines
 from common import RESULTS, db_path, index, labels, latency, path_of, rel, same_value, save, stay_awake, stratified, use_llm
 
-from sniff import config, db
+from sniff import ai_settings, config, db
 from sniff.schemas import DOC_TYPES, FACT_MODELS
 
 SETS = ["test", "hard", "real", "own"]
@@ -119,6 +119,9 @@ def evaluate(sets: list[str]):
     from run_index import times_path
 
     model = config.LLM_MODEL
+    # label rows by this run's AI setting: score with the same SNIFF_AI the databases were indexed with
+    off = ai_settings.current()["provider"] == "off"
+    type_name, fact_name = ("Sniff (AI off)",) * 2 if off else (f"Sniff ({model}, prompted)", f"Sniff ({model}, JSON schema)")
     type_rows, fact_rows, type_fail, fact_fail, per_field, confusion = [], [], [], [], {}, None
     for split in sets:
         if not db_path(split).exists():
@@ -127,11 +130,11 @@ def evaluate(sets: list[str]):
         m, pf, tf, ff = score(db.connect(db_path(split)), labels(split), load_times(times_path(split)), {"set": split})
         confusion = confusion or m["confusion"]
         type_rows += [
-            {"system": f"Sniff ({model}, prompted)", "set": split, "n": m["n"], "accuracy": m["type_accuracy"], "macro_F1": m["type_macro_F1"]},
+            {"system": type_name, "set": split, "n": m["n"], "accuracy": m["type_accuracy"], "macro_F1": m["type_macro_F1"]},
             {"system": "Keyword rules (baseline)", "set": split, "n": m["n"], "accuracy": m["keyword_accuracy"], "macro_F1": m["keyword_macro_F1"]},
         ]
         fact_rows += [
-            {"system": f"Sniff ({model}, JSON schema)", "set": split, "n": m["docs_with_fields"], "field_accuracy": m["field_accuracy"],
+            {"system": fact_name, "set": split, "n": m["docs_with_fields"], "field_accuracy": m["field_accuracy"],
              "schema_valid": m["schema_valid"], "verified_precision": m["verified_precision"],
              "verified_recall": m["verified_recall"], "needs_review_rate": m["needs_review_rate"],
              "latency_p50_ms": m["latency_p50_ms"], "latency_p95_ms": m["latency_p95_ms"]},

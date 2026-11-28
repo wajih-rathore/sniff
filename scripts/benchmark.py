@@ -204,7 +204,8 @@ def main(a) -> None:
     try:
         procs = {"backend (python)": psutil.Process()}
         found = find_servers({"chat": a.chat_port, "embedding": a.embed_port})
-        if len(found) < 2:
+        need = ["embedding"] if os.environ.get("SNIFF_AI") == "off" else ["chat", "embedding"]  # AI off: no chat server
+        if any(not any(f" {role} " in name for name in found) for role in need):
             raise SystemExit(f"model servers not found on ports {a.chat_port}/{a.embed_port}: start them or use --start-servers")
         procs.update(found)
         instrument()
