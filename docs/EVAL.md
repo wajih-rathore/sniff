@@ -334,11 +334,11 @@ baseline, which needs a model.
 Accuracy, macro-F1 in brackets. On `real` every document is a receipt, so macro-F1 says nothing there.
 
 The keyword rules win on all three sets. Sniff with AI off is never confidently wrong on `test`: all 28 wrong types
-are documents it left as `other`, because the classifier was unsure and its top guess was under 0.5 (8 transcripts,
+are documents it left as `other`, because the classifier gave no type p >= 0.5 (8 transcripts,
 5 offer letters, 5 warranty cards, 5 fee vouchers, 3 bank statements, 1 bill, 1 ID card). On `hard`, 58 of the 62
 wrong are `other` too and 4 are called receipts (by variant the 62 are photos 24, low-res 18, cut-off 12,
-handwriting 8); on `real` all 33 are `other`. The keyword rules almost always pick a type, and on these sets a forced guess is
-right more often than the classifier's abstention. An abstained document still gets text search; it gets no facts.
+handwriting 8); on `real` all 33 are `other`. The keyword rules almost always pick a type, and on these sets a
+forced guess is right more often than the classifier's abstention. An abstained document still gets text search; it gets no facts.
 
 ### Fact extraction
 
