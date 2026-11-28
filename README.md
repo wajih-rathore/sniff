@@ -1,116 +1,120 @@
 # Sniff
 
-Sniff is a desktop app that indexes the documents on your laptop (PDFs, Office files, scans and photos), works out what each one is, extracts key details such as dates, amounts and expiry dates, and answers questions about them with links to the source page. You can check and correct the extracted details on a review screen. It can add expiry and due dates to Google Calendar, and AI tools such as Claude Code can query it through MCP.
+Sniff reads the documents already on your computer (bills, receipts, ID cards, certificates, letters, scans and phone photos), works out what each one is, pulls out the details that matter (dates, amounts, expiry dates, ID numbers) and answers questions about them, with a link to the page each answer came from.
 
-Reading, OCR, the models, the index and the answers all run on the laptop. Two optional features send data out; see [What leaves the laptop](#what-leaves-the-laptop).
+It runs on your computer. It works with AI switched off, and that is how it starts.
 
 ![The launcher: search results on the left, the matching bill's page on the right](docs/media/hero.png)
 
-Find a file and look at its page before opening it:
+**[Download Sniff](https://github.com/wajih-rathore/sniff/releases/latest)** for Windows, macOS or Linux. Free and open source (MIT).
+
+## What you can do with it
+
+**Find a file by what is in it**, even a scan or a photo, and see its page before you open it:
 
 ![Typing "metro gas", previewing the bill's page, opening it](docs/media/search-open.gif)
 
-Ask a question. Two copies of a fee voucher disagree, so Sniff shows both totals and you pick the right copy:
+**Ask a question across your documents.** "How much did I pay for electricity this year?" is added up by code from the bills it found, never guessed by a model. When two copies disagree, Sniff shows both and lets you pick:
 
 ![Asking for a total, seeing two possible totals, picking the right copy](docs/media/ask-conflict.gif)
 
-Check one extracted value at a time, next to the part of the page it came from:
+**Check what it read.** Each extracted value sits next to the part of the page it came from, so you can accept or correct it:
 
 ![Reviewing a fact: accept it, or skip it for later](docs/media/review.gif)
 
-Recorded from the launcher running in a browser against the real back end, on the synthetic test documents (all names are made up), with the chat model off.
+**Get reminded** a week before a passport, ID card, warranty or insurance policy expires, or before a bill is due.
 
-Sniff started as a term project for the Generative AI course (AI-4009) at FAST-NUCES. How it is evaluated is in [docs/EVAL.md](docs/EVAL.md).
+**Let your AI assistant use it (optional).** Tools such as Claude Code can search your documents through MCP, limited to the document types you allow.
+
+The recordings use made-up documents.
+
+## Download and install
+
+Get the file for your computer from the [latest release](https://github.com/wajih-rathore/sniff/releases/latest):
+
+| Your computer | File |
+|---|---|
+| Windows 10 or 11 (64-bit) | `Sniff_<version>_x64-setup.exe` |
+| Mac with Apple silicon (M1 and later), macOS 15 or later | `Sniff_<version>_aarch64.dmg` |
+| Mac with Intel, macOS 15 or later | `Sniff_<version>_x64.dmg` |
+| Debian or Ubuntu 22.04 and later | `Sniff_<version>_amd64.deb` |
+| Other Linux (64-bit) | `Sniff_<version>_amd64.AppImage` |
+
+The installers are not code-signed yet, so your system will warn you the first time:
+
+- **Windows:** SmartScreen says it protected your PC. Click **More info**, then **Run anyway**. Sniff installs for your user only and needs no administrator rights.
+- **macOS:** open Sniff once and close the warning, then go to **System Settings > Privacy & Security** and click **Open Anyway**. If macOS says Sniff is damaged, run `xattr -dr com.apple.quarantine /Applications/Sniff.app`.
+- **Linux:** `sudo apt install ./Sniff_<version>_amd64.deb`, or make the AppImage executable (`chmod +x`) and run it.
+
+The Windows build is the one we use every day. The macOS and Linux builds are new: they are built and started by our CI on every release, but few people have run them yet, so please [tell us](https://github.com/wajih-rathore/sniff/issues) if something breaks. The full guide for each system, including where files go and how to uninstall, is in [docs/INSTALL.md](docs/INSTALL.md).
+
+## Getting started
+
+1. Start Sniff. The first time, it downloads its search model (46 MB). Nothing else is needed.
+2. Press **Alt+Shift+Space** (Option+Shift+Space on a Mac) to open Sniff from any app. You can change the shortcut in Settings.
+3. Choose **Add a folder…** and pick a folder with your documents. Sniff reads it and keeps it up to date as files are added, changed, renamed or deleted.
+4. Type to search. Press **Tab** to ask a question instead. **Review** lists the values Sniff is unsure of.
+
+Sniff lives in the tray (the menu bar on a Mac). Closing the window only hides it; **Quit** in the tray menu stops it.
+
+## AI is optional
+
+Without AI, Sniff still reads your files (including OCR for scans and photos), sorts most of them into types, finds most details with rules, searches by meaning, and answers questions about totals, dates, counts and expiries with code. Turn AI on in **Settings > AI** to fill details the rules missed, understand unusual questions, and write answers from your documents:
+
+| Setting | What you need | Where your text goes |
+|---|---|---|
+| **Off** (default) | Nothing | Nowhere |
+| **Groq (free tier)** | A free key from [console.groq.com/keys](https://console.groq.com/keys) | Groq |
+| **Anthropic** | Your Anthropic API key | Anthropic |
+| **OpenAI-compatible** | A base URL, a model and a key: OpenAI, OpenRouter, a local Ollama or LM Studio, and others | That server |
+| **This laptop** | A one-time download of a small model (about 1.4 GB) from Settings > AI | Nowhere: the model runs on your computer |
+
+When a cloud provider is on, it gets only small pieces: the lines around a detail the rules could not read, your question, or the few passages an answer is written from. Never a whole document. ID numbers are masked, and ID cards, passports, bank statements and a few other private types are never sent unless you allow them. Settings > AI shows exactly what would be sent before you turn it on. Your key is kept in your system's password store.
+
+No model ever does the arithmetic: every total, count and date comparison is computed by code.
+
+## What leaves your computer
+
+Nothing, unless you turn one of these on:
+
+| Feature | What is sent, and to whom |
+|---|---|
+| A cloud AI provider (Settings > AI) | The small pieces described above, to the provider you chose |
+| Google Calendar reminders | Only when you click "Add to Google Calendar" on a date: the event title, the date and the file name, to Google. Not the document text. Without Google, Sniff can save a reminder as a calendar file instead |
+| Agent access (MCP) | Only if you add Sniff to an agent such as Claude Code: the snippets and facts it asks for, for the types you allow, to that agent and its model. Every call is logged |
+
+Your index, the extracted details and the models stay in Sniff's own folder on your computer ([where](docs/INSTALL.md)).
+
+## System requirements
+
+- Windows 10 or 11, macOS 15 or later, or 64-bit Linux with glibc 2.35 or later (Ubuntu 22.04, Debian 12, Fedora 36 and later).
+- No GPU needed. Measured on a 4-core laptop CPU: with AI off, Sniff uses about 0.2 GB of memory when idle and about 1.2 GB at most while reading a large folder. The optional "This laptop" model adds up to about 2 GB while it runs, and it stops itself after two minutes without use.
+- About 550 MB of disk for the app and its search model, plus about 1.4 GB if you download the local AI model.
 
 ## How it works
 
-| Step | What happens | AI or code |
-|---|---|---|
-| Read | PDF, DOCX, PPTX and text are read page by page; scanned pages and photos go through OCR (RapidOCR) | AI (OCR) |
-| Index | Text is split into passages, embedded (all-MiniLM-L6-v2) and stored with a BM25 keyword index in SQLite | AI (embeddings) |
-| Type | A small local LLM (Qwen3-1.7B) picks the document type | AI |
-| Facts | The LLM extracts the type's fields as JSON that must match a schema. Code then checks each value: it must be on the page, next to its field's label, and pass the field's rules ([docs/FIELDS.md](docs/FIELDS.md)). Otherwise it is marked "needs review" with a reason | AI + code |
-| Review | The review screen lists facts that need review; you can correct or approve them | Code |
-| Ask | The LLM routes the question: either it fills a fixed facts query, which code runs (sums, counts, dates), or hybrid search finds passages and the LLM answers from them with citations. Exact copies are counted once and conflicting values are shown side by side ([docs/CALCULATIONS.md](docs/CALCULATIONS.md)) | AI + code |
-| Remind | Expiry and due dates become Google Calendar events after you click to approve | Code |
-| Stay fresh | Each file's size, time and hash are stored; re-scans re-index only changed files, renames keep their data, deleted files are removed, and cited files are re-checked before an answer is shown | Code |
+| Step | What happens |
+|---|---|
+| Read | PDFs, Word, PowerPoint and text files are read page by page. Scans and photos go through OCR (RapidOCR, PP-OCR models) |
+| Index | Text is split into passages, embedded (all-MiniLM-L6-v2) and stored with a keyword index in SQLite, so search works by meaning and by exact words |
+| Sort | Keyword rules, then a small classifier, decide each document's type. When both are unsure, the local model decides if "This laptop" is on; otherwise Sniff guesses and sends the details to review |
+| Extract | Rules read each type's fields next to their printed labels. With AI on, a model fills only the required fields the rules missed. Every value is checked against the page and the field's rules ([docs/FIELDS.md](docs/FIELDS.md)) |
+| Answer | Questions about totals, dates and counts run as database queries in code, counting exact copies once and showing conflicts ([docs/CALCULATIONS.md](docs/CALCULATIONS.md)). Other questions get the best matching passages, and with AI on, a written answer that cites them |
+| Stay fresh | Sniff watches your folders and re-reads only what changed. Renamed files keep their details; deleted files are removed |
 
-## What leaves the laptop
+How well each part works, measured on test documents, is in [docs/EVAL.md](docs/EVAL.md).
 
-| Feature | Off by default? | What is sent, and to whom |
-|---|---|---|
-| Google Calendar reminders | Yes. Nothing is sent until you click "Add to Google Calendar" on a date | To Google: the event title (document type, which date it is, and the holder's name or the provider/shop), the date, and the file name and page. Not the folder path, not the document text |
-| MCP (Claude Code and other agents) | Yes. Only runs if you add the MCP server to an agent | To the agent and whatever model it uses (for Claude Code, Anthropic's servers): the snippets, facts, answers and full file paths it asks for. ID cards and unclassified files are hidden, ID numbers are masked, and every call is logged to `.sniff/mcp_access.log`. The allow-list is `MCP_ALLOW` in `backend/sniff/config.py` |
+## Help and feedback
 
-## Run it (Windows)
+- Something not working? Sniff keeps logs in the `logs` folder of its data folder ([where](docs/INSTALL.md)). Please [open an issue](https://github.com/wajih-rathore/sniff/issues) and attach them.
+- Ideas and questions are welcome as issues too.
 
-Requirements: Python 3.11 with [uv](https://docs.astral.sh/uv/), Node 22, and about 50 MB of disk for the embedding model (1.4 GB more for the optional chat model). The app was built and tested on Windows 11.
+## Contributing
 
-```powershell
-# 1. llama.cpp (CPU build b12628): unzip it into models/llama/
-#    https://github.com/ggml-org/llama.cpp/releases/download/b12628/llama-b12628-bin-win-cpu-x64.zip
+Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to send a change, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) how to run Sniff from source and run the tests.
 
-# 2. back end and the embedding model (all-MiniLM-L6-v2, 46 MB; sha256 checked). Add qwen3-1.7b
-#    (Qwen3-1.7B Q4_K_M, 1.4 GB) only to run AI on this laptop (Settings > AI > This laptop)
-cd backend
-uv sync
-uv run python ../eval/fetch_models.py all-minilm
+## License
 
-# 3. front end
-cd ../frontend
-npm install
+[MIT](LICENSE). The models Sniff downloads have their own licences: all-MiniLM-L6-v2 and the PP-OCR models are Apache-2.0, and so is the optional local chat model.
 
-# 4. start everything from the repo root: embeddings on 8081, API on 8000, UI on 5173
-#    (the API starts the chat model on 8080 when it needs it, and stops it after 120 s idle)
-cd ..
-powershell -ExecutionPolicy Bypass -File scripts\dev.ps1
-```
-
-Open http://localhost:5173, type `/watch`, press Enter, then type a folder path and press Enter. Sniff indexes it and keeps it up to date. Type `/` to see the other commands. The index is `.sniff/sniff.db`; set `SNIFF_DB` to use another file. `VITE_MOCK=1 npm run dev` runs the UI on fixture data, without the back end.
-
-To start the parts by hand (for example on another OS), these are the commands `dev.ps1` runs. If a chat server
-already answers on 8080 (the first line), the API uses it and never stops it:
-
-```bash
-models/llama/llama-server -m models/qwen3-1.7b-q4_k_m.gguf --port 8080 --jinja --reasoning-budget 0 -c 8192   # optional
-models/llama/llama-server -m models/all-minilm-l6-v2.gguf --embedding --port 8081 -c 2048 -b 2048 -ub 2048
-cd backend && uv run uvicorn sniff.api:app --port 8000
-cd frontend && npm run dev
-```
-
-**Google Calendar (optional):** create an OAuth client (Desktop app) in a Google Cloud project with the Calendar API enabled, and save its JSON as `backend/.secrets/google_client.json`. The first reminder opens a Google sign-in page.
-
-**Reminders without Google:** `GET /reminders/ics?file_id=<id>&field=expiry_date` returns an all-day `.ics` event with alerts 7 days and 1 day before. Open it in any calendar app. Only the file name goes in the description.
-
-**Indexing in two steps:** a new file is read, cut into chunks and embedded first, which takes about a second (more for a scan that needs OCR); search finds it from then on. Its type and facts are read later by one background worker, oldest file first, from a queue kept in the database, so a restart picks up where it stopped. The worker waits while someone is searching or asking. `GET /index/status` gives `queued`, the number of files still waiting, and the launcher shows "reading facts: N left". Search results whose facts are not read yet carry `"reading": true`. `POST /ask/stream` returns the same answer as `POST /ask` as server-sent events: `token` events while a search answer is written, then one `answer` event.
-
-**Keep a folder live:** `POST /watch {"folder": "..."}` makes the back end watch it. New, edited, renamed and deleted files are picked up about 2 seconds after the folder goes quiet. Office lock files (`~$`) and partial downloads (`.crdownload`, `.part`, `.tmp`) are ignored. `GET /watch` lists the folders and `DELETE /watch {"folder": "..."}` stops one. The list is stored in the database and watched again after a restart.
-
-**Docker (not built or run on our machines):** `Dockerfile` builds the back end and `docker-compose.yml` adds two llama.cpp server containers, one for chat and one for embeddings. Put the model files in `models/` first. We only ran `docker compose config` to check the file, because Docker's disk is on a drive that is nearly full. Building the image and running the stack is untested. Changes inside a Windows folder mounted into a container may not reach the watcher, so use `POST /index` there.
-
-```bash
-docker compose up --build        # API on http://127.0.0.1:8000; SNIFF_DOCS=/path/to/docs sets the mounted folder
-```
-
-**CI:** `.github/workflows/ci.yml` runs the back end tests (fake models only) and the front end build on every push. It has not run yet, because nothing is pushed.
-
-**Use Sniff from Claude Code (optional):**
-
-```bash
-claude mcp add sniff -- uv --directory /path/to/sniff/backend run python -m sniff.mcp_server
-```
-
-MCP is **off until you turn it on**: `PUT /mcp/settings` with `{"enabled": true, "allow": {"utility_bill": ["*"]}}`. While it is off, every tool refuses and the call is still logged. `GET /mcp/settings` shows the current settings and `GET /mcp/log?limit=50` the recent calls. Changes apply on the next call, without a restart. Without a saved list, the default is `config.MCP_ALLOW`, which gives field lists only (no page text) and hides ID cards, passports, bank statements, offer letters, transcripts and unclassified (`other`) files until you grant them. Setting `SNIFF_MCP_ALLOW` (JSON) overrides the database and turns MCP on, for development.
-
-## Tests and evaluation
-
-```bash
-cd backend
-uv run pytest                     # functional tests
-```
-
-The evaluation (test sets, metrics, baselines, the run order and the results) is in [docs/EVAL.md](docs/EVAL.md). Results go to `eval/results/`; the app does not show them, but `GET /eval` returns them. Failure examples are saved next to them for error analysis. The OCR baseline needs Tesseract (`C:\Program Files\Tesseract-OCR`).
-
-## Team
-
-Ibraheem Farooq, Wajih ur Raza, Ali Aan. Supervisor: Dr. Akhtar Jamil.
+Made by Ibraheem Farooq, Wajih ur Raza and Ali Aan.
