@@ -112,3 +112,20 @@ def test_this_laptops_model_is_an_optional_download(registry):
     assert (s["ready"], s["have"], s["error"]) == (True, s["size"], None)
     assert c.get("/ai/settings").json()["local_available"] is True
     assert c.put("/ai/settings", json={"provider": "local"}).json()["provider"] == "local"
+
+
+def test_progress_is_right_while_the_part_file_is_renamed(registry, monkeypatch):
+    """A poll can look for the final file just before the .part is renamed to it, then find no .part either."""
+    dest = config.MODELS_DIR / desktop.CHAT
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(b"done")  # the rename has happened by the time the .part is looked at
+    real, first = type(dest).exists, [True]
+
+    def exists(p):  # the first look at the final file comes just before the rename
+        if p == dest and first:
+            first.pop()
+            return False
+        return real(p)
+
+    monkeypatch.setattr(type(dest), "exists", exists)
+    assert desktop.progress(desktop.CHAT)["have"] == desktop.MODELS[desktop.CHAT][2]

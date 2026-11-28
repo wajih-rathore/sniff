@@ -86,7 +86,13 @@ def start(names: list[str], state: dict) -> None:
 
 def progress(name: str) -> dict:
     dest, part, size = config.MODELS_DIR / name, config.MODELS_DIR / (name + ".part"), MODELS[name][2]
-    return {"name": name, "size": size, "have": size if dest.exists() else part.stat().st_size if part.exists() else 0}
+    if dest.exists():
+        return {"name": name, "size": size, "have": size}
+    try:
+        have = part.stat().st_size
+    except FileNotFoundError:  # not started, or the .part was renamed to its final name since the check above
+        have = size if dest.exists() else 0
+    return {"name": name, "size": size, "have": have}
 
 
 def answers(url: str) -> bool:
@@ -103,8 +109,9 @@ def answers(url: str) -> bool:
 def setup():
     """servers: the embedding server answers, so Sniff can index and search. The chat server is not waited for: it is
     optional, and starts on the first model call."""
+    state = dict(STATE)  # read before the files: once a download has stopped, its files are final
     return {"servers": answers(config.EMBED_URL), "ready": all((config.MODELS_DIR / n).exists() for n in SETUP),
-            "folder": str(config.MODELS_DIR), "models": [progress(n) for n in SETUP], **STATE}
+            "folder": str(config.MODELS_DIR), "models": [progress(n) for n in SETUP], **state}
 
 
 @app.post("/setup/download")
@@ -117,7 +124,8 @@ def start_download():
 def local_model():
     """This laptop's chat model: its download progress, and ready once the file is on disk (Settings > AI then offers
     This laptop)."""
-    return {**progress(CHAT), "ready": (config.MODELS_DIR / CHAT).exists(), **CHAT_STATE}
+    state = dict(CHAT_STATE)  # read before the files, as in setup()
+    return {**progress(CHAT), "ready": (config.MODELS_DIR / CHAT).exists(), **state}
 
 
 @app.post("/ai/local/download")
