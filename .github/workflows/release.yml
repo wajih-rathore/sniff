@@ -94,4 +94,5 @@ jobs:
       - name: Draft release with every installer
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --draft --generate-notes --repo "$GITHUB_REPOSITORY"
+        # each bundle keeps its folder (dist/nsis/, dist/dmg/, ...), so pass the files
+        run: gh release create "$GITHUB_REF_NAME" $(find dist -type f) --draft --generate-notes --repo "$GITHUB_REPOSITORY"
