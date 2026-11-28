@@ -12,7 +12,7 @@ Thanks for helping. Sniff reads people's private documents, so correctness and p
 
 ## Running it
 
-See [docs/INSTALL.md](docs/INSTALL.md), including "run from source" for macOS and Linux.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) to run Sniff from source on Windows, and [docs/INSTALL.md](docs/INSTALL.md) ("run from source") for macOS and Linux.
 
 ```
 cd backend && uv sync && uv run pytest -q
