@@ -1,0 +1,65 @@
+{
+  "component": "ask_by_category",
+  "n": 261,
+  "rows": [
+    {
+      "category": "conflict",
+      "n": 12,
+      "Sniff_correct": 0.5,
+      "citation_correct": 0.833,
+      "router_accuracy": 0.833,
+      "keyword_router_accuracy": 0.75,
+      "conflicts_flagged": 0.333
+    },
+    {
+      "category": "cross_doc_total",
+      "n": 62,
+      "Sniff_correct": 0.419,
+      "citation_correct": 0.839,
+      "router_accuracy": 0.984,
+      "keyword_router_accuracy": 1.0
+    },
+    {
+      "category": "duplicates",
+      "n": 13,
+      "Sniff_correct": 0.154,
+      "citation_correct": 1.0,
+      "router_accuracy": 1.0,
+      "keyword_router_accuracy": 1.0
+    },
+    {
+      "category": "expiring_window",
+      "n": 18,
+      "Sniff_correct": 0.167,
+      "citation_correct": 0.722,
+      "router_accuracy": 1.0,
+      "keyword_router_accuracy": 1.0
+    },
+    {
+      "category": "semantic",
+      "n": 54,
+      "Sniff_correct": 0.056,
+      "citation_correct": 0.704,
+      "router_accuracy": 0.241,
+      "keyword_router_accuracy": 0.593
+    },
+    {
+      "category": "single_fact",
+      "n": 92,
+      "Sniff_correct": 0.652,
+      "citation_correct": 0.804,
+      "router_accuracy": 0.902,
+      "keyword_router_accuracy": 0.739
+    },
+    {
+      "category": "unanswerable",
+      "n": 10,
+      "Sniff_correct": 0.6,
+      "citation_correct": null,
+      "router_accuracy": 0.5,
+      "keyword_router_accuracy": 0.2
+    }
+  ],
+  "failures": 0,
+  "updated": "2026-11-28T14:13:48"
+}

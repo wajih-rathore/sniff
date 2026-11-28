@@ -1,0 +1,20 @@
+{
+  "component": "ocr_hard",
+  "n": 155,
+  "rows": [
+    {
+      "system": "RapidOCR (PaddleOCR models)",
+      "CER": 0.4304597593198118
+    },
+    {
+      "system": "Tesseract defaults (baseline)",
+      "CER": 0.6501135733233026
+    }
+  ],
+  "latency_ms": {
+    "p50": 6283,
+    "p95": 13456
+  },
+  "failures": 141,
+  "updated": "2026-11-28T14:37:28"
+}

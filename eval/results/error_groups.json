@@ -1,0 +1,204 @@
+{
+ "component": "error_groups",
+ "components": [
+  {
+   "component": "document_type",
+   "title": "Document type",
+   "failures": 123,
+   "groups": [
+    {
+     "cause": "typed document called other",
+     "count": 119,
+     "example": "test: test/Documents/old/Scan 13.pdf is utility_bill, predicted other",
+     "fix": "Add the type's printed title words (for example 'Policy Schedule', 'Fee Challan') to the type list in the classify prompt; check on dev."
+    },
+    {
+     "cause": "confused with another type",
+     "count": 4,
+     "example": "hard: hard/cutoff/Downloads/Document (20).jpg is utility_bill, predicted receipt",
+     "fix": "Name the confusing pair in the prompt (what tells them apart); if it stays, fall back to the keyword rules when they are sure."
+    }
+   ]
+  },
+  {
+   "component": "fact_extraction",
+   "title": "Fact extraction",
+   "failures": 1133,
+   "groups": [
+    {
+     "cause": "document type was wrong",
+     "count": 651,
+     "example": "test: test/Documents/old/Scan 13.pdf provider: gold 'FastLink Internet', stored None (None)",
+     "fix": "Fixed by the type fixes above; the fields of a wrongly typed document are never extracted."
+    },
+    {
+     "cause": "value missed",
+     "count": 399,
+     "example": "test: test/WhatsApp Images/IMG-20260907-WA0436.jpg tax: gold 11390.0, stored None (None)",
+     "fix": "Add the missing label spellings to FIELDS (docs/FIELDS.md) and retry extraction for required fields that came back empty."
+    },
+    {
+     "cause": "wrong value",
+     "count": 52,
+     "example": "test: test/Documents/old/Screenshot 2026-03-10 at 22.49.37.png merchant: gold 'BookNook', stored 'Goods once sold will not be ex' (verified)",
+     "fix": "Look at the label the verifier found; add a field rule that rejects values of the wrong shape."
+    },
+    {
+     "cause": "text partly right",
+     "count": 25,
+     "example": "test: test/Downloads/download (26).pdf institution: gold 'Lifeline Training Center', stored 'Training Center' (verified)",
+     "fix": "Compare names without spaces and punctuation in the verifier, and keep the full line next to the label."
+    },
+    {
+     "cause": "value for a field the document does not have",
+     "count": 5,
+     "example": "hard: hard/cutoff/Documents/old/24dff1e9.jpg merchant: gold None, stored 'Pieasekeep this invoice for warrarty claims' (verified)",
+     "fix": "Already flagged: these are needs_review because no label is near them. Next: drop a value whose label is missing instead of storing it."
+    },
+    {
+     "cause": "date read wrong",
+     "count": 1,
+     "example": "hard: hard/lowres/Downloads/CamScanner 05-03-2026 19.48.pdf payment_date: gold '2026-05-08', stored '2026-05-06' (verified)",
+     "fix": "Parse more printed date forms in verify.parse_date (tested on dev scans); prefer the date next to the field's label."
+    }
+   ]
+  },
+  {
+   "component": "ocr",
+   "title": "OCR, test set",
+   "failures": 145,
+   "groups": [
+    {
+     "cause": "phone photo",
+     "count": 95,
+     "example": "test/WhatsApp Images/IMG-20260628-WA0489.jpg: CER 0.378",
+     "fix": "Straighten and sharpen photos before OCR (deskew is already done for scans)."
+    },
+    {
+     "cause": "printed page misread",
+     "count": 49,
+     "example": "test/Documents/old/CamScanner 11-05-2026 11.19.pdf: CER 0.36",
+     "fix": "Render PDF scans at 300 dpi instead of 200 for OCR."
+    },
+    {
+     "cause": "spaces only (words glued together)",
+     "count": 1,
+     "example": "test/Downloads/IMG_6043.jpg: CER 0.104",
+     "fix": "Field parsing already copes (parse_date reads '06Sep2026'). For search, split glued words with the dictionary of the document's own words."
+    }
+   ]
+  },
+  {
+   "component": "ocr_hard",
+   "title": "OCR, hard set",
+   "failures": 141,
+   "groups": [
+    {
+     "cause": "phone photo",
+     "count": 59,
+     "example": "hard/photo/Documents/old/b4245552.jpg: CER 0.108",
+     "fix": "Straighten and sharpen photos before OCR (deskew is already done for scans)."
+    },
+    {
+     "cause": "low-resolution scan",
+     "count": 44,
+     "example": "hard/lowres/Work/Backup/Document (27).pdf: CER 0.563",
+     "fix": "Upscale pages under 150 dpi two times before OCR."
+    },
+    {
+     "cause": "printed page misread",
+     "count": 21,
+     "example": "hard/cutoff/Documents/old/24dff1e9.jpg: CER 0.331",
+     "fix": "Render PDF scans at 300 dpi instead of 200 for OCR."
+    },
+    {
+     "cause": "handwriting",
+     "count": 9,
+     "example": "hard/handwriting/Downloads/Document (29).jpg: CER 0.577",
+     "fix": "Out of scope for RapidOCR's printed-text models; mark handwritten pages as needs_review."
+    },
+    {
+     "cause": "spaces only (words glued together)",
+     "count": 8,
+     "example": "hard/handwriting/Desktop/scan_5048.jpg: CER 0.149",
+     "fix": "Field parsing already copes (parse_date reads '06Sep2026'). For search, split glued words with the dictionary of the document's own words."
+    }
+   ]
+  },
+  {
+   "component": "search",
+   "title": "Search (hybrid)",
+   "failures": 32,
+   "groups": [
+    {
+     "cause": "some of several relevant documents found",
+     "count": 23,
+     "example": "'power bill March 2026': wanted test/Documents/old/Print_2026-04-03.pdf, test/Documents/old/scan_1804.pdf",
+     "fix": "Expected for list questions with many relevant files (recall is capped at 5); route these to the facts table."
+    },
+    {
+     "cause": "query words are in the document but it ranked lower",
+     "count": 8,
+     "example": "'gas bill June 2026': wanted test/Desktop/Print_2026-07-04.pdf",
+     "fix": "Weight file type and field labels in BM25 (index the document type as a word)."
+    },
+    {
+     "cause": "no query word in the document (vocabulary gap)",
+     "count": 1,
+     "example": "'air conditioner invoice': wanted test/Desktop/file_4108.pdf, test/Documents/old/Print_2025-06-21.pdf",
+     "fix": "Index the document type and its synonyms ('power' -> electricity bill) with each chunk."
+    }
+   ]
+  },
+  {
+   "component": "router",
+   "title": "Router",
+   "failures": 58,
+   "groups": [
+    {
+     "cause": "search question sent to facts",
+     "count": 46,
+     "example": "'What institution issued Sara's degree?' (semantic)",
+     "fix": "Tell the router that 'what does X say' and topic questions go to search."
+    },
+    {
+     "cause": "facts question sent to search",
+     "count": 12,
+     "example": "'What is Ali's date of birth?' (single_fact)",
+     "fix": "Add the missed question forms to the router prompt's examples (dev questions only)."
+    }
+   ]
+  },
+  {
+   "component": "ask",
+   "title": "Ask",
+   "failures": 155,
+   "groups": [
+    {
+     "cause": "facts route, wrong result",
+     "count": 76,
+     "example": "'How much did we pay for electricity in 2026?' (cross_doc_total): gold 98766.32, got 92,695.32 in total, from 11 documents.",
+     "fix": "Check the filter the router filled (name, date range) against the stored values; most come from missed or wrong facts upstream."
+    },
+    {
+     "cause": "refused an answerable question",
+     "count": 42,
+     "example": "'What is the total of all our utility bills for 2026?' (cross_doc_total): gold 194353.56, got No matching documents found.",
+     "fix": "When the facts query matches nothing, try search before refusing."
+    },
+    {
+     "cause": "wrong route",
+     "count": 33,
+     "example": "'What institution issued Sara's degree?' (semantic): gold Lakeshore University, got 2025-07-10 (Print_2025-07-10.pdf), from the newest document (2025-07-10).",
+     "fix": "Router fixes above."
+    },
+    {
+     "cause": "answered a question that has no answer",
+     "count": 4,
+     "example": "'When does my gym membership expire?' (unanswerable): gold , got Copies of one record disagree, so Sniff has not picked one. If download (5).pdf is right:\u2026",
+     "fix": "Refuse when no passage shares a key word with the question."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1162 @@
+[
+  {
+    "file": "test/WhatsApp Images/IMG-20260628-WA0489.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.378,
+    "pred": "Letter toAunt Hira\nDearAuntHira,\nexams.We allmissyou and hopeyou can visit during thewinter break.\nPlease send my salaam to everyone at home.\nWith love.\nNusrat",
+    "gold": "Letter to Aunt Hira\nDear Aunt Hira,\nI hope you are well. The weather here has turned cold and Hamza has been busy with his\n   exams. We all miss you and hope you can visit during the winter break.\nPlease send my salaam to everyone at home.\nWith love,\nNusrat"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260126-WA0001.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.154,
+    "pred": "Green Leaf Pharmacy\n76ClinicRoad.Lakeshore City1Tel 042-6310955\nCASH MEMO\nDate:25.01.2026 No.9015554\nPayment:Card\nQty Description\nUnit Price Amount\nParacetamol500mg\n234/- 234/-\nTotal 234/-\nGoods once sold willnolbe exchangedwithout this invoice",
+    "gold": "Green Leaf Pharmacy\n76 Clinic Road, Lakeshore City | Tel 042-6310955\nCASH MEMO No. 9015554\nDate: 25.01.2026 Payment: Card\nQty Description Unit Price Amount\n1 Paracetamol 500mg 234/- 234/-\nTotal 234/-\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20261110-WA0030.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.131,
+    "pred": "DailyNeeds Mart\n21BlockC Commercial,Lakeshore City|Tel042-9750564\nTAXINVOICE\nNo.8907066\nPayment:Card\nQty Description\nUnit Price Amount\n3 Yogurt 1kg\n2 PKR300.00 PKR900.00\nMilk1L\nPKR304.00 PKR608.00\n1 Onions2kg\nPKR283.00 PKR283.00\n3 Basmati Rice5kg\nPKR1647.00 PKR4941.00\nCooking Oil3L PKR2112.00\nEggs D",
+    "gold": "Daily Needs Mart\n21 Block C Commercial, Lakeshore City | Tel 042-9750564\nTAX INVOICE No. 8907066\nPayment: Card\nQty Description Unit Price Amount\n3 Yogurt 1kg PKR 300.00 PKR 900.00\n2 Milk 1L PKR 304.00 PKR 608.00\n1 Onions 2kg PKR 283.00 PKR 283.00\n3 Basmati Rice 5kg PKR 1647.00 PKR 4941.00\n1 Cooking "
+  },
+  {
+    "file": "test/Documents/old/photo_7.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.46,
+    "pred": "FRESHBASKET GROCERS\n31 Garden Town Market, Lakeshore City\nTe1:042-5431613\nTime:20:32\nReceipt#7558235\nRs.3,478\n  x R9.612\n2x Sugar 2kg Rs.568\n2xMilk 1L Rs.2,818\n2xTea950g\nRs.7,476\nGRAND TOTAL\nPaid by:Card***8235\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "FRESHBASKET GROCERS\n31 Garden Town Market, Lakeshore City\nTel: 042-5431613\n------------------------------------------\nTime: 20:32\nReceipt #7558235\n------------------------------------------\n2 x Flour 10kg Rs. 3,478\n2 x Sugar 2kg Rs. 612\n2 x Milk 1L Rs. 568\n2 x Tea 950g Rs. 2,818\n--------------------"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260907-WA0436.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.105,
+    "pred": "Metro Electronics Mart\n67TechPlaza,Main Boulevard,Lakeshore City|Tel042-2595809\nTAXINVOICE\nDate:06Sep2026 No.2847886\nPayment:Card\nQty Description\nUnit Price Amount\nSmartphone8/256GB 67,000/-\n67,000/-\nSubtotal 67,000/-\nGST17% 11,390/-\nAmountDue 78,390/-\nWarrantyvaliduntil:06/09/2027\nPlease keep this ",
+    "gold": "Metro Electronics Mart\n67 Tech Plaza, Main Boulevard, Lakeshore City | Tel 042-2595809\nTAX INVOICE No. 2847886\nDate: 06 Sep 2026 Payment: Card\nQty Description Unit Price Amount\n1 Smartphone 8/256GB 67,000/- 67,000/-\nSubtotal 67,000/-\nGST 17% 11,390/-\nAmount Due 78,390/-\nWarranty valid until: 06/09/2"
+  },
+  {
+    "file": "test/Documents/old/CamScanner 11-05-2026 11.19.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.36,
+    "pred": "FASTLINK INTERNET\nINVOICE -INTERNET SERVICE\nAccount. FL-1930-9677\nCustomer. AliRazaKhan\nAddress.. House 14, Street 7,Garden Town,Lakeshore City\nPeriod... 2026-10\nInvoice date. 05.11.2026\nPackage Charges (50 Mbps) Rs.3,221\nAdd-ons Rs.189\nTaxes Rs.379\nCurrent Bill Rs.3,789\nBalance broughtforward Rs.0\n",
+    "gold": "FASTLINK INTERNET\nINVOICE - INTERNET SERVICE\n==============================================================\nAccount............. FL-1930-9677\nCustomer............ Ali Raza Khan\nAddress............. House 14, Street 7, Garden Town, Lakeshore City\nPeriod.............. 2026-10\nInvoice date........ 05.1"
+  },
+  {
+    "file": "test/Documents/old/scan_4713.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.381,
+    "pred": "Northern Electric Supply Co. Customer Care:0800-7826-252\nElectricity Bill\nAccount No. ELC-9079-2256\nCustomer Name\nAli RazaKhan Billing Month Oct-2026\nIssue Date 04NoV2026\nService Address 749501355\nHouse14,Street7,GardenTown,LakeshoreCity Reference\nAmount\nDescription\n5,296/-\nEnergy Charges\n883/-\nFuel",
+    "gold": "Northern Electric Supply Co. Customer Care: 0800-7826-252\nElectricity Bill\nCustomer Name\nAccount No. ELC-9079-2256\nAli Raza Khan\nBilling Month Oct-2026\nService Address Issue Date 04 Nov 2026\nHouse 14, Street 7, Garden Town, Lakeshore City\nReference 749501355\nDescription Amount\nEnergy Charges 5,296/-"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260110-WA0178.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.272,
+    "pred": "Daily Needs Mart\n21BlockCCommerclal Lakeshore City|Tel042-1130545\nCASHMEMO\nDate:2026-01-08 No.8688194\nPayment:Card\nQty Description\nUnit Price Amount\nBasmati Rice5kg\n2 Cooking Oil 3L 1,890/- 1,890/-\n3 Bread 2,002/- 4,004/-\n2 Sugar 2kg 162/- 486/-\nOnions 2kg 342/- 684/-\n265/- 265/-\nAmountDue 7,329/-\nG",
+    "gold": "Daily Needs Mart\n21 Block C Commercial, Lakeshore City | Tel 042-1130545\nCASH MEMO No. 8688194\nDate: 2026-01-08 Payment: Card\nQty Description Unit Price Amount\n1 Basmati Rice 5kg 1,890/- 1,890/-\n2 Cooking Oil 3L 2,002/- 4,004/-\n3 Bread 162/- 486/-\n2 Sugar 2kg 342/- 684/-\n1 Onions 2kg 265/- 265/-\nAmo"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260604-WA0163.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.224,
+    "pred": "Urban Threads\nOrder Confirmation\nOrderNo:4872902\nPlacedon:02/06/2026\nShip to:43MallAvenue,Lakeshore City\nRs.10,817\nWinterJacket(x1)\nRs.10.838\nCottonKurta (x2)\nFree\nDelivery\nRs.21,655\nOrder Total\nPaidvia Card\nThank you for shopping withus!",
+    "gold": "Urban Threads\nOrder Confirmation\nOrder No: 4872902\nPlaced on: 02/06/2026\nShip to: 43 Mall Avenue, Lakeshore City\nWinter Jacket (x1) Rs. 10,817\nCotton Kurta (x2) Rs. 10,838\nDelivery Free\nOrder Total Rs. 21,655\nPaid via Card\nThank you for shopping with us!"
+  },
+  {
+    "file": "test/Desktop/Scan 27.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.119,
+    "pred": "BRIGHTPATHSCHOOL\nCERTIFICATE\nThis is tocertifythat\nHamza Khan\nhaspassedtheexaminationfor\nSecondary School Certificate (Science)\nIssued on:20 Jun 2023\nDirector\nRegistrar\nCertificateNo.GK-586293",
+    "gold": "BRIGHTPATH SCHOOL\nCERTIFICATE\nThis is to certify that\nHamza Khan\nhas passed the examination for\nSecondary School Certificate (Science)\nIssued on: 20 Jun 2023\nRegistrar Director\nCertificate No. GK-586293"
+  },
+  {
+    "file": "test/Desktop/photo_18.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.371,
+    "pred": "DAILYNEEDS MART\n21Elock C Commercial, Lakeshore City\nTel:042-2789030\nDate:11/01/2026 Time:12:47\nReceipt5167106\n3xCooking.Oi13L Rs.5,472\n1xChicken 1kg RS.623\n2x Tea 950g Ra.2,280\n2xEggs Dozen Rs.832\nGRAND TOTAL Rs.9,207\nPaid by:Card***7106\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "DAILY NEEDS MART\n21 Block C Commercial, Lakeshore City\nTel: 042-2789030\n------------------------------------------\nDate: 11/01/2026 Time: 12:47\nReceipt #5167106\n------------------------------------------\n3 x Cooking Oil 3L Rs. 5,472\n1 x Chicken 1kg Rs. 623\n2 x Tea 950g Rs. 2,280\n2 x Eggs Dozen Rs. 8"
+  },
+  {
+    "file": "test/Desktop/scan_7322.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.103,
+    "pred": "Metro Gas Ltd\nMonthly GasStatement\nAccount Number: MG-5907-2522\nStatement Period: September2026\nStatement Date: 2026-10-03\nBilled To: Ali Raza Khan\nPremises: House14,Street7,GardenTown,LakeshoreCity\nNet Amount Due\nRs.1,752.64\nBreakdownofcharges\nGas Charges\nFixed Charges Rs.1,402.11\nGasDevelopment Su",
+    "gold": "Metro Gas Ltd\nMonthly Gas Statement\nAccount Number: MG-5907-2522\nStatement Period: September 2026\nStatement Date: 2026-10-03\nBilled To: Ali Raza Khan\nPremises: House 14, Street 7, Garden Town, Lakeshore City\nNet Amount Due\nRs. 1,752.64\nBreakdown of charges\nGas Charges Rs. 1,402.11\nFixed Charges Rs. "
+  },
+  {
+    "file": "test/Downloads/photo_18.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.39,
+    "pred": "HomeEase Appliances\n37Market Road.Lakeshore City|Tel 042-5023858\nNo.2701180\nCASH MEMO\nPayment:Cash\nDate:26.04.2025\nUnit Price Amount\nQty Description\nRs.93.900 Rs.93,900\nRefrigerator14cft\nSubtotal Rs.93,900\nGST17% Rs.15,963\nNet Total Rs.109,863\nWarranty till:26Oct2025\nPlease keepthis invoice forwarra",
+    "gold": "HomeEase Appliances\n37 Market Road, Lakeshore City | Tel 042-5023858\nCASH MEMO No. 2701180\nDate: 26.04.2025 Payment: Cash\nQty Description Unit Price Amount\n1 Refrigerator 14cft Rs. 93,900 Rs. 93,900\nSubtotal Rs. 93,900\nGST 17% Rs. 15,963\nNet Total Rs. 109,863\nWarranty till: 26 Oct 2025\nPlease keep t"
+  },
+  {
+    "file": "test/Downloads/photo_27.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.165,
+    "pred": "Green LeafPharmacy\n76Clinic Road,Lakeshore City|Tel 042-2459355\nTAXINVOICE\nDate:19Aug2026 No.6485136\nPayment:Cash\nQty Description\nUnit Price Amount\nCough Syrup 4721-\n4721-\nAmount Due 472/-\nGoodsonce sold willnotbeexchanged without thisinvoice",
+    "gold": "Green Leaf Pharmacy\n76 Clinic Road, Lakeshore City | Tel 042-2459355\nTAX INVOICE No. 6485136\nDate: 19 Aug 2026 Payment: Cash\nQty Description Unit Price Amount\n1 Cough Syrup 472/- 472/-\nAmount Due 472/-\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/Documents/old/Document (26).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.444,
+    "pred": "FASTLINK INTERNET\nINVOICE-INTERNET SERVICE\nAccount. FL-1930-9677\nCustomer. AliRaza Khan\nHouse 14,Street 7,Garden Town,Lakeshore City\nAddress.\nPeriod. Jun-2026\nInvoice date.. 05.07.2026\n3,058/-\nPackage Charges (50 Mbps)\n180/-\nAdd-ons\n360/-\nTaxes\n3,598/-\nCharges for the month\n0/-\nPrevious Balance\n3,59",
+    "gold": "FASTLINK INTERNET\nINVOICE - INTERNET SERVICE\n==============================================================\nAccount............. FL-1930-9677\nCustomer............ Ali Raza Khan\nAddress............. House 14, Street 7, Garden Town, Lakeshore City\nPeriod.............. Jun-2026\nInvoice date........ 05."
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260702-WA0327.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.194,
+    "pred": "HomeEase Appliances\nOrder Confirmation\nOrder No:5642990\nPlacedon:30.06.2026\nShip to:37Market Road,Lakeshore City\nWater Dispenser(x1)\n31.700/-\nSubtotal\nGST17% 31.700/-\nDelivery 5.389/\nOrder Total Free\nPaid Via Gash 37,089/-\nThankyou for shopping win us!",
+    "gold": "HomeEase Appliances\nOrder Confirmation\nOrder No: 5642990\nPlaced on: 30.06.2026\nShip to: 37 Market Road, Lakeshore City\nWater Dispenser (x1) 31,700/-\nSubtotal 31,700/-\nGST 17% 5,389/-\nDelivery Free\nOrder Total 37,089/-\nPaid via Cash\nThank you for shopping with us!"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2026-04-26 at 10.24.54.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.376,
+    "pred": "DAILY NEEDS MART\n21 Block C Commercial,Lakeshore City\nTel:042-6418856\nDate:2026-04-26 Time:09:51\nReceipt 9898258\n1x Yogurt lkg Rs.322\n2xBread RS.396\n2x Eggs Dozen Rs.834\nNET PAYABLE Rs.1,552\nPaid by:Card****8258\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "DAILY NEEDS MART\n21 Block C Commercial, Lakeshore City\nTel: 042-6418856\n------------------------------------------\nDate: 2026-04-26 Time: 09:51\nReceipt #9898258\n------------------------------------------\n1 x Yogurt 1kg Rs. 322\n2 x Bread Rs. 396\n2 x Eggs Dozen Rs. 834\n--------------------------------"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260216-WA0227.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.335,
+    "pred": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel:042-5872517\nDate:2026-02-13\nReceipt#1920351 Time:17:02\n1x Monitor 24in IPS PKR32800.00\n1x Laptop Sleeve PKR 2870.00\nSubtotal\nGST17 PKR 35670.00\nPKR 6063.90\nNET PAYABLE PKR41733.90\nPaid by:Card****0351\n***WARRANTY***\nWarranty ex",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-5872517\n------------------------------------------\nDate: 2026-02-13 Time: 17:02\nReceipt #1920351\n------------------------------------------\n1 x Monitor 24in IPS PKR 32800.00\n1 x Laptop Sleeve PKR 2870.00\n------------------"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20261003-WA0780.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.175,
+    "pred": "Urban Threads\n43Mall Avenue,LakeshoreCiy|Tel042-7447163\nTAXINVOICE\nDate:01.10.2026 No.1728219\nPayment:Cash\nQty Description\nUnit Price Amount\n2 Denim Jeans\nRs.6,031 Rs.12,062\nTotal Rs.12,062\nGoodsnce soldwil notbeexchangedwithou this voice",
+    "gold": "Urban Threads\n43 Mall Avenue, Lakeshore City | Tel 042-7447163\nTAX INVOICE No. 1728219\nDate: 01.10.2026 Payment: Cash\nQty Description Unit Price Amount\n2 Denim Jeans Rs. 6,031 Rs. 12,062\nTotal Rs. 12,062\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/Desktop/IMG_5499.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.399,
+    "pred": "Eastland Transport Authority\nDRIVING LICENCE\nLicenceNo\nKHI-20-305626\nDOB\nName 1982-09-03\nAyesha Khan\nExpiry\nValld From 2025-07-02\n2020-07-02\nVehicle classes:LTV,MTV\nSgpature olhoce",
+    "gold": "DRIVING LICENCE Eastland Transport Authority\nLicence No.\nKHI-20-305626\nName DOB\nAyesha Khan 1982-09-03\nValid From Expiry\n2020-07-02 2025-07-02\nVehicle classes: LTV, MTV\nSignature of holder"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2026-02-14 at 13.53.48.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.319,
+    "pred": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel:042-6019095\nDate:14 Feb 2026 Time:09:48\nReceipt #6504135\nLx Wireless Earbuds Rs.14,800\nSubtotal Rs.14,800\nGST17 Rs.2,516\nAMOUNT PAID Rs.17,316\nPaidby:Card****4135\n***WARRANTY***\nGuarantee expires 14 Feb 2027\nTHANK YOU FOR SHOPP",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-6019095\n------------------------------------------\nDate: 14 Feb 2026 Time: 09:48\nReceipt #6504135\n------------------------------------------\n1 x Wireless Earbuds Rs. 14,800\n------------------------------------------\nSubtot"
+  },
+  {
+    "file": "test/Documents/old/scan_1804.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.296,
+    "pred": "Northern Electric Supply Co. CustomerCare:0800-8222-816\nElectricity Bill\nAccount No. ELC-9079-2256\nCustomer Name\nAli Raza Khan Billing Month 2026-03\nIssue Date 03.04.2026\nService Address 650590026\nHouse14,Street7,GardenTown,LakeshoreCity Reference\nAmount\nDescription\n4,371/-\nEnergy Charges\n729/-\nFuel",
+    "gold": "Northern Electric Supply Co. Customer Care: 0800-8222-816\nElectricity Bill\nCustomer Name\nAccount No. ELC-9079-2256\nAli Raza Khan\nBilling Month 2026-03\nService Address Issue Date 03.04.2026\nHouse 14, Street 7, Garden Town, Lakeshore City\nReference 650590026\nDescription Amount\nEnergy Charges 4,371/-\nF"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2026-10-02 at 22.16.28.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.376,
+    "pred": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel:042-1966927\nDate: 02 0ct 2026 Time:12:56\nReceipt #3329894\nRs.15,100\n1x USB-C Cable Rs.1,260\nSubtotal\nGST174 Rs.16,360\nRs.2,781.20\nGRAND TOTAL Rs.19,141.20\nCash tendered Rs.19,500\nChange Rs.358.80\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-1966927\n------------------------------------------\nDate: 02 Oct 2026 Time: 12:56\nReceipt #3329894\n------------------------------------------\n1 x Headphones BT Rs. 15,100\n1 x USB-C Cable Rs. 1,260\n--------------------------"
+  },
+  {
+    "file": "test/Desktop/photo_5.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.435,
+    "pred": "URBAN THREADS\n43 Mall Avenue, Lakeshore City\nTel:042-2847420\nDate:19.09.2025 Time:19:10\nReceipt #8794995\nRs.5,475\nxDenim Jeans\nGRAND TOTAL Rs.5,475\nPaid by:Card****4995\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "URBAN THREADS\n43 Mall Avenue, Lakeshore City\nTel: 042-2847420\n------------------------------------------\nDate: 19.09.2025 Time: 19:10\nReceipt #8794995\n------------------------------------------\n1 x Denim Jeans Rs. 5,475\n------------------------------------------\nGRAND TOTAL Rs. 5,475\nPaid by: Card *"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260408-WA0109.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.14,
+    "pred": "Metro Electronics Mart\n67TechPlazaMain Boulevard.Lakeshore CtyTel0423420589\nTAXINVOICE\nDate:06Apr2026 No.1240959\nPayment:Cash\nQty Description\nUnit Price Amount\n1 Laptopi516GB512GB\nPKR104900.00 PKR104900.00\nUSB-C Cable PKR820.00\nPKR820.00\nSubtotal PKR105720.00\nGST17% PKR17972.40\nAmountDuePKR 123692.4",
+    "gold": "Metro Electronics Mart\n67 Tech Plaza, Main Boulevard, Lakeshore City | Tel 042-3420589\nTAX INVOICE No. 1240959\nDate: 06 Apr 2026 Payment: Cash\nQty Description Unit Price Amount\n1 Laptop i5 16GB 512GB PKR 104900.00 PKR 104900.00\n1 USB-C Cable PKR 820.00 PKR 820.00\nSubtotal PKR 105720.00\nGST 17% PKR 1"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260427-WA0220.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.202,
+    "pred": "HunzaHoliday Itinerary\nDay 1:Fly to Gilgit and drive toKarimabad.\nDay 2:Visit BaltitFort andAltitFort.\nDay4:Return fight. Day3:Attabad Lake boat ride andPassu cones.\nStay:Riverside Inn,Karimabad\nRemember to carrywarm clothes andcash for the road.",
+    "gold": "Hunza Holiday Itinerary\nDay 1: Fly to Gilgit and drive to Karimabad.\nDay 2: Visit Baltit Fort and Altit Fort.\nDay 3: Attabad Lake boat ride and Passu cones.\nDay 4: Return flight.\nStay: Riverside Inn, Karimabad\nRemember to carry warm clothes and cash for the road."
+  },
+  {
+    "file": "test/Downloads/IMG_6043.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.104,
+    "pred": "REPUBLIC OF EASTLAND\nNATIONALIDENTITY CARD\nName\nALIRAZAKHAN\nidenttyNumber\n75516-4747260-2\nDate ol Brih\n14May1978\nDateofissue\n10Feb2017\nDate dl Expiry\n10Feb2027",
+    "gold": "REPUBLIC OF EASTLAND\nNATIONAL IDENTITY CARD\nName\nALI RAZA KHAN\nIdentity Number\n75516-4747260-2\nDate of Birth\n14 May 1978\nDate of Issue\n10 Feb 2017\nDate of Expiry\n10 Feb 2027"
+  },
+  {
+    "file": "test/Desktop/scan_2564.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.359,
+    "pred": "FASTLINK INTERNET\nINVOICE-INTERNET SERVICE\nAccount. FL-1930-9677\nCustomer.. Ali Raza Khan\nAddress.. House 14,Street 7,Garden Town,Lakeshore City\nPeriod.. 2026-01\nInvoice date. 03/02/2026\nPackage Charges (50 Mbps) 2,870/-\nAdd-ons 169/-\nTaxes 337/-\nCurrent Bill 3,376/-\nPrevious Balance 0/-\nNet Amount ",
+    "gold": "FASTLINK INTERNET\nINVOICE - INTERNET SERVICE\n==============================================================\nAccount............. FL-1930-9677\nCustomer............ Ali Raza Khan\nAddress............. House 14, Street 7, Garden Town, Lakeshore City\nPeriod.............. 2026-01\nInvoice date........ 03/0"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20261029-WA0435.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.205,
+    "pred": "Green Leaf Pharmacy\nOrder Confirmation\nOrderNo:9754226\nPlacedon:2026-10-26\nShip to:76 ClinicRoad,Lakeshore City\nPKR197.00\nParacetamol500mg(x1)\nPKR344.00\nAntacid Tablets(x2)\nPKR778.00\nCough Syrup (x2)\nFree\nDelivery\nPKR1319.00\nTotal Amount\nPaid via Card\nThank youfor shoppinig withus!",
+    "gold": "Green Leaf Pharmacy\nOrder Confirmation\nOrder No: 9754226\nPlaced on: 2026-10-26\nShip to: 76 Clinic Road, Lakeshore City\nParacetamol 500mg (x1) PKR 197.00\nAntacid Tablets (x2) PKR 344.00\nCough Syrup (x2) PKR 778.00\nDelivery Free\nTotal Amount PKR 1319.00\nPaid via Card\nThank you for shopping with us!"
+  },
+  {
+    "file": "test/Desktop/IMG_0138.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.376,
+    "pred": "METRO ELECTRONICS MART\n67Tech Plaza, Main Boulevard, Lakeahore City\n1:042-3071728\nTime113:27\nRecelpt4253799\n1xSmaztphone8/256GB 108,100/-\nSubtotal 108,100/-\nGST174 18.377/-\nGRAND TOTAL 126,477/-\nPaid by:Card****3799\n***WARRANTY***\nWarranty validuntil 2027-04-09\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-3871728\n------------------------------------------\nDate: 09 Apr 2025 Time: 13:27\nReceipt #4253799\n------------------------------------------\n1 x Smartphone 8/256GB 108,100/-\n------------------------------------------\nSubto"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2025-08-01 at 14.52.59.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.203,
+    "pred": "HomeEase Appliances\nOrder Confirmation\nOrderNo:7785567\nPlacedon:2025-08-01\nShip to:37MarketRoad,Lakeshore City\nWater Dispenser (x1)\nSubtotal PKR23700.00\nGST17% PKR23700.00\nDelivery PKR4029.00\nOrderTotal Free\nPaid via Card PKR27729.00\nWarranty expires on:2026-08-01\nThankyou for shopping with us!",
+    "gold": "HomeEase Appliances\nOrder Confirmation\nOrder No: 7785567\nPlaced on: 2025-08-01\nShip to: 37 Market Road, Lakeshore City\nWater Dispenser (x1) PKR 23700.00\nSubtotal PKR 23700.00\nGST 17% PKR 4029.00\nDelivery Free\nOrder Total PKR 27729.00\nPaid via Card\nWarranty expires on: 2026-08-01\nThank you for shoppi"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260102-WA0326.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.154,
+    "pred": "FreshBasket Grocers\nOrder Confirmation\nOrderNo:1096653\nPlaced on:02Jan2026\nShip to:31 GardenTown Market,Lakeshore City\nTea950g (x1)\nCookingOil 3L(x2) PKR1114.00\nSugar 2kg(x2) PKR4388.00\nBread(x1) PKR724.00\nChicken 1kg(x2) PKR178.00\nMilk1L(x1) PKR1456.00\nFlour 10kg(x1) PKR321.00\nPKR1683.00\nDelivery\nF",
+    "gold": "FreshBasket Grocers\nOrder Confirmation\nOrder No: 1096653\nPlaced on: 02 Jan 2026\nShip to: 31 Garden Town Market, Lakeshore City\nTea 950g (x1) PKR 1114.00\nCooking Oil 3L (x2) PKR 4388.00\nSugar 2kg (x2) PKR 724.00\nBread (x1) PKR 178.00\nChicken 1kg (x2) PKR 1456.00\nMilk 1L (x1) PKR 321.00\nFlour 10kg (x1"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20261107-WA0971.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.398,
+    "pred": "DAILY NEEDS MART\nTel:042-6756724\nDate:2026-11-05 Tim:14:59\nReceipt1155036\n3x Tomatoes.1kg PKR.675.00\n2xOnions2kg PKR496.00\n2xBasmat1Rico 5kg PKR3228.00\n2x Sugar 2kg PKR644.00\n1x Ccoking 0i13L PKR 2051.00\n3x Yogurt ikg\n2x Eggs Dozen PKR 872.00\nTOTAL PKR9064.00\nCash.tendered PKR-9500.00\nChange PKR-436",
+    "gold": "DAILY NEEDS MART\n21 Block C Commercial, Lakeshore City\nTel: 042-6756724\n------------------------------------------\nDate: 2026-11-05 Time: 14:59\nReceipt #1155036\n------------------------------------------\n3 x Tomatoes 1kg PKR 675.00\n2 x Onions 2kg PKR 496.00\n2 x Basmati Rice 5kg PKR 3228.00\n2 x Sugar"
+  },
+  {
+    "file": "test/Downloads/photo_16.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.44,
+    "pred": "SPICE GARDEN RESTAURANT\n74 Food Street,Lakeshore City\nTel:042-1284790\nDate:06/01/2026\nReceipt #9304926 Time:18:47\n1x Biryani Plate\n1x Mint Margarita 725/-\n481/-\nSubtotal\nService Tax 16% 1,206/-\nTOTAL 192.96/-\n1,398.96/-\nCash tendered\nChange 1,500/-\n101.04/-\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "SPICE GARDEN RESTAURANT\n74 Food Street, Lakeshore City\nTel: 042-1284790\n------------------------------------------\nDate: 06/01/2026 Time: 18:47\nReceipt #9304926\n------------------------------------------\n1 x Biryani Plate 725/-\n1 x Mint Margarita 481/-\n------------------------------------------\nSubt"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20250317-WA0352.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.295,
+    "pred": "HomeEase Appliances\nOrder Confirmation\nOrderNo:8395368\nPlacedon:17/03/2025\nShip to:37Market Road,Lakeshore City\nMicrowave Oven25L(x1)\nPKR27000.00\nSubtotal\nGST17% PKR27000.00\nDelivery PKR4590.00\nTotal Paid Free\nPKR31590.00\nGuarantee expires:17Mar2026",
+    "gold": "HomeEase Appliances\nOrder Confirmation\nOrder No: 8395368\nPlaced on: 17/03/2025\nShip to: 37 Market Road, Lakeshore City\nMicrowave Oven 25L (x1) PKR 27000.00\nSubtotal PKR 27000.00\nGST 17% PKR 4590.00\nDelivery Free\nTotal Paid PKR 31590.00\nPaid via Cash\nGuarantee expires: 17 Mar 2026\nThank you for shopp"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2026-02-26 at 15.59.29.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.199,
+    "pred": "HomeEase Appliances\nOrder Confirmation\nOrderNo:7741378\nPlacedon:26Feb2026\nShip to:37Market Road,Lakeshore City\n25,400/-\nMicrowaveOven25L(x1)\n25,400/-\nSubtotal 4.318-\nGST17% Free\nDelivery\n29,718/-\nTotal Paid\nPaid via Cash\nThank you for shopping with us!",
+    "gold": "HomeEase Appliances\nOrder Confirmation\nOrder No: 7741378\nPlaced on: 26 Feb 2026\nShip to: 37 Market Road, Lakeshore City\nMicrowave Oven 25L (x1) 25,400/-\nSubtotal 25,400/-\nGST 17% 4,318/-\nDelivery Free\nTotal Paid 29,718/-\nPaid via Cash\nThank you for shopping with us!"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260714-WA0980.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.207,
+    "pred": "FreshBasket Grocers\nOrder Confirmation\nOrderNo:4012486\nPlaced on:12Jul2026\nShip to:31 GardenTownMarket,Lakeshore City\nRs.750\nOnions 2kg(x3)\nRs.3.026\nFlour10kg(x2)\nRs.742\nSugar 2kg(x2)\nRs.1,475\nTea 950g\uff08x1)\nRs.402\nEggs Dozen (x1)\nFree\nDelivery\nRs.6,395\nTotal Paid\nPaid via Card\nThankyou for shopping w",
+    "gold": "FreshBasket Grocers\nOrder Confirmation\nOrder No: 4012486\nPlaced on: 12 Jul 2026\nShip to: 31 Garden Town Market, Lakeshore City\nOnions 2kg (x3) Rs. 750\nFlour 10kg (x2) Rs. 3,026\nSugar 2kg (x2) Rs. 742\nTea 950g (x1) Rs. 1,475\nEggs Dozen (x1) Rs. 402\nDelivery Free\nTotal Paid Rs. 6,395\nPaid via Card\nTha"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2026-02-03 at 14.28.35.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.424,
+    "pred": "SPICE GARDEN RESTAURANT\n74 Food Street,Lakeshore City\nTel:042-6172041\nTime:12:47\nDate:2026-02-03\nReceipt #5724753\nRs,175\n1x Garlic Naan\nRs.388\n1xMint Margarita\nRs.563\nsubtotal Rs.90.08\nService Tax 16s\nRs.653.08\nNET PAYABLE\nRs.1,000\nCash tendered\nRs.346.92\nChange\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "SPICE GARDEN RESTAURANT\n74 Food Street, Lakeshore City\nTel: 042-6172041\n------------------------------------------\nDate: 2026-02-03 Time: 12:47\nReceipt #5724753\n------------------------------------------\n1 x Garlic Naan Rs. 175\n1 x Mint Margarita Rs. 388\n------------------------------------------\nSu"
+  },
+  {
+    "file": "test/Desktop/IMG_6923.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.421,
+    "pred": "CITYFUELSTATION\n35Ring Road, Lakeshore City\nTel:042-6682882\nDate:16.10.2026 Time:13:59\nReceipt #1941343\n1xPetro126.8L 7,637/-\nNET PAYABLE 7,637/-\nPaidby:Card****1343\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "CITYFUEL STATION\n35 Ring Road, Lakeshore City\nTel: 042-6682882\n------------------------------------------\nDate: 16.10.2026 Time: 13:59\nReceipt #1941343\n------------------------------------------\n1 x Petrol 26.8 L 7,637/-\n------------------------------------------\nNET PAYABLE 7,637/-\nPaid by: Card **"
+  },
+  {
+    "file": "test/Downloads/IMG_5033.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.358,
+    "pred": "Metro Electronics Mart\n67Tech Plaza.MainBouevard,Lakeshore Cty Tel 042-5213238\nNo.8003704\nCASH MEMO Payment:Card\nDate:02/02/2026\nUnit Price Amount\nQty Description\nPKR109000.00\nPKR109000.00\nSmartphone8/256GB\nPKR960.00 PKR960.00\nUSB-C Cable\nPKR109960.00\nSubtotal\nPKR18693.20\nGST17%\nNet Total PKR128653.",
+    "gold": "Metro Electronics Mart\n67 Tech Plaza, Main Boulevard, Lakeshore City | Tel 042-5213238\nCASH MEMO No. 8003704\nDate: 02/02/2026 Payment: Card\nQty Description Unit Price Amount\n1 Smartphone 8/256GB PKR 109000.00 PKR 109000.00\n1 USB-C Cable PKR 960.00 PKR 960.00\nSubtotal PKR 109960.00\nGST 17% PKR 18693."
+  },
+  {
+    "file": "test/Documents/old/CamScanner 01-07-2024 11.15.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.27,
+    "pred": "Summit Online Certificate\nLearning of Completion\nPresented to\nAyesha Khan\nfor successfully completing\nDigital Teaching Tools\nIssue Date\n07.01.2024 Certificate ID\nDL-240079\nIssued by Summit Online Learning",
+    "gold": "Certificate\nSummit Online\nof Completion\nLearning\nPresented to\nAyesha Khan\nfor successfully completing\nDigital Teaching Tools\nIssue Date Certificate ID\n07.01.2024 DL-240079\nIssued by Summit Online Learning"
+  },
+  {
+    "file": "test/Desktop/PXL_20260516_150553.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.125,
+    "pred": "Metro Electronics Mart\n67Tech Plaza.Main Boulevard,Lakeshore Giy1Tel 042-1390885\nTAXINVOICE\nDate:16.05.2026 No.1345185\nPayment:Card\nQty Description\nUnit Price Amount\nHeadphones BT\nRs.9,700 Rs.9.700\nScreen Guard\nRs.510 Rs.510\nSubtotal Rs.10,210\nGST17% Rs.1,735.70\nTotal Rs.11,945.70\nGuarantee expires:",
+    "gold": "Metro Electronics Mart\n67 Tech Plaza, Main Boulevard, Lakeshore City | Tel 042-1390885\nTAX INVOICE No. 1345185\nDate: 16.05.2026 Payment: Card\nQty Description Unit Price Amount\n1 Headphones BT Rs. 9,700 Rs. 9,700\n1 Screen Guard Rs. 510 Rs. 510\nSubtotal Rs. 10,210\nGST 17% Rs. 1,735.70\nTotal Rs. 11,945"
+  },
+  {
+    "file": "test/Documents/old/Document (14).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.18,
+    "pred": "Metro Institute Certificate\nof Technology of Completion\nPresented to\nHamza Khan\nfor successfully completing\nRobotics Workshop\nIssued on Certificate ID\n25/04/2021 EP-725486\nIssued by Metro Institute of Technology",
+    "gold": "Certificate\nMetro Institute\nof Completion\nof Technology\nPresented to\nHamza Khan\nfor successfully completing\nRobotics Workshop\nIssued on Certificate ID\n25/04/2021 EP-725486\nIssued by Metro Institute of Technology"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260219-WA0462.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.296,
+    "pred": "CityFuel Station\n35Ring Road,Lakeshore City |Tel042-9377071\nNo.7170441\nTAXINVOICE\nPayment:Cash\nDate:2026-02-17\nUnit Price Amount\nQty Description\nPKR6529.00 PKR6529.00\nPetrol22.9L\nTotal PKR6529.00\nGoods once sold will notbe exchanged without thisinvoice.",
+    "gold": "CityFuel Station\n35 Ring Road, Lakeshore City | Tel 042-9377071\nTAX INVOICE No. 7170441\nDate: 2026-02-17 Payment: Cash\nQty Description Unit Price Amount\n1 Petrol 22.9 L PKR 6529.00 PKR 6529.00\nTotal PKR 6529.00\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260515-WA0708.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.475,
+    "pred": "CITYFUELSTATION\n35 Ring Road,Lakeshore City\nTel:042-6152778\nTime:12:26\nDate:2026-05-14\nReceipt#7707310\n9,980/-\n1xPetrol35.0L\n9,980/-\nNET PAYABLE\nPaidby:Card***+7310\nTHANK YOU EOR SHOPPING WITH US",
+    "gold": "CITYFUEL STATION\n35 Ring Road, Lakeshore City\nTel: 042-6152778\n------------------------------------------\nDate: 2026-05-14 Time: 12:26\nReceipt #7707310\n------------------------------------------\n1 x Petrol 35.0 L 9,980/-\n------------------------------------------\nNET PAYABLE 9,980/-\nPaid by: Card **"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2026-01-23 at 19.12.43.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.315,
+    "pred": "GreenLeafPharmacy\n76ClinicRoad,Lakeshore City|Tel042-9684751\nNo.3439339\nCASH MEMO\nPayment:Cash\nDate:23.01.2026\nUnit Price Amount\nQty Description\nRs.233 Rs.233\nAntacid Tablets\nNet Total Rs.233\nGoods once soid will not be exchanged without this invoice.",
+    "gold": "Green Leaf Pharmacy\n76 Clinic Road, Lakeshore City | Tel 042-9684751\nCASH MEMO No. 3439339\nDate: 23.01.2026 Payment: Cash\nQty Description Unit Price Amount\n1 Antacid Tablets Rs. 233 Rs. 233\nNet Total Rs. 233\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260114-WA0256.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.114,
+    "pred": "BookNook\n59 University Road,LakeshoreCity|Tel 042-2066844\nTAXINVOICE\nDate:13/01/2026 No.5123442\nPayment: Card\nQty Description\nUnit Price Amount\n2 Novel Paperback\n1,442/- 2,884/-\nAmount Due 2,884/-\nGoods once sold will not be exchangedwithout this invoice.",
+    "gold": "BookNook\n59 University Road, Lakeshore City | Tel 042-2066844\nTAX INVOICE No. 5123442\nDate: 13/01/2026 Payment: Card\nQty Description Unit Price Amount\n2 Novel Paperback 1,442/- 2,884/-\nAmount Due 2,884/-\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/Downloads/IMG_6839.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.464,
+    "pred": "HOMEEASE APPLIANCES\n37Markat Rcad, Lakeshore Caty\nTel:042-1705589\nTime:18:01\nDate: 23 Aug 2026\nReceipt 13665a65\nRs.23,400\nIxAir Fxyer 5L\nR5.23.400\nGST17A\nRs.27,378\nTOTAL\nPai4by:Card****5865\n***WARRANTY***\nWarranty ti1l 2029-08-23\nTHANR YOU FOR SHOPPING WITH US",
+    "gold": "HOMEEASE APPLIANCES\n37 Market Road, Lakeshore City\nTel: 042-1705589\n------------------------------------------\nDate: 23 Aug 2026 Time: 18:01\nReceipt #3665865\n------------------------------------------\n1 x Air Fryer 5L Rs. 23,400\n------------------------------------------\nSubtotal Rs. 23,400\nGST 17% "
+  },
+  {
+    "file": "test/Downloads/IMG_2568.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.389,
+    "pred": "HOMEEASE APPLIANCES\n37Harket ead,Lakeshore city\nTe1+042-1690009\nDate:23.07.2025 Timo:09:41\nRaceipt-5131374\n1xMicroave Oven 25L FKR 27000.00\nsubtotal PKR27000.00\nG5T175 PKR4590.00\nNET PAYABLE PKR31590.00\nPaid by:Card*1374\nWARRANTY\nWarranty ti11 23 Jul 2026\nIHANK YOU FOR SHOPPTNG WITH US",
+    "gold": "HOMEEASE APPLIANCES\n37 Market Road, Lakeshore City\nTel: 042-1699009\n------------------------------------------\nDate: 23.07.2025 Time: 09:41\nReceipt #6131374\n------------------------------------------\n1 x Microwave Oven 25L PKR 27000.00\n------------------------------------------\nSubtotal PKR 27000.00"
+  },
+  {
+    "file": "test/Documents/old/Scan 4.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.14,
+    "pred": "Certificate\nMetro Institute\nof Completion\nof Technology\nPresented to\nAli Raza Khan\nfor successfully completing\nProject Management Fundamentals\nCertificate ID\nAwarded on HM-219255\n26.01.2018\nIssued by Metro Institute of Technology",
+    "gold": "Certificate\nMetro Institute\nof Completion\nof Technology\nPresented to\nAli Raza Khan\nfor successfully completing\nProject Management Fundamentals\nAwarded on Certificate ID\n26.01.2018 HM-219255\nIssued by Metro Institute of Technology"
+  },
+  {
+    "file": "test/Documents/old/PXL_20251014_95671.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.371,
+    "pred": "SPICE GARDEN RESTAURANT\n74 Food Street,Lakeshore City\nTel:042-4001366\nDate:2025-10-14 Time:11:02\nReceipt#8332943\n2x Mint Margarita Rs.868\nSubtotal\nService Tax 16 Rs.868\nRs.138.88\nAMOUNT PAID Rs.1,006.88\nCash tendered Rs.1,500\nChange Rs.493.12\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "SPICE GARDEN RESTAURANT\n74 Food Street, Lakeshore City\nTel: 042-4001366\n------------------------------------------\nDate: 2025-10-14 Time: 11:02\nReceipt #8332943\n------------------------------------------\n2 x Mint Margarita Rs. 868\n------------------------------------------\nSubtotal Rs. 868\nService T"
+  },
+  {
+    "file": "test/Desktop/PXL_20260416_176795.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.375,
+    "pred": "HomeEase Appliances\n37Market Road,Lakeshore City|Tel0427458570\nNo.8304433\nTAXINVOICE Payment:Card\nDate:2026-04-16\nAmount\nUnit Price\nQty Description\nRs.17,100 Rs.17.100\nAirFryer5L\nRs.17,100\nSubtotal\nRs.2,907\nGST17%\nRs.20,007\nTotal\nGoodsncsoldwlnotbeexchangadwithout thioice",
+    "gold": "HomeEase Appliances\n37 Market Road, Lakeshore City | Tel 042-7458570\nTAX INVOICE No. 8304433\nDate: 2026-04-16 Payment: Card\nQty Description Unit Price Amount\n1 Air Fryer 5L Rs. 17,100 Rs. 17,100\nSubtotal Rs. 17,100\nGST 17% Rs. 2,907\nTotal Rs. 20,007\nGoods once sold will not be exchanged without this"
+  },
+  {
+    "file": "test/Documents/old/Document (7).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.184,
+    "pred": "Chicken Biryani\nServes6\nIngredients:1 kg chicken,3 cups basmati rice,2onions,1 cup yogurt,ginger-garlic paste,biryani masala,saffron milk,fresh\nmint.\n1.Marinate the chicken in yogurt,ginger-garlic paste and biryani masala for 2 hours.\n3.Cook the chicken with the remaining onions until tender. 2.Fry ",
+    "gold": "Chicken Biryani\nServes 6\nIngredients: 1 kg chicken, 3 cups basmati rice, 2 onions, 1 cup\n   yogurt, ginger-garlic paste, biryani masala, saffron milk, fresh\n   mint.\n1. Marinate the chicken in yogurt, ginger-garlic paste and biryani\n   masala for 2 hours.\n2. Fry the sliced onions until golden and se"
+  },
+  {
+    "file": "test/Documents/old/IMG_4724.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.193,
+    "pred": "DRIVING LICENCE\nEastland Transport Authority\nLicence No\nISB-23-569491\nHoidr\nAli Raza Khan DOB\n14.05.1978\nValidFrom\n15.06.2023 Expiry\n15.06.2028\nVehicle classes:LTV.MTV\nSignatutecthoid",
+    "gold": "DRIVING LICENCE Eastland Transport Authority\nLicence No.\nISB-23-569491\nHolder DOB\nAli Raza Khan 14.05.1978\nValid From Expiry\n15.06.2023 15.06.2028\nVehicle classes: LTV, MTV\nSignature of holder"
+  },
+  {
+    "file": "test/Documents/old/IMG_3154.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.411,
+    "pred": "METRO ELECTRONICS MART\n67Tech Plaza,Main Boulevard,Lakeshore Clty\nTe1:042-4458201\nTime:09:17\nReceipt#9028910\n11,900/\nSubtotal 11,900/-\nGST-175 2,023/-\nTOTAL 13,923/-\nCash tendered 14,000/\nChange 777\n***WARRANTY***\nWarranty validunti1 07/12/2026\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-4468201\n------------------------------------------\nDate: 07 Dec 2025 Time: 09:17\nReceipt #9028910\n------------------------------------------\n1 x Wireless Earbuds 11,900/-\n------------------------------------------\nSubtotal"
+  },
+  {
+    "file": "test/Documents/old/Scan 13.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.475,
+    "pred": "FASTLINK INTERNET\nINVOICE-INTERNET SERVICE\nAccount.\nCustomer.. FL-1930-9677\nAddress.. Ali Raza Khan\nPeriod.. House 14, Street 7,Garden Town,Lakeshore City\nInvoice date. November 2026\n05Dec2026\nPackage Charges (50 Mbps)\nAdd-ons PKR 2930.00\nTaxes PKR172.00\nPKR345.00\nCharges for the month\nPrevious Bala",
+    "gold": "FASTLINK INTERNET\nINVOICE - INTERNET SERVICE\n==============================================================\nAccount............. FL-1930-9677\nCustomer............ Ali Raza Khan\nAddress............. House 14, Street 7, Garden Town, Lakeshore City\nPeriod.............. November 2026\nInvoice date......."
+  },
+  {
+    "file": "test/Downloads/IMG_0640.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.221,
+    "pred": "HomeEase Appliances\n37 Market Road.Lakeshore City Tel 042-8401430\nNo.2582258\nSALES INVOICE\nPayment:Card\nDate:09/01/2025\nUnit Price Amount\nQty Description\nRs.24,800 Rs.24,800\nAir Fryer5L\nSubtotal Rs.24,800\nGST17% Rs.4,216\nNet Total Rs.29,016\nWarranty expireson:09/01/2026\nPtease keep this involce lor ",
+    "gold": "HomeEase Appliances\n37 Market Road, Lakeshore City | Tel 042-8401430\nSALES INVOICE No. 2582258\nDate: 09/01/2025 Payment: Card\nQty Description Unit Price Amount\n1 Air Fryer 5L Rs. 24,800 Rs. 24,800\nSubtotal Rs. 24,800\nGST 17% Rs. 4,216\nNet Total Rs. 29,016\nWarranty expires on: 09/01/2026\nPlease keep "
+  },
+  {
+    "file": "test/Desktop/Screenshot 2026-09-13 at 18.59.10.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.131,
+    "pred": "Metro Electronics Mart\n67TechPlaza.Main Boulevard,Lakeshore City1Tel042-8110283\nTAXINVOICE\nDate:13/09/2026 No.3525720\nPayment:Cash\nQty Description\nUnit Price Amount\nLaptopi516GB512GB PKR157300.00\nPKR157300.00\nSubtotal PKR157300.00\nGST17% PKR26741.00\nTotal PKR184041.00\nWarrantyexpires on:13Sep2027\nPl",
+    "gold": "Metro Electronics Mart\n67 Tech Plaza, Main Boulevard, Lakeshore City | Tel 042-8110283\nTAX INVOICE No. 3525720\nDate: 13/09/2026 Payment: Cash\nQty Description Unit Price Amount\n1 Laptop i5 16GB 512GB PKR 157300.00 PKR 157300.00\nSubtotal PKR 157300.00\nGST 17% PKR 26741.00\nTotal PKR 184041.00\nWarranty "
+  },
+  {
+    "file": "test/Documents/old/scan_4104.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.419,
+    "pred": "FASTLINK INTERNET\nINVOICE-INTERNET SERVICE\nAccount. FL-1930-9677\nCustomer.. Ali Raza Khan\nHouse 14, Street 7,Garden Town,Lakeshore City\nAddress..\nPeriod.. 2026-02\nInvoice date. 02Mar2026\n3,076.10/-\nPackage Charges (50 Mbps)\n180.95/-\nAdd-ons\n361.89/-\nTaxes\nCharges for the month 3,618.94/-\nBalance bro",
+    "gold": "FASTLINK INTERNET\nINVOICE - INTERNET SERVICE\n==============================================================\nAccount............. FL-1930-9677\nCustomer............ Ali Raza Khan\nAddress............. House 14, Street 7, Garden Town, Lakeshore City\nPeriod.............. 2026-02\nInvoice date........ 02 M"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2024-05-02 at 15.15.44.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.142,
+    "pred": "REPUBLIC OF EASTLAND\nNATIONAL IDENTITY CARD\nFul Name\nAYESHAKHAN\nDNO\n44645-7426301-5\nBotn\n03Sep 1982\nissied\n02May2024\nNUD OIEA\n02May2034",
+    "gold": "REPUBLIC OF EASTLAND\nNATIONAL IDENTITY CARD\nFull Name\nAYESHA KHAN\nID No.\n44645-7426301-5\nBorn\n03 Sep 1982\nIssued\n02 May 2024\nValid Until\n02 May 2034"
+  },
+  {
+    "file": "test/Downloads/Scan 19.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.272,
+    "pred": "Summit Online Certificate\nLearning of Completion\nPresented to\nSara Khan\nfor successfully completing\nData Analysis with SQL\nIssue Date\n15.07.2023 Certificate ID\nDP-152489\nIssued by Summit Online Learning",
+    "gold": "Certificate\nSummit Online\nof Completion\nLearning\nPresented to\nSara Khan\nfor successfully completing\nData Analysis with SQL\nIssue Date Certificate ID\n15.07.2023 DP-152489\nIssued by Summit Online Learning"
+  },
+  {
+    "file": "test/Desktop/PXL_20260825_174690.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.473,
+    "pred": "FRESHBASKET GROCERS\n31 Garden Town Market, Lakeshore City\nTel:042-1501374\nDate:25 Aug 2026\nReceipt#7847190 Time:18:09\n3xMi1k1L\n936/-\n2,161/-\n3x Sugar 2kg 4,473/-\n3xFlour 10kg 1,008/-\nXIOx -/805'5\n1xTomatoes 1kg 602/-\n156/-\nNET PAYABLE\n14,844/-\nCash tendered\nChange 15,000/-\n156/-\nTHANK YOU FOR SHOPPI",
+    "gold": "FRESHBASKET GROCERS\n31 Garden Town Market, Lakeshore City\nTel: 042-1501374\n------------------------------------------\nDate: 25 Aug 2026 Time: 18:09\nReceipt #7847190\n------------------------------------------\n3 x Milk 1L 936/-\n1 x Cooking Oil 3L 2,161/-\n3 x Basmati Rice 5kg 4,473/-\n3 x Sugar 2kg 1,00"
+  },
+  {
+    "file": "test/Desktop/Screenshot 2026-07-15 at 22.19.58.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.397,
+    "pred": "BOOKNOOK\n59 University Road, Lakeshore City\nTel:042-1957184\nDate:2026-07-15 Time:15:00\nReceipt#8904987\n2x Novel Paperback Rs.2,362\n2xTextbook Rs.12,844\nTOTAL Rs.15,206\nPaidby:Card***4987\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "BOOKNOOK\n59 University Road, Lakeshore City\nTel: 042-1957184\n------------------------------------------\nDate: 2026-07-15 Time: 15:00\nReceipt #8904987\n------------------------------------------\n2 x Novel Paperback Rs. 2,362\n2 x Textbook Rs. 12,844\n------------------------------------------\nTOTAL Rs. "
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2026-08-26 at 15.31.43.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.192,
+    "pred": "CityFuel Station\n35Ring Road.Lakeshore City|Tel 042-5606989\nSALESINVOICE\nDate:26/08/2026 No.7710139\nQty Payment:Card\nDescription\nUnit Price Amount\nPetrol27.8L\nRs.7,930 Rs.7,930\nAmount Due Rs.7,930\nGoods once soldwillnotbeexchangedwithout thisinvoice.",
+    "gold": "CityFuel Station\n35 Ring Road, Lakeshore City | Tel 042-5606989\nSALES INVOICE No. 7710139\nDate: 26/08/2026 Payment: Card\nQty Description Unit Price Amount\n1 Petrol 27.8 L Rs. 7,930 Rs. 7,930\nAmount Due Rs. 7,930\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20251105-WA0365.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.229,
+    "pred": "Metro Electronics Mart\nOrder Confirmation\nOrderNo:4004114\nPlacedon:2025-11-02\nShip to:67TechPlaza.Main Boulevard,LakeshoreCity\nRs.39.600\nMonitor 24in IPS (x1) Rs.1,080\nUSB-C Cable (x1)\nRs.40.680\nSubtotal Rs.6,915.60\nGST17% Free\nDellvery\nRs.47,595.60\nTotal Amount\nPaid via Card\nWarrantyvalid until:02M",
+    "gold": "Metro Electronics Mart\nOrder Confirmation\nOrder No: 4004114\nPlaced on: 2025-11-02\nShip to: 67 Tech Plaza, Main Boulevard, Lakeshore City\nMonitor 24in IPS (x1) Rs. 39,600\nUSB-C Cable (x1) Rs. 1,080\nSubtotal Rs. 40,680\nGST 17% Rs. 6,915.60\nDelivery Free\nTotal Amount Rs. 47,595.60\nPaid via Card\nWarrant"
+  },
+  {
+    "file": "test/Desktop/Screenshot 2026-04-16 at 9.53.36.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.33,
+    "pred": "HomeEase Appliances\n37Market Road,Lakeshore Clty|Tel 042-3339454\nNo.2226009\nTAXINVOICE Payment:Cash\nDate:16Apr2026\nUnit Price Amount\nQty Description\nRs.113,400 Rs.113,400\nRefrigerator14cft\nRs.113,400\nSubtotal\nRs.19,278\nGST17%\nTotal Rs.132,678\nGoods once soldwillnotbe exchangedwithout thisinvoice.",
+    "gold": "HomeEase Appliances\n37 Market Road, Lakeshore City | Tel 042-3339454\nTAX INVOICE No. 2226009\nDate: 16 Apr 2026 Payment: Cash\nQty Description Unit Price Amount\n1 Refrigerator 14cft Rs. 113,400 Rs. 113,400\nSubtotal Rs. 113,400\nGST 17% Rs. 19,278\nTotal Rs. 132,678\nGoods once sold will not be exchanged "
+  },
+  {
+    "file": "test/Downloads/photo_10.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.191,
+    "pred": "Spice Garden Restaurant\n74FoodStreet,Lakeshore City|Tel042-3732455\nTAXINVOICE No.5552620\nDate:2026-09-03 Payment:Card\nUnit Price Amount\nQty Description\nPKR181.00 PKR181.00\nGarlicNaan\nSubtotal PKR181.00\nServiceTax16% PKR28.96\nAmountDue PKR209.96\nGoods once sold willnotbe exchangedwithout this invoice",
+    "gold": "Spice Garden Restaurant\n74 Food Street, Lakeshore City | Tel 042-3732455\nTAX INVOICE No. 5552620\nDate: 2026-09-03 Payment: Card\nQty Description Unit Price Amount\n1 Garlic Naan PKR 181.00 PKR 181.00\nSubtotal PKR 181.00\nService Tax 16% PKR 28.96\nAmount Due PKR 209.96\nGoods once sold will not be exchan"
+  },
+  {
+    "file": "test/Downloads/IMG_2813.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.346,
+    "pred": "FRESHBASKET GROCERS\n31 Garden Town Market,Lakesnore City\nTe1:042-8588979\nDate:22 May 2026 Time:16:57\nReceipt#1473778\n2xTea 950g PKR2554.00\n1xTomatoes1kg PKR 161.00\n1xMi1k1L PKR 337.00\nNET PAYABLE PKR 3052.00\nCash tendered PKR 3500.00\nChange PKR448.00\nTHANK YOU FOR SHOPPING WITH US",
+    "gold": "FRESHBASKET GROCERS\n31 Garden Town Market, Lakeshore City\nTel: 042-8588979\n------------------------------------------\nDate: 22 May 2026 Time: 16:57\nReceipt #1473778\n------------------------------------------\n2 x Tea 950g PKR 2554.00\n1 x Tomatoes 1kg PKR 161.00\n1 x Milk 1L PKR 337.00\n----------------"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260928-WA0520.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.131,
+    "pred": "CityFuel Station\nOrder Confirmation\nOrderNo:8252737\nPlacedon:27/09/2026\nShip to:35 Ring Road,Lakeshore City\nPetrol 24.3L(x1)\n6,926/-\nDelivery\nTotal Amount Free\nPaid via Cash 6,926/-\nThankyou for shopping with us!",
+    "gold": "CityFuel Station\nOrder Confirmation\nOrder No: 8252737\nPlaced on: 27/09/2026\nShip to: 35 Ring Road, Lakeshore City\nPetrol 24.3 L (x1) 6,926/-\nDelivery Free\nTotal Amount 6,926/-\nPaid via Cash\nThank you for shopping with us!"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260612-WA0839.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.376,
+    "pred": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel:042-6931340\nTime:13:59\nDate:11Jun 2026\nReceipt#9897708\n159,800/-\n1xLaptop i5 16GB 512GB\n159,800/-\nSubtotal 27,166/-\nGST17 186,966/-\nTOTAL\n187,000/-\nCash tendered 34/-\nChange\n***WARRANTY***\nWarranty expires on 11.12.2026\nTHANK Y",
+    "gold": "METRO ELECTRONICS MART\n67 Tech Plaza, Main Boulevard, Lakeshore City\nTel: 042-6931340\n------------------------------------------\nDate: 11 Jun 2026 Time: 13:59\nReceipt #9897708\n------------------------------------------\n1 x Laptop i5 16GB 512GB 159,800/-\n------------------------------------------\nSub"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260806-WA0717.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.295,
+    "pred": "Metro Gas Ltd\nMonthly Gas Statemen\nAccount Number. MG-5907-2522\nStatement Period: 07/2026\nStatement Date. 03Aug2026\nBiled To: Ali Raza Khan\nPremises: House14,Street7,GardenTown,Lakeshore City\nNet Amount Due\nPKR1426.33 DueDate\n19Aug2026\nBreakdown ofcharges\nGas Charges\nFixed Charges PKR1141.06\nGas Dev",
+    "gold": "Metro Gas Ltd\nMonthly Gas Statement\nAccount Number: MG-5907-2522\nStatement Period: 07/2026\nStatement Date: 03 Aug 2026\nBilled To: Ali Raza Khan\nPremises: House 14, Street 7, Garden Town, Lakeshore City\nNet Amount Due Due Date\nPKR 1426.33 19 Aug 2026\nBreakdown of charges\nGas Charges PKR 1141.06\nFixed"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20200331-WA0309.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.174,
+    "pred": "Summit Online Certificate\nLearning of Completion\nPresented to\nSara Khan\nfor successfully completing\nPython Programming\nDate of Issue Certificate ID\n29.03.2020 BQ-484261\nIssued by Summit Online Leaming",
+    "gold": "Certificate\nSummit Online\nof Completion\nLearning\nPresented to\nSara Khan\nfor successfully completing\nPython Programming\nDate of Issue Certificate ID\n29.03.2020 BQ-484261\nIssued by Summit Online Learning"
+  },
+  {
+    "file": "test/Work/Backup/IMG-20260126-WA0001.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.154,
+    "pred": "Green Leaf Pharmacy\n76ClinicRoad.Lakeshore City1Tel 042-6310955\nCASH MEMO\nDate:25.01.2026 No.9015554\nPayment:Card\nQty Description\nUnit Price Amount\nParacetamol500mg\n234/- 234/-\nTotal 234/-\nGoods once sold willnolbe exchangedwithout this invoice",
+    "gold": "Green Leaf Pharmacy\n76 Clinic Road, Lakeshore City | Tel 042-6310955\nCASH MEMO No. 9015554\nDate: 25.01.2026 Payment: Card\nQty Description Unit Price Amount\n1 Paracetamol 500mg 234/- 234/-\nTotal 234/-\nGoods once sold will not be exchanged without this invoice."
+  },
+  {
+    "file": "test/Desktop/CamScanner 01-01-2019 20.24.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.341,
+    "pred": "Northfield College\nAcademicTranscript Issuedon\n2008-07-09\nProgramme\nReg No MasterofBusinessAdministration\nName of Student 2006-NC-MBA-058\nAli Raza Khan\n3B\nFall2006 3B-\nMBA-101 FinancialAccounting\nMBA-102 BusinessStatistics\nSGPA2.67\nMBA-103OrganizationalBehavior\n3B-\nSpring 2007 3B-\nMBA-104Managerial ",
+    "gold": "Northfield College\nAcademic Transcript\nName of Student Reg No Programme Issued on\nAli Raza Khan 2006-NC-MBA-058 Master of Business Administration 2008-07-09\nFall 2006\nMBA-101  Financial Accounting 3  B\nMBA-102  Business Statistics 3  B-\nMBA-103  Organizational Behavior 3  C+\nSGPA 2.67\nSpring 2007\nMB"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20190103-WA0286.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.286,
+    "pred": "Northfield College\nAcademicTranscript\nNane of Student FagNo\nAyesha Khan 2000-NC-EDU-213 Programme\nBachelor of Education isstedon\nFall2000 06Jul2002\nEDU-101 Philosophy of Education EDU-102 ChildDevelopment 3B\nEDU-103 General MethodsofTeaching 3A\n3B\nSpring2001 SGPA3.00\nEDU-104 Educational Psychology 3",
+    "gold": "Northfield College\nAcademic Transcript\nName of Student Reg No Programme Issued on\nAyesha Khan 2000-NC-EDU-213 Bachelor of Education 06 Jul 2002\nFall 2000\nEDU-101  Philosophy of Education 3  B-\nEDU-102  Child Development 3  A-\nEDU-103  General Methods of Teaching 3  B-\nSGPA 3.00\nSpring 2001\nEDU-104  "
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20250115-WA0576.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.407,
+    "pred": "WARRANTY CARD\nKELVON\nMicrowave Oven 30L\nltem:\nKV-30MG\nModel No.\nKV84B2814839\nS/N:\n12.01.2025\nDate ot Purchase\n2years\nWarranty Period:\n12.01.2027\nWarranty expires:\nGalaxy Home Store\nDealer.\nAli Raza Khan\nCustomerName\nKeep this ard wthyou purchase recept.",
+    "gold": "KELVON WARRANTY CARD\nItem: Microwave Oven 30L\nModel No.: KV-30MG\nS/N: KV84B2814839\nDate of Purchase: 12.01.2025\nWarranty Period: 2 years\nWarranty expires: 12.01.2027\nDealer: Galaxy Home Store\nCustomer Name: Ali Raza Khan\nKeep this card with your purchase receipt."
+  },
+  {
+    "file": "test/Desktop/photo_19.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.137,
+    "pred": "EASTLAND\nPassport\nPassport Number EE1284103\nFull Name AyeshaKhan\nNationality Eastlander\nDate of Birth 03/09/1982\nPlace of Birth Lakeshore City\nIssue Date 11/07/2014\nExpiryDate 11/07/2019\nBooklet No B73863912\nP<EASKHAN<<AYESHA<\nEE1284103<0EAS8209030F1907110<<",
+    "gold": "EASTLAND\nPassport\nPassport Number EE1284103\nFull Name Ayesha Khan\nNationality Eastlander\nDate of Birth 03/09/1982\nPlace of Birth Lakeshore City\nIssue Date 11/07/2014\nExpiry Date 11/07/2019\nBooklet No B73863912\nP<EASKHAN<<AYESHA<<<<<<<<<<<<<<<<<<<<<<<<<<<\nEE1284103<0EAS8209030F1907110<<<<<<<<<<<<<00"
+  },
+  {
+    "file": "test/Desktop/IMG_7377.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.137,
+    "pred": "REPUBLIC OF EASTLAND\nPASSPORT\nCountry Code Passport No.\nEAS KX2053268\nNane\nHAMZAKHAN\nNauonality xeS\nEASTLANDER M\nDateof Brth Place ol Binn\n2007-11-03 LAKESHORECITY\nDate of issue Dale ot Expiry\n2012-01-09 2017-01-09\nIssuing Authonty\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<HAMZA<<<<\nKX2053268<0E",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS KX2053268\nName\nHAMZA KHAN\nNationality Sex\nEASTLANDER M\nDate of Birth Place of Birth\n2007-11-03 LAKESHORE CITY\nDate of Issue Date of Expiry\n2012-01-09 2017-01-09\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<HAMZA"
+  },
+  {
+    "file": "test/Downloads/Scan 6.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.398,
+    "pred": "EASTLAND\nPassport\nCS5336599\nPassport Number\nAyesha Khan\nFull Name\nEastlander\nNationality\n03/09/1982\nDate of Birth\nLakeshore City\nPlace of Birth\n20/07/2009\nIssue Date\n20/07/2014\nExpiryDate\nB19369823\nBooklet No\nP<EASKHAN<<AYESHA\nCS5336599<0EAS8209030F1407200<<<<<<<<",
+    "gold": "EASTLAND\nPassport\nPassport Number CS5336599\nFull Name Ayesha Khan\nNationality Eastlander\nDate of Birth 03/09/1982\nPlace of Birth Lakeshore City\nIssue Date 20/07/2009\nExpiry Date 20/07/2014\nBooklet No B19369823\nP<EASKHAN<<AYESHA<<<<<<<<<<<<<<<<<<<<<<<<<<<\nCS5336599<0EAS8209030F1407200<<<<<<<<<<<<<00"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20230322-WA0284.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.109,
+    "pred": "Brightpath School\nFeeVoucher\nVoucher No: 76933548\nName olStudent Hamza Khan\nRoll No: BPS-1734\nClass. Class 10\nTem. April toJune2023\nDate ot Issue 20/03/2023\nLast Dale 10/04/2023\nParticulars Amount\nTuition Fee 29,500/-\nComputer Lab 1,800/\nSports Fee 700/-\nTotal Amount 32,000/-\nAmount afterduedate 34.",
+    "gold": "Brightpath School\nFee Voucher\nVoucher No: 76933548\nName of Student: Hamza Khan\nRoll No: BPS-1734\nClass: Class 10\nTerm: April to June 2023\nDate of Issue: 20/03/2023\nLast Date: 10/04/2023\nParticulars Amount\nTuition Fee 29,500/-\nComputer Lab 1,800/-\nSports Fee 700/-\nTotal Amount 32,000/-\nAmount after d"
+  },
+  {
+    "file": "test/Documents/old/IMG_1841.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.361,
+    "pred": "LAKESHORE UNIVERSITY LAKESHOREUNIVERSITY\nFEEVOUCHER BANKCOPY LAKESHOREUNIVERSITY\nFEEVOUCHER-INSTITUTIONCOPY FEEVOUCHER-STUDENT COPY\nPaynhC\nChallan No! 81700648 Challan No 81700648\nIstuDate Challan No 81700648\n2024-08-02 Issue Da 2024-08-02\nDueQ 2024-08-22 issueDale: 2024-08-02\nDuo Daie: 2024-08-22 D",
+    "gold": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 81"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2019-01-01 at 16.17.11.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.317,
+    "pred": "NORTHFIELDCOLLEGE\nOffice of the Controller ofExaminations\nTRANSCRIPTOFACADEMICRECORD\nStudent Name: Ayesha Khan\nProgram: Bachelor of Education Reqistratlon No.\nDate of Birth Date of Issue: 2000-NC-EDU-213\n1982-09-03 2003-02-20\nCode Transcript No: EDU-T-381895\nCourse Title\nFall2000 Credit Hours\nEDU-10",
+    "gold": "NORTHFIELD COLLEGE\nOffice of the Controller of Examinations\nTRANSCRIPT OF ACADEMIC RECORD\nStudent Name: Ayesha Khan Registration No: 2000-NC-EDU-213\nProgram: Bachelor of Education Date of Issue: 2003-02-20\nDate of Birth: 1982-09-03 Transcript No: EDU-T-381895\nCode Course Title Credit Hours Grade\nFal"
+  },
+  {
+    "file": "test/Desktop/Document (5).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.144,
+    "pred": "RENT AGREEMENT\nNusrat Khan\nLessor\nDanish Rauf\nLessee\nFlat2,BlockB,CanalViewApartments,Lakeshore City\nPremises\nRent per month 58,000/-\nDeposit 116,000/-\n01.07.2025\nStart Date\nEnd Date 31.05.2026\nAgreement Date 15.06.2025\nNotice period one month\nTerms\n-Rent ispaidin advanceby the5thof everymonth.\n-Uti",
+    "gold": "RENT AGREEMENT\nLessor Nusrat Khan\nLessee Danish Rauf\nPremises Flat 2, Block B, Canal View Apartments, Lakeshore City\nRent per month 58,000/-\nDeposit 116,000/-\nStart Date 01.07.2025\nEnd Date 31.05.2026\nAgreement Date 15.06.2025\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th of eve"
+  },
+  {
+    "file": "test/Downloads/scan_7545.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.376,
+    "pred": "Brightpath School\nGardenTown,Lakeshore City\nRef:HR/2025/237\nAyesha Khan Date:10Mar2025\nHouse14,Street7,GardenTown,LakeshoreCity\nSubject:Offer of Employment\nDear Ayesha Khan,\nmain termsof the offer are givenbelow.Thefull terms are in the employment contract youwill sign on joining. Wearepleased to of",
+    "gold": "Brightpath School\nGarden Town, Lakeshore City\nRef: HR/2025/237 Date: 10 Mar 2025\nAyesha Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nSubject: Offer of Employment\nDear Ayesha Khan,\nWe are pleased to offer you the position of Head of Primary Section at Brightpath School. The\nmain terms of the "
+  },
+  {
+    "file": "test/Downloads/IMG_9832.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.105,
+    "pred": "BrightpathSchool\nFee Voucher\nVoucher No 66978138\nName ofStudent: Hamza Khan\nRoll No: BPS-1734\nClass: Class9\nTerm: OctobertoDecember2022\nDate of Issue: 20Sep2022\nLast Date: 10Oct2022\nParticulars\nAmount\nTuition Fee\nComputer Lab 27,000/\nSportsFee 1,600/-\n700/-\nTotal Amount\n29,300/-\nAmount after due dat",
+    "gold": "Brightpath School\nFee Voucher\nVoucher No: 66978138\nName of Student: Hamza Khan\nRoll No: BPS-1734\nClass: Class 9\nTerm: October to December 2022\nDate of Issue: 20 Sep 2022\nLast Date: 10 Oct 2022\nParticulars Amount\nTuition Fee 27,000/-\nComputer Lab 1,600/-\nSports Fee 700/-\nTotal Amount 29,300/-\nAmount "
+  },
+  {
+    "file": "test/Documents/old/CamScanner 06-20-2022 20.26.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.104,
+    "pred": "BRIGHTPATHSCHOOL\nBRIGHTPATHSCHOOL\nBRIGHTPATH SCHOOL FEEVOUCHER-STUDENT COPY\nFEEVOUCHER-INSTITUTION COPY\nFEEVOUCHER-BANKCOPY Payable at any branch of Crescent Bank Limited\nPayable at anybranch of Crescent Bank Limited\nPayable at any branch of Crescent Bank Limited\nChallan No: 58715660\nChallan No: 587",
+    "gold": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 58715660 Ch"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260528-WA0107.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.265,
+    "pred": "ORCHARDSOFTWARE\nHuman ResourcesDeparment\nDated:2026-05-28\nOFFERLETTER\nTo:HamzaKhan\nHouse14,Street7,GardenTown,LakeshoreCity\nDear Hamza,\nFollowingyourintrviewweare happy toofferyouajobwithus.Pleaseread the temsblow\nand letusknowyourdecision.\nHamza Khan\nCandidate Name\nSummer Intern\nDesignation\nDepartm",
+    "gold": "ORCHARD SOFTWARE\nHuman Resources Department\nOFFER LETTER Dated: 2026-05-28\nTo: Hamza Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nDear Hamza,\nFollowing your interview, we are happy to offer you a job with us. Please read the terms below\nand let us know your decision.\nCandidate Name Hamza Kha"
+  },
+  {
+    "file": "test/Desktop/scan_7901.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.135,
+    "pred": "BRIGHTPATHSCHOOL BRIGHTPATHSCHOOL\nBRIGHTPATH SCHOOL\nFEEVOUCHER-INSTITUTION COPY FEEVOUCHER-STUDENT COPY\nFEEVOUCHER BANK COPY Payable at anybranch of Crescent Bank Limited\nPayable at any branch of Crescent Bank Limited\nPayable at any branch of Crescent Bank Limited\nChallan No: 13976554 Chailan No: 13",
+    "gold": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 13976554 Ch"
+  },
+  {
+    "file": "test/Documents/old/PXL_20220801_161939.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.319,
+    "pred": "Lakeshore University\nFee Voucher\nVoucherNo. 35965991\nName of Student: Sara Khan\nReg No. 2021-LU-CS-117\nProgram: BS Computer Science\nSession, Fall2022\nDale of lIssue: 01/08/2022\nLast Date: 19/08/2022\nAmount\nParticulars\n89.000/-\nTuitionFee 5.300/\nLab Fee 1,800/-\nLibrary Fee 3,600/\nExamFee\n99,700/-\nTot",
+    "gold": "Lakeshore University\nFee Voucher\nVoucher No: 35965991\nName of Student: Sara Khan\nReg No: 2021-LU-CS-117\nProgram: BS Computer Science\nSession: Fall 2022\nDate of Issue: 01/08/2022\nLast Date: 19/08/2022\nParticulars Amount\nTuition Fee 89,000/-\nLab Fee 5,300/-\nLibrary Fee 1,800/-\nExam Fee 3,600/-\nTotal A"
+  },
+  {
+    "file": "test/Documents/old/CamScanner 10-31-2026 14.27.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.283,
+    "pred": "Unity Bank Limited\nAccount Statement\nSara Khan\nHouse14,Street7,GardenTown,Lakeshore City\nAccount No. 1303-73050953-75\nIBAN: EA54UNTY0013037305095375\nBranch: University Road Branch(0233)\nStatement Period: 01Oct2026to31Oct2026\nStatement Date: 02Nov2026\n280,941.91 Total Credits: 140,000.00\nOpening Bala",
+    "gold": "Unity Bank Limited\nAccount Statement\nSara Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nAccount No.: 1303-73050953-75\nIBAN: EA54UNTY0013037305095375\nBranch: University Road Branch (0233)\nStatement Period: 01 Oct 2026 to 31 Oct 2026\nStatement Date: 02 Nov 2026\nOpening Balance: 280,941.91 Total"
+  },
+  {
+    "file": "test/Documents/old/CamScanner 09-15-2020 13.39.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.307,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nPassport No.\nCountry Code\nType DN3498255\nEAS\nName\nNUSRATKHAN\nNationality F\nEASTLANDER\nPlace of Bith\nDate olBirth LAKESHORECITY\n1950-01-28\nDate of Expiry\nDate olIssue 2025-09-15\n2020-09-15\nIssuing Authorlty\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<NUSRAT<<\nDN3498255<0",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS DN3498255\nName\nNUSRAT KHAN\nNationality Sex\nEASTLANDER F\nDate of Birth Place of Birth\n1950-01-28 LAKESHORE CITY\nDate of Issue Date of Expiry\n2020-09-15 2025-09-15\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<NUSR"
+  },
+  {
+    "file": "test/Downloads/CamScanner 09-15-2026 17.24.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.144,
+    "pred": "Cedarline Analytics\nTech Park,Lakeshore City\nRef:HR/2026/572\nDate:2026-09-15\nSara Khan\nHouse14,Street7,GardenTown,LakeshoreCity\nSubject:Offer of Employment\nDear Sara Khan,\nWe arepleased to offeryou theposition of Data Analyst at CedarlineAnalytics.The main terms\njoining. of the offer are givenbelow.",
+    "gold": "Cedarline Analytics\nTech Park, Lakeshore City\nRef: HR/2026/572 Date: 2026-09-15\nSara Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nSubject: Offer of Employment\nDear Sara Khan,\nWe are pleased to offer you the position of Data Analyst at Cedarline Analytics. The main terms\nof the offer are give"
+  },
+  {
+    "file": "test/Downloads/Screenshot 2026-11-16 at 8.19.50.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.504,
+    "pred": "NORTHFIELD COLLEGE\nFEEVOUCHER BANK COPY NORTHFIELD COLLEGE\nPayaoy bncho Uy BL FEEVOUCHER-INSTIUTION COPY NORTHFIELD COLLEGE\nChalan Na 38898950 Panynf yBkL FEEVOUCHER-STUDENTCOPY\nIssue Date 16.11.2026 Chalan No: 38898950 Paaanyh B Li\nOuDate 12.01.2027 lssueDae 16.11.2026 Chatan No- 38898950\nSodert Na",
+    "gold": "NORTHFIELD COLLEGE NORTHFIELD COLLEGE NORTHFIELD COLLEGE\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Unity Bank Limited Payable at any branch of Unity Bank Limited Payable at any branch of Unity Bank Limited\nChallan No: 38898950 Challan "
+  },
+  {
+    "file": "test/Desktop/PXL_20190101_205924.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.109,
+    "pred": "EASTLAND\nPassport\nPassport Number RR7530978\nFull Name Ali Raza Khan\nNationality Eastlander\nDate of Birth 14May1978\nPiace of Birth Lakeshore City\nIssue Date 14Apr2016\nExpiryDate 14Apr2026\nBooklet No B61477116\nP<EASKHAN<<ALI<RAZA<\nRR7530978<02AS7805140M2604140<<<<<<<<<<<<<00",
+    "gold": "EASTLAND\nPassport\nPassport Number RR7530978\nFull Name Ali Raza Khan\nNationality Eastlander\nDate of Birth 14 May 1978\nPlace of Birth Lakeshore City\nIssue Date 14 Apr 2016\nExpiry Date 14 Apr 2026\nBooklet No B61477116\nP<EASKHAN<<ALI<RAZA<<<<<<<<<<<<<<<<<<<<<<<<<\nRR7530978<0EAS7805140M2604140<<<<<<<<<<<"
+  },
+  {
+    "file": "test/Documents/old/Document (11).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.407,
+    "pred": "EASTLAND\nPassport\nFS4608288\nPassport Number\nAli Raza Khan\nName\nEastlander\nNationality\n14/05/1978\nDate of Birth\nLakeshore City\nPlace of Birth\n08/05/2006\nDate of Issue\n08/05/2011\nDate of Expiry\nB13890872\nBooklet No\nP<EASKHAN<<ALI<RAZ\nFS4608288<0EAS7805140M1105080",
+    "gold": "EASTLAND\nPassport\nPassport Number FS4608288\nName Ali Raza Khan\nNationality Eastlander\nDate of Birth 14/05/1978\nPlace of Birth Lakeshore City\nDate of Issue 08/05/2006\nDate of Expiry 08/05/2011\nBooklet No B13890872\nP<EASKHAN<<ALI<RAZA<<<<<<<<<<<<<<<<<<<<<<<<<\nFS4608288<0EAS7805140M1105080<<<<<<<<<<<<<"
+  },
+  {
+    "file": "test/Downloads/Document (27).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.347,
+    "pred": "LAKESHOREUNIVERSITY\nOfficeof theControllerof Examinations\nTRANSCRIPTOFACADEMICRECORD\nStudent Name: SaraKhan\nProgram: BS Computer Science Registration No:\nDate of Birth: 2021-LU-CS-117\n21Mar2003 Issue Date: 15Jul2025\nTranscript No: CS-T-682688\nCode Course Title\nFall2021\nCS-101 Programming Fundamental",
+    "gold": "LAKESHORE UNIVERSITY\nOffice of the Controller of Examinations\nTRANSCRIPT OF ACADEMIC RECORD\nStudent Name: Sara Khan Registration No: 2021-LU-CS-117\nProgram: BS Computer Science Issue Date: 15 Jul 2025\nDate of Birth: 21 Mar 2003 Transcript No: CS-T-682688\nCode Course Title Credit Hours Grade\nFall 202"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20190702-WA0436.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.423,
+    "pred": "EASTLAND\nNONJUDICIALSTAMP PAPERR.1200\nTENANCYAGREEMENT\nThis agreeme maden25/06/2019 Lakeshor Chy beween tepaesnaedbelow\nTariq Mehmood\nLandioed:\nAli Raza Khan\nTeant House 14.Street 7,GardenTown,Lakeshore City\nPopeny Adireis\nPKR66000.00\nMoathly Reat\nPKR132000.00\nSety Depoat\n01/07/2019\nComnccn Dotr\n31/",
+    "gold": "EASTLAND\nNON-JUDICIAL STAMP PAPER   Rs. 1200\nStamp paper No. 211472\nTENANCY AGREEMENT\nThis agreement is made on 25/06/2019 at Lakeshore City between the parties named below.\nLandlord: Tariq Mehmood\nTenant: Ali Raza Khan\nProperty Address: House 14, Street 7, Garden Town, Lakeshore City\nMonthly Rent: "
+  },
+  {
+    "file": "test/Downloads/Document (3).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.307,
+    "pred": "CRESCENTBANKLIMITED\nGardenTown Branch(0412) e-Statement\nCustomer: Ali Raza Khan\nAccount No. 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nPeriod From: 01Feb2026\nPeriod To: 28Feb2026\nDate Description\n01Feb2026 Balancebroughtforward Debit Credit\n01Feb2026 Balance\n06Feb2026 Salary credit-Harbor Logis",
+    "gold": "CRESCENT BANK LIMITED e-Statement\nGarden Town Branch (0412)\nCustomer: Ali Raza Khan\nAccount No.: 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nPeriod From: 01 Feb 2026\nPeriod To: 28 Feb 2026\nDate Description Debit Credit Balance\n01 Feb 2026 Balance brought forward 598,895.00\n01 Feb 2026 Salary cre"
+  },
+  {
+    "file": "test/Desktop/Scan 21.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.409,
+    "pred": "WARRANTY CARD\nPEARL\nSewing Machine\nltem:\nPL-SM5\nModel No.\nPL12F3114868\nS/N:\n14Feb2019\nDate of Purchase:\n3years\nWarranty Period:\n14Feb2022\nWarranty expires:\nGalaxy Home Store\nDealer:\nNusrat Khan\nCustomer Name:\nKeepthis card with your purchase receipt",
+    "gold": "PEARL WARRANTY CARD\nItem: Sewing Machine\nModel No.: PL-SM5\nS/N: PL12F3114868\nDate of Purchase: 14 Feb 2019\nWarranty Period: 3 years\nWarranty expires: 14 Feb 2022\nDealer: Galaxy Home Store\nCustomer Name: Nusrat Khan\nKeep this card with your purchase receipt."
+  },
+  {
+    "file": "test/Documents/old/Document (12).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.132,
+    "pred": "Northfield College\nCollege Road,Lakeshore City\nDate:2022-08-01\nRef:HR/2022/752\nAyesha Khan\nHouse14,Street7,GardenTown,LakeshoreCity\nSubject:Offerof Employment\nDear Ayesha Khan,\nWe arepleased to offeryou thepositionof Visiting Lecturer at NorthfieldCollege.Themain\ntermsof theoffer aregivenbelow.Thefu",
+    "gold": "Northfield College\nCollege Road, Lakeshore City\nRef: HR/2022/752 Date: 2022-08-01\nAyesha Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nSubject: Offer of Employment\nDear Ayesha Khan,\nWe are pleased to offer you the position of Visiting Lecturer at Northfield College. The main\nterms of the offe"
+  },
+  {
+    "file": "test/Downloads/PXL_20200418_128682.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.222,
+    "pred": "Homestar\nWARRANTYCERTIFICATE\nCovered aganstmaruntacturng delectslor5years\nAppiancs Model\nCeiling Fan 56in HS-CF56\nSeral Numbe aegestapmd\nHS89A1553102 18/04/2020\nVadunu Dealer\n18/04/2025 GalaxyHome Store\nCustomerName:AyeshaKhan\nThewaty ovorsparsandbour for lauts nnoathoms\ntdoesngt cover damage tromsu",
+    "gold": "Homestar\nWARRANTY CERTIFICATE\nCovered against manufacturing defects for 5 years.\nAppliance Model\nCeiling Fan 56in HS-CF56\nSerial Number Purchase Date\nHS89A1553102 18/04/2020\nValid until Dealer\n18/04/2025 Galaxy Home Store\nCustomer Name: Ayesha Khan\nThe warranty covers parts and labour for faults in "
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260816-WA0253.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.117,
+    "pred": "Job Opening:Operations Executive\nHarbor Logisticn Pvt Ltd is hiring an Cperations Executive for its Port.Roadofflce,\nRequirements: a bachelor's degree,two years of experience in\nWe offer a competitive salary, medical cover and paid leave.\nSend your CV to careersehazborlogistics.example by 30 Novembe",
+    "gold": "Job Opening: Operations Executive\nHarbor Logistics Pvt Ltd is hiring an Operations Executive for its\n   Port Road office.\nRequirements: a bachelor's degree, two years of experience in\n   logistics and good spoken English.\nWe offer a competitive salary, medical cover and paid leave.\nSend your CV to c"
+  },
+  {
+    "file": "test/Desktop/Scan 4.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.247,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nType Country Code\nP EAS Passport No.\nKN8122788\nName\nALIRAZAKHAN\nNationality\nEASTLANDER\nM\nDate of Birth\n1978-05-14 Place ofBirth\nLAKESHORECITY\nDate oflssue\n2026-02-20 Date of Expiry\n2036-02-20\nIssuing Authority\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<ALI<RAZA<<<\nKN81",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS KN8122788\nName\nALI RAZA KHAN\nNationality Sex\nEASTLANDER M\nDate of Birth Place of Birth\n1978-05-14 LAKESHORE CITY\nDate of Issue Date of Expiry\n2026-02-20 2036-02-20\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<AL"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20220702-WA0039.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.216,
+    "pred": "EASTLAND\nNON-JUDICIALSTAMPPAPERRs1200\nTENANCYAGREEMENT\nThis agreement ismade on25.06.2022at Lakeshore City between the parties named below\nLandlord: Tariq Mehmood\nTenant: Ali Raza Khan\nProperty Address: House 14,Street 7,GardenTown.Lakeshore City\nMomthly Rent. Rs.88.000\nSecurity Depost Rs.176,000\nCo",
+    "gold": "EASTLAND\nNON-JUDICIAL STAMP PAPER   Rs. 1200\nStamp paper No. 150036\nTENANCY AGREEMENT\nThis agreement is made on 25.06.2022 at Lakeshore City between the parties named below.\nLandlord: Tariq Mehmood\nTenant: Ali Raza Khan\nProperty Address: House 14, Street 7, Garden Town, Lakeshore City\nMonthly Rent: "
+  },
+  {
+    "file": "test/Downloads/scan_9950.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.306,
+    "pred": "Highway Motor Insurance Co.\nMotor cover you can count on\nPOLICY SCHEDULE\nPolicy No..\nHM-MTR-2024-645665\nPolicy Holder: Ali Raza Khan\nCover Type:\nVehicle: Comprehensive private car\nPeriod of Insurance: SakuraSedan1.6(2019),Reg.LEA-19-4521\nSum Insured: From15Mar2024To14Mar2025\nRs.4,200,000\nTotal Premi",
+    "gold": "Highway Motor Insurance Co.\nMotor cover you can count on\nPOLICY SCHEDULE\nPolicy No.: HM-MTR-2024-645665\nPolicy Holder: Ali Raza Khan\nCover Type: Comprehensive private car\nVehicle: Sakura Sedan 1.6 (2019), Reg. LEA-19-4521\nPeriod of Insurance: From 15 Mar 2024 To 14 Mar 2025\nSum Insured: Rs. 4,200,00"
+  },
+  {
+    "file": "test/Desktop/IMG_4967.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.183,
+    "pred": "Zenkai\nWARRANTYCERTIFICATE\nCovered againstmanufacturing defects for 1year.\nModel\nAppliance\nZK-W2\nSmart Watch\nPurchase Date\nSerial Number\n26.12.2025\nZK89C8387892\nDealer\nValid until\nOnline order\n26.12.2026\nCustomerName:SaraKhan\nThe warranty covers parts and labour for faults in normal home use.\nIt doe",
+    "gold": "Zenkai\nWARRANTY CERTIFICATE\nCovered against manufacturing defects for 1 year.\nAppliance Model\nSmart Watch ZK-W2\nSerial Number Purchase Date\nZK89C8387892 26.12.2025\nValid until Dealer\n26.12.2026 Online order\nCustomer Name: Sara Khan\nThe warranty covers parts and labour for faults in normal home use.\n"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260805-WA0718.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.565,
+    "pred": "LAKESHORE UNIVERSITY\nFEEVOUCHERBANK COPY LAKESHORE UNIVERSITY\nPyC FEEVOUCHER-NSTITUmON COPY LAKESHOREUNIVERSITY\nChallan No: 20664894 Paaley hst d FEEVOUCHER-STUDENTCOPY\nlosueDatr 03.08.2026 Chalan No 20664894 Payany nchtnBa L\nDue Datr 25.08.2026 lseue Datg 03.08.2026 ChlanNo\nShder Namo. DueDute 2066",
+    "gold": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 20"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260803-WA0647.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.146,
+    "pred": "Northfield College\nFee Voucher\nVoucherNo: 96539620\nName ol Stuident Hamza Khan\nFegNo: 2025-NC-SE-089\nProgram. BS Software Engineering\nSemester Fall2026\nDate of Issue 03/08/2026\nLastDate 21/08/2026\nParticulars Amount\nTuition Fee Rs.72,000\nLabFee Rs.5.000\nExam Fee Rs.2,900\nSportsFee Rs.1,100\nTotalAmou",
+    "gold": "Northfield College\nFee Voucher\nVoucher No: 96539620\nName of Student: Hamza Khan\nReg No: 2025-NC-SE-089\nProgram: BS Software Engineering\nSemester: Fall 2026\nDate of Issue: 03/08/2026\nLast Date: 21/08/2026\nParticulars Amount\nTuition Fee Rs. 72,000\nLab Fee Rs. 5,000\nExam Fee Rs. 2,900\nSports Fee Rs. 1,"
+  },
+  {
+    "file": "test/Downloads/Scan 2.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.254,
+    "pred": "LAKESHORECOMMERCIALBANKLTD e-Statement\nMall Road Branch(0127)\nCustomer: Ayesha Khan\nAccount No. 9136-91851385-10\nIBAN: EA72LCBK0091369185138510\nPeriod From: 01Apr2025\nPeriod To: 30Jun2025\nDate Description\nDebit Credit Balance\n01Apr2025 Balancebroughtforward\n01Apr2025 Salary credit-BrightpathSchool 3",
+    "gold": "LAKESHORE COMMERCIAL BANK LTD e-Statement\nMall Road Branch (0127)\nCustomer: Ayesha Khan\nAccount No.: 9136-91851385-10\nIBAN: EA72LCBK0091369185138510\nPeriod From: 01 Apr 2025\nPeriod To: 30 Jun 2025\nDate Description Debit Credit Balance\n01 Apr 2025 Balance brought forward 312,307.14\n01 Apr 2025 Salary"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20190104-WA0408.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.248,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nPasspon No.\nCountry Code\nEAS EC7941747\nName\nALIRAZAKHAN\nSex\nNationalty M\nEASTLANDER\nPlaceof Birth\nDate of Birth LAKESHORECITY\n14May1978\nDate ol Expiry\nDale of Issue 20 May2006\n20 May2001\nIssuing Authorty\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKH<<ALI<RAA<<<<<<<<<<<<<<<<<",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS EC7941747\nName\nALI RAZA KHAN\nNationality Sex\nEASTLANDER M\nDate of Birth Place of Birth\n14 May 1978 LAKESHORE CITY\nDate of Issue Date of Expiry\n20 May 2001 20 May 2006\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<"
+  },
+  {
+    "file": "test/Documents/old/photo_25.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.131,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\npe Counby Code\nPaespont Ny\nEAS SK2333504\nName\nAYESHA KHAN\nNationality\nEASTLANDER\nDateotBih Plac ot Brh\n1982-09-03 LAKESHORECITY\nDate d lesue Dat of Expiry\n2004-08-01 2009-08-01\nJssung Auhorty\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EAKN<<YESA<<<<<<<<<<<<<<<<<<<<<<<<<<\nSK2333",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS SK2333504\nName\nAYESHA KHAN\nNationality Sex\nEASTLANDER F\nDate of Birth Place of Birth\n1982-09-03 LAKESHORE CITY\nDate of Issue Date of Expiry\n2004-08-01 2009-08-01\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<AYES"
+  },
+  {
+    "file": "test/Downloads/CamScanner 07-01-2020 16.21.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.245,
+    "pred": "RENTAGREEMENT\nLessor Tariq Mehmood\nLessee Ali Raza Khan\nPremises House14,Street7,GardenTown,LakeshoreCity\nRent permonth Rs.72,500\nDeposit Rs. 145,000\nStart Date 01Jul 2020\nEnd Date 31May2021\nAgreement Date 17Jun2020\nNotice period onemonth\nTerms\n-Rent ispaid in advanceby the5th of everymonth.\n-Utilit",
+    "gold": "RENT AGREEMENT\nLessor Tariq Mehmood\nLessee Ali Raza Khan\nPremises House 14, Street 7, Garden Town, Lakeshore City\nRent per month Rs. 72,500\nDeposit Rs. 145,000\nStart Date 01 Jul 2020\nEnd Date 31 May 2021\nAgreement Date 17 Jun 2020\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th of"
+  },
+  {
+    "file": "test/Documents/old/Document (24).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.354,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nPassport No.\nCountry Code\nType GG7052081\nP EAS\nName\nALIRAZAKHAN\nSex\nNationalty M\nEASTLANDER\nPlace of Birth\nDate of Birth LAKESHORECITY\n14May1978\nDate ofExpiry\nDate ot lssue 26Apr2016\n26Apr2011\nIssuingAuthority\nDIRECTORATEOFIMMIGRATION,LAKESHORE\n<<<<<<<<<<<\nP<EASKHAN<<ALI<",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS GG7052081\nName\nALI RAZA KHAN\nNationality Sex\nEASTLANDER M\nDate of Birth Place of Birth\n14 May 1978 LAKESHORE CITY\nDate of Issue Date of Expiry\n26 Apr 2011 26 Apr 2016\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<"
+  },
+  {
+    "file": "test/Downloads/CamScanner 07-09-2026 14.35.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.255,
+    "pred": "Northfield College\nAcademicTranscript\nName of Student\nHamza Khan Reg No\n2025-NC-SE-089 Programmo\nBS Software Engineering lssuedon\nFall2025 2026-07-09\nSE-101 Programming Fundamentals SE-102 AppliedPhysics\nSE-103 Functional English 3C+\n3B+\n3B\nSpring 2026 SGPA2.89\nSE-104 Object OrientedProgramming SE-1",
+    "gold": "Northfield College\nAcademic Transcript\nName of Student Reg No Programme Issued on\nHamza Khan 2025-NC-SE-089 BS Software Engineering 2026-07-09\nFall 2025\nSE-101  Programming Fundamentals 3  C+\nSE-102  Applied Physics 3  B+\nSE-103  Functional English 3  B\nSGPA 2.89\nSpring 2026\nSE-104  Object Oriented "
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20190101-WA0956.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.126,
+    "pred": "EASTLAND\nPassport\nPassport Number AA4809631\nName Sara Khan\nNationality Eastlander\nDate of Birth 21Mar2003\nPlace of Birth Lakeshore City\nDate of Issue 02May2013\nDate of Expiry 02May2018\nBooklet No B27865128\nP<EASKHAN<<SARA<\nAA4809631<0EAS0303210F1805020<<<<<<<<<<<",
+    "gold": "EASTLAND\nPassport\nPassport Number AA4809631\nName Sara Khan\nNationality Eastlander\nDate of Birth 21 Mar 2003\nPlace of Birth Lakeshore City\nDate of Issue 02 May 2013\nDate of Expiry 02 May 2018\nBooklet No B27865128\nP<EASKHAN<<SARA<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\nAA4809631<0EAS0303210F1805020<<<<<<<<<<<<<0"
+  },
+  {
+    "file": "test/Downloads/scan_0770.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.112,
+    "pred": "CRESCENTBANKLIMITED e-Statement\nGardenTownBranch(0412)\nCustomer: Ali RazaKhan\nAccount No. 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nPeriodFrom: 01.03.2026\nPeriod To: 31.03.2026\nDate Description Debit\nCredit Balance\n01.03.2026 Balancebroughtforward\n01.03.2026 Salarycredit-Harbor LogisticsPvt Lt",
+    "gold": "CRESCENT BANK LIMITED e-Statement\nGarden Town Branch (0412)\nCustomer: Ali Raza Khan\nAccount No.: 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nPeriod From: 01.03.2026\nPeriod To: 31.03.2026\nDate Description Debit Credit Balance\n01.03.2026 Balance brought forward 785,582.00\n01.03.2026 Salary credit "
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20190705-WA0799.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.1,
+    "pred": "EASTLAND\nPassport\nPassport Number SJ5201310\nFull Name Ayesha Khan\nNationality Eastlander\nDate of Binth 03/09/1982\nPlaceof Birth Lakeshore City\nIssue Date 02/07/2019\nExpiryDate 02/07/2024\nBooklet No B31752156\nP<EASKHAN<<AYESHA\nSJ5201310<0EAS8209030F2407020<<<<<<<<<<<<<00",
+    "gold": "EASTLAND\nPassport\nPassport Number SJ5201310\nFull Name Ayesha Khan\nNationality Eastlander\nDate of Birth 03/09/1982\nPlace of Birth Lakeshore City\nIssue Date 02/07/2019\nExpiry Date 02/07/2024\nBooklet No B31752156\nP<EASKHAN<<AYESHA<<<<<<<<<<<<<<<<<<<<<<<<<<<\nSJ5201310<0EAS8209030F2407020<<<<<<<<<<<<<00"
+  },
+  {
+    "file": "test/Documents/old/PXL_20240701_205121.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.115,
+    "pred": "RENTAGREEMENT\nOwner Tariq Mehmood\nLessee Ali Raza Khan\nHouse14treet7,GardenTown,LakshoreCt\nPremises\nRent per month 106,000/-\nDeposit 212,000/\nStart Date 01/07/2024\nEnd Date 31/05/2025\nAgreement Date 25/06/2024\nNotice period onemonth\nTerms\nRent is paid in advance by the Sth of everymonth.\n-Utility bi",
+    "gold": "RENT AGREEMENT\nOwner Tariq Mehmood\nLessee Ali Raza Khan\nPremises House 14, Street 7, Garden Town, Lakeshore City\nRent per month 106,000/-\nDeposit 212,000/-\nStart Date 01/07/2024\nEnd Date 31/05/2025\nAgreement Date 25/06/2024\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th of every "
+  },
+  {
+    "file": "test/Desktop/Document (28).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.267,
+    "pred": "GLOBEGUARD TRAVELINSURANCE\nCERTIFICATEOFINSURANCE\nInsured Person\nPolicy Number Hamza Khan\nGG-TR-2026-907970\nExpiryDate\nEffective Date\n30/12/2026\n10/12/2026\nSum Insured\nPremium PKR7500000.00\nPKR5800.00\nCover:Single trip travel cover\nKeep this certificate with you.ltis valid only for the period shown ",
+    "gold": "GLOBEGUARD TRAVEL INSURANCE\nCERTIFICATE OF INSURANCE\nPolicy Number Insured Person\nGG-TR-2026-907970 Hamza Khan\nEffective Date Expiry Date\n10/12/2026 30/12/2026\nPremium Sum Insured\nPKR 5800.00 PKR 7500000.00\nCover: Single trip travel cover\nKeep this certificate with you. It is valid only for the peri"
+  },
+  {
+    "file": "test/Desktop/Scan 22.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.224,
+    "pred": "Orchard Software\nTech Park,Lakeshore City\nDate:01.12.2024\nRef:HR/2024/914\nSara Khan\nHouse14,Street7,GardenTown,LakeshoreCity\nSubject:Offer of Employment\nDear Sara Khan,\nWe arepleased toofferyou thepositionofSoftware Intern atOrchardSoftware.Themainterms\nof the offeraregivenbelow.The full terms arein",
+    "gold": "Orchard Software\nTech Park, Lakeshore City\nRef: HR/2024/914 Date: 01.12.2024\nSara Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nSubject: Offer of Employment\nDear Sara Khan,\nWe are pleased to offer you the position of Software Intern at Orchard Software. The main terms\nof the offer are given b"
+  },
+  {
+    "file": "test/Documents/old/Scan 18.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.445,
+    "pred": "NORTHFIELD COLLEGE\nOfficeof the Controller of Examinations\nTRANSCRIPT OFACADEMIC RECORD\n2006-NC-MBA-058\nRegistration No:\n23Jul2007\nAli Raza Khan Issue Date:\nStudent Name:\nMaster of Business Administration MBA-T-676602\nProgram: Transcript No:\n14May1978 Grade\nDate of Birth: Credit Hours\nCode Course Ti",
+    "gold": "NORTHFIELD COLLEGE\nOffice of the Controller of Examinations\nTRANSCRIPT OF ACADEMIC RECORD\nStudent Name: Ali Raza Khan Registration No: 2006-NC-MBA-058\nProgram: Master of Business Administration Issue Date: 23 Jul 2007\nDate of Birth: 14 May 1978 Transcript No: MBA-T-676602\nCode Course Title Credit Ho"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20230316-WA0902.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.106,
+    "pred": "HIGHWAYMOTORINSURANCECO.\nCERTIFICATEOFINSURANCE\nPolicy Number Insured Person\nHM-MTR-2023-613905 Ali Raza Khan\nStart Date\n15Mar2023 14Mar2024\nPremum SumInsured\n61,000/- 3,900,000/-\nCover:Comprehensive private car\nVehicle:Sakura Sedan 1.6(2019),Reg.LEA-19-4521\nKeep tis cerificatewihyou l isvalid onlyf",
+    "gold": "HIGHWAY MOTOR INSURANCE CO.\nCERTIFICATE OF INSURANCE\nPolicy Number Insured Person\nHM-MTR-2023-613905 Ali Raza Khan\nStart Date End Date\n15 Mar 2023 14 Mar 2024\nPremium Sum Insured\n61,000/- 3,900,000/-\nCover: Comprehensive private car\nVehicle: Sakura Sedan 1.6 (2019), Reg. LEA-19-4521\nKeep this certif"
+  },
+  {
+    "file": "test/Desktop/PXL_20230701_90922.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.204,
+    "pred": "EASTLAND\nNON-JUDICIALSTAMPPAPERRs.1200\nTENANCYAGREEMENT\nThis agreememt ismade on 2023-06.17 at Lakeshore City beween the parties named below\nLandlord: Tariq Mehmood\nTenam Ali RazaKhan\nHouse 14, Street 7,GardenTown.Lakeshore City\nProperty Address:\nMomthly Rent: 96,500/-\n193,000/-\n2023-07-01\nExpiry Da",
+    "gold": "EASTLAND\nNON-JUDICIAL STAMP PAPER   Rs. 1200\nStamp paper No. 949670\nTENANCY AGREEMENT\nThis agreement is made on 2023-06-17 at Lakeshore City between the parties named below.\nLandlord: Tariq Mehmood\nTenant: Ali Raza Khan\nProperty Address: House 14, Street 7, Garden Town, Lakeshore City\nMonthly Rent: "
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20220901-WA0889.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.248,
+    "pred": "RENTAGREEMENT\nRubina Siddiqui\nOwoer\nSaraKhan\nLessee\nRoom 3,22UniversityRoad,LakeshoreCity\nPremises\n18,000/-\nRent per month\n01Sep2022\nStart Dae\n30Jun2023\nEndDate\n26Aug2022\nAgreement Date\nonemonth\nNotica penog\nTerms\nRent ispaid in advance by the 5th of every month.\n-Utilitybills arepaid by thelessee.\n",
+    "gold": "RENT AGREEMENT\nOwner Rubina Siddiqui\nLessee Sara Khan\nPremises Room 3, 22 University Road, Lakeshore City\nRent per month 18,000/-\nStart Date 01 Sep 2022\nEnd Date 30 Jun 2023\nAgreement Date 26 Aug 2022\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th of every month.\n- Utility bills "
+  },
+  {
+    "file": "test/Documents/old/PXL_20250315_125849.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.449,
+    "pred": "WARRANTY CARD\nPUREXA\nAir Purifier\nltem.\nPX-AP3\nModet No..\nPX65F3275555\nS/N:\n2025-03-15\nDate ol Purchase.\n2years\nWarrantyPerod\n2027-03-15\nWarranty expires:\nGalaxy Home Store\nDealer:\nAli Raza Khan\nCustomer Name:\nKeop tfascardwithyourpurchasereceipt",
+    "gold": "PUREXA WARRANTY CARD\nItem: Air Purifier\nModel No.: PX-AP3\nS/N: PX65F3275555\nDate of Purchase: 2025-03-15\nWarranty Period: 2 years\nWarranty expires: 2027-03-15\nDealer: Galaxy Home Store\nCustomer Name: Ali Raza Khan\nKeep this card with your purchase receipt."
+  },
+  {
+    "file": "test/Desktop/CamScanner 01-01-2019 17.12.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.419,
+    "pred": "EASTLAND\nPassport\nCE5282234\nPassport Number\nSara Khan\nName\nEastlander\nNationality\n21.03.2003\nDate of Birth\nLakeshore City\nPlace of Birth\n20.04.2018\nDate of Issue\n20.04.2023\nDate of Expiry\nB16495745\nBooklet No\nP<EASKHAN<<SARA\nCE5282234<0EAS0303210F2304200<",
+    "gold": "EASTLAND\nPassport\nPassport Number CE5282234\nName Sara Khan\nNationality Eastlander\nDate of Birth 21.03.2003\nPlace of Birth Lakeshore City\nDate of Issue 20.04.2018\nDate of Expiry 20.04.2023\nBooklet No B16495745\nP<EASKHAN<<SARA<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\nCE5282234<0EAS0303210F2304200<<<<<<<<<<<<<00"
+  },
+  {
+    "file": "test/Desktop/CamScanner 02-20-2023 17.35.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.304,
+    "pred": "Lakeshore University\nAcademicTranscript Issuedon\nProgramme 2023-02-20\nReg No BS Computer Science\nName of Student 2021-LU-CS-117\nSara Khan\nFall2021 3A\nCS-101ProgrammingFundamentals 3B\n3A-\nCS-102Calculus1\nCS-103 English Composition SGPA3.56\nSpring 2022 3A-\nCS-104ObjectOrientedProgramming 3A\n3A\nCS-105 ",
+    "gold": "Lakeshore University\nAcademic Transcript\nName of Student Reg No Programme Issued on\nSara Khan 2021-LU-CS-117 BS Computer Science 2023-02-20\nFall 2021\nCS-101  Programming Fundamentals 3  A\nCS-102  Calculus I 3  B\nCS-103  English Composition 3  A-\nSGPA 3.56\nSpring 2022\nCS-104  Object Oriented Programm"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20260118-WA0819.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.37,
+    "pred": "Eastland Transport Authority\nDRIVING LICENCE\nLicence No\nKHI-26-109329\nDOB\nName 2007-11-03\nHamza Khan\nValid Untl\nValid From 2027-01-14\n2026-01-15\nVehicle classes:LTV,MTV\nSignature of holder",
+    "gold": "DRIVING LICENCE Eastland Transport Authority\nLicence No.\nKHI-26-109329\nName DOB\nHamza Khan 2007-11-03\nValid From Valid Until\n2026-01-15 2027-01-14\nVehicle classes: LTV, MTV\nSignature of holder"
+  },
+  {
+    "file": "test/Documents/old/photo_14.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.316,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nPasspor! No\nCourry Cods CD3013060\nEAS\nNamo\nHAMZA KHAN\nSex\nNatonality M\nEASTLANDER\nPlace of Bith\nDate olBirtt LAKESHORECITY\n2007-11-03\nDate ol Exoiry\nDate ofissue 2026-12-20\n2021-12-20\nIssung Authonty\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<HAMZA<<<<<<<<\nCD3013060<0E",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS CD3013060\nName\nHAMZA KHAN\nNationality Sex\nEASTLANDER M\nDate of Birth Place of Birth\n2007-11-03 LAKESHORE CITY\nDate of Issue Date of Expiry\n2021-12-20 2026-12-20\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<HAMZA"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20240723-WA0393.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.484,
+    "pred": "Lakeshore University\nAcademic Transcript\nSaraKhan PagNo\n2021-LU-CS-117 BS Computer Sclence\nFall2021 2024-07-20\nCS-102Calius1 CS-101 ProgramingFundarmentais Fall2023\n3A CS301 Operatng Systms\n3B 3A\n3A 34\nSpring 2022 3B+\nCS-104ObjectOrentedProgramming 3A Spring2024 SGPA356\nCS106 Digital Logic Design 3A",
+    "gold": "Lakeshore University\nAcademic Transcript\nName of Student Reg No Programme Issued on\nSara Khan 2021-LU-CS-117 BS Computer Science 2024-07-20\nFall 2021 Fall 2023\nCS-101  Programming Fundamentals 3  A CS-301  Operating Systems 3  A-\nCS-102  Calculus I 3  B CS-302  Design and Analysis of Algorithms 3  A"
+  },
+  {
+    "file": "test/Desktop/CamScanner 07-01-2026 16.57.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.201,
+    "pred": "RENT AGREEMENT\nTariq Mehmood\nLessor\nAli Raza Khan\nLessee\nHouse14,Street7,GardenTown,akeshoreCity\nPremises\nPKR128000.00\nRent per month\nPKR256000.00\nDeposit\n01/07/2026\nStart Date\n31/05/2027\nEnd Date\n14/06/2026\nAgreement Date\none month\nNotice period\nTerms\n-Rent ispaid in advance by the5thof everymonth.",
+    "gold": "RENT AGREEMENT\nLessor Tariq Mehmood\nLessee Ali Raza Khan\nPremises House 14, Street 7, Garden Town, Lakeshore City\nRent per month PKR 128000.00\nDeposit PKR 256000.00\nStart Date 01/07/2026\nEnd Date 31/05/2027\nAgreement Date 14/06/2026\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th "
+  },
+  {
+    "file": "test/Documents/old/CamScanner 01-01-2019 11.21.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.265,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nType Country Code\nP EAS PassportNo,\nTP3891291\nName\nAYESHAKHAN\nNationality\nEASTLANDER Sex\nF\nDate of Birth\n03Sep1982 Place of Birth\nLAKESHORECITY\nDateof lssue\n14Aug1999 Date of Expiry\n14Aug2004\nIssuingAuthority\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<AYESHA<<<<<\nTP389",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS TP3891291\nName\nAYESHA KHAN\nNationality Sex\nEASTLANDER F\nDate of Birth Place of Birth\n03 Sep 1982 LAKESHORE CITY\nDate of Issue Date of Expiry\n14 Aug 1999 14 Aug 2004\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<A"
+  },
+  {
+    "file": "test/Documents/old/Document (23).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.364,
+    "pred": "LAKESHOREUNIVERSITY\nLAKESHOREUNIVERSITY FEEVOUCHER-STUDENTCOPY\nLAKESHOREUNIVERSITY FEEVOUCHER-INSTITUTION COPY Payable at any branch of Crescent Bank Limited\nFEEVOUCHER-BANKCOPY Payable at anybranch of Crescent Bank Limited\nPayable at any branch of Crescent Bank Limited Challan No: 38948834\nChallan ",
+    "gold": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 38"
+  },
+  {
+    "file": "test/Documents/old/scan_2271.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.127,
+    "pred": "BrightpathSchool\nFeeVoucher\nVoucher No: 15574466\nNameofStudent: Hamza Khan\nRoll No: BPS-1734\nClass, Class9\nTerm: JanuarytoMarch2022\nDate of Issue: 2021-12-20\nLast Date: 2022-01-10\nParticulars\nTuition Fee Amount\nComputer Lab PKR27000.00\nSports Fee PKR1600.00\nTotal Amount PKR700.00\nAmountafterduedate ",
+    "gold": "Brightpath School\nFee Voucher\nVoucher No: 15574466\nName of Student: Hamza Khan\nRoll No: BPS-1734\nClass: Class 9\nTerm: January to March 2022\nDate of Issue: 2021-12-20\nLast Date: 2022-01-10\nParticulars Amount\nTuition Fee PKR 27000.00\nComputer Lab PKR 1600.00\nSports Fee PKR 700.00\nTotal Amount PKR 2930"
+  },
+  {
+    "file": "test/Downloads/Scan 4.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.163,
+    "pred": "EASTLAND\nNON-JUDICIALSTAMPPAPERRs.300\nStamppaperNo.347406\nTENANCYAGREEMENT\nThis agreement is made on 27.05.2024 at Lakeshore City between the parties namedbelow.\nLandlord: Nusrat Khan\nTenant: Junaid Akram\nProperty Address: Flat2,BlockB,CanalViewApartments,Lakeshore City\nMonthly Rent: PKR52000.00\nSec",
+    "gold": "EASTLAND\nNON-JUDICIAL STAMP PAPER   Rs. 300\nStamp paper No. 347406\nTENANCY AGREEMENT\nThis agreement is made on 27.05.2024 at Lakeshore City between the parties named below.\nLandlord: Nusrat Khan\nTenant: Junaid Akram\nProperty Address: Flat 2, Block B, Canal View Apartments, Lakeshore City\nMonthly Ren"
+  },
+  {
+    "file": "test/WhatsApp Images/IMG-20250725-WA0246.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.176,
+    "pred": "Brightwave Systems(Pvt) Ltd\n12 Canal Road.Lakeshore City\nDate:25 Jul2025\nRet:HR/2025/115\nSara Khan\nHouse 14,Street 7.Garden Town,Lakeshore City\nSubject:Offer of Employment\nDear Sara Khan.\nWe arepleased toofferyou the position ofJuniorDataAnalyst at Brghtwave SystemsPvt)\nLtd.Themain terms of the offe",
+    "gold": "Brightwave Systems (Pvt) Ltd\n12 Canal Road, Lakeshore City\nRef: HR/2025/115 Date: 25 Jul 2025\nSara Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nSubject: Offer of Employment\nDear Sara Khan,\nWe are pleased to offer you the position of Junior Data Analyst at Brightwave Systems (Pvt)\nLtd. The ma"
+  },
+  {
+    "file": "test/Downloads/photo_25.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.319,
+    "pred": "Crescent Bank Limited\nAccount Statement\nAli Raza Khan\nHouse14tret7,GardnTwLahrC\nAocount No 8371-77432942-16\nIBAN EA86CRES0083717743294216\nBranck Garden Town Branch (0412)\nSulement Penod 01/09/20261o30/09/2026\nStatement Dale: 03/10/2026\nOpening Baiance.\nTotal Debits 1,930,452.12 Total Cradis:\n43,670.",
+    "gold": "Crescent Bank Limited\nAccount Statement\nAli Raza Khan\nHouse 14, Street 7, Garden Town, Lakeshore City\nAccount No.: 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nBranch: Garden Town Branch (0412)\nStatement Period: 01/09/2026 to 30/09/2026\nStatement Date: 03/10/2026\nOpening Balance: 1,930,452.12 Tot"
+  },
+  {
+    "file": "test/Documents/old/Document (6).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.243,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nType County Code\nP Passport No.\nEAS UC6677205\nName\nNUSRATKHAN\nNationality\nEASTLANDER Sex\nF\nDate of Birth\n1950-01-28 Place of Birth\nLAKESHORECITY\nDate of lssue\n2010-10-05 Date of Expiry\n2015-10-05\nIssuingAuthority\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<NUSRAT<<\nUC66",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS UC6677205\nName\nNUSRAT KHAN\nNationality Sex\nEASTLANDER F\nDate of Birth Place of Birth\n1950-01-28 LAKESHORE CITY\nDate of Issue Date of Expiry\n2010-10-05 2015-10-05\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<NUSR"
+  },
+  {
+    "file": "test/Downloads/PXL_20240222_121865.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.349,
+    "pred": "LAKESHOREUNIVERSITY\nOffice of the Controller of Examinamioms\nTRANSCRIPT OF ACADEMICRECORD\nSaraKhan Rogistalon No 2021-LU-CS-117\nBS Computer Science sD 22.02.2024\n21.03.2003 CS-T-682685\nCode Course Title\nCredit Hours Grade\nFall2021\nCS-101 Programmng Fundan\nCS-102 CacausI A\nCS-103 English Cempoiton\nA\n",
+    "gold": "LAKESHORE UNIVERSITY\nOffice of the Controller of Examinations\nTRANSCRIPT OF ACADEMIC RECORD\nStudent Name: Sara Khan Registration No: 2021-LU-CS-117\nProgram: BS Computer Science Issue Date: 22.02.2024\nDate of Birth: 21.03.2003 Transcript No: CS-T-682685\nCode Course Title Credit Hours Grade\nFall 2021\n"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2023-06-20 at 15.16.22.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.567,
+    "pred": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL\nBRIGHTPATH SCHOOL\nFEEVOUOHER.NTURONOM VOUESTCOSCORY\n35924158 OhelNo 35924158\n20 Jun2023 35924158\n20 Jun2023 20Jun2023\n10Jul2023 10 Jul2023\nHamzaKhan 10 Juf2023\nLO Hamza Klran HamzaKhan\nBPS-1734 BPS-1734\nClass10 BPS-1734\nClass10 Class10\nJuly to September 2023 July ",
+    "gold": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL\nFEE VOUCHER - BANK COPY FEE VOUCHER - INSTITUTION COPY FEE VOUCHER - STUDENT COPY\nPayable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited Payable at any branch of Crescent Bank Limited\nChallan No: 35924158 Ch"
+  },
+  {
+    "file": "test/Documents/old/scan_4283.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.129,
+    "pred": "REPUBLICOFEASTLAND\nPASSPORT\nCountry Code Passpon No.\nP EAS RH3002514\nName\nSARA KHAN\nNationality\nEASTLANDER F\nDate otBinh Place of Birth\n21/03/2003 LAKESHORECITY\nDate of lssue Date of Expiry\n12/05/2008 12/05/2013\nIssuing Authority\nDIRECTORATEOFIMMIGRATION,LAKESHORE\nP<EASKHAN<<SARA<<<\nRH3002514<0EAS03",
+    "gold": "REPUBLIC OF EASTLAND\nPASSPORT\nType Country Code Passport No.\nP EAS RH3002514\nName\nSARA KHAN\nNationality Sex\nEASTLANDER F\nDate of Birth Place of Birth\n21/03/2003 LAKESHORE CITY\nDate of Issue Date of Expiry\n12/05/2008 12/05/2013\nIssuing Authority\nDIRECTORATE OF IMMIGRATION, LAKESHORE\nP<EASKHAN<<SARA<<"
+  },
+  {
+    "file": "test/Documents/old/Screenshot 2022-07-20 at 11.30.33.png",
+    "variant": null,
+    "effects": null,
+    "cer": 0.3,
+    "pred": "Nordik\nWARRANTYCERTIFICATE\nCovered agninstmanufacturng detecls for 10years\nMGdHd\nProauct\nNK-DF12\nDeep Freezer 12cft\nPurchase Dne\nSeriai Nunber\n2022-07-20\nNK79B7406696\nDeller\nValid unt\nGalaxy HomeStore\n2032-07-20\nCustomer Name:AyeshaKhan\nThe waranty coversparts and labour lor lault inrormal home use\n",
+    "gold": "Nordik\nWARRANTY CERTIFICATE\nCovered against manufacturing defects for 10 years.\nProduct Model\nDeep Freezer 12cft NK-DF12\nSerial Number Purchase Date\nNK79B7406696 2022-07-20\nValid until Dealer\n2032-07-20 Galaxy Home Store\nCustomer Name: Ayesha Khan\nThe warranty covers parts and labour for faults in n"
+  },
+  {
+    "file": "test/Documents/old/PXL_20260831_214817.jpg",
+    "variant": null,
+    "effects": null,
+    "cer": 0.371,
+    "pred": "CRESCENTBANKLIMITED\nGarden Town Brnch (0412) e-Statement\nCustomon. Aii Raza Khan\nAccount Ns 8371-77432942-16\nBAN EA86CRES0083717743294216\nPenodFon 01.08.2026\nPanod To 31.08.2026\nDate Description\n01.082026 Balance brought foward Deblt\n01.08.2026 Salary credit-Habor LogisticsPyt Ld Credit Balance\n03.0",
+    "gold": "CRESCENT BANK LIMITED e-Statement\nGarden Town Branch (0412)\nCustomer: Ali Raza Khan\nAccount No.: 8371-77432942-16\nIBAN: EA86CRES0083717743294216\nPeriod From: 01.08.2026\nPeriod To: 31.08.2026\nDate Description Debit Credit Balance\n01.08.2026 Balance brought forward 1,717,548.12\n01.08.2026 Salary credi"
+  },
+  {
+    "file": "test/Work/Backup/Document (27).pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.347,
+    "pred": "LAKESHOREUNIVERSITY\nOfficeof theControllerof Examinations\nTRANSCRIPTOFACADEMICRECORD\nStudent Name: SaraKhan\nProgram: BS Computer Science Registration No:\nDate of Birth: 2021-LU-CS-117\n21Mar2003 Issue Date: 15Jul2025\nTranscript No: CS-T-682688\nCode Course Title\nFall2021\nCS-101 Programming Fundamental",
+    "gold": "LAKESHORE UNIVERSITY\nOffice of the Controller of Examinations\nTRANSCRIPT OF ACADEMIC RECORD\nStudent Name: Sara Khan Registration No: 2021-LU-CS-117\nProgram: BS Computer Science Issue Date: 15 Jul 2025\nDate of Birth: 21 Mar 2003 Transcript No: CS-T-682688\nCode Course Title Credit Hours Grade\nFall 202"
+  },
+  {
+    "file": "test/Work/Backup/CamScanner 07-01-2026 16.57.pdf",
+    "variant": null,
+    "effects": null,
+    "cer": 0.201,
+    "pred": "RENT AGREEMENT\nTariq Mehmood\nLessor\nAli Raza Khan\nLessee\nHouse14,Street7,GardenTown,akeshoreCity\nPremises\nPKR128000.00\nRent per month\nPKR256000.00\nDeposit\n01/07/2026\nStart Date\n31/05/2027\nEnd Date\n14/06/2026\nAgreement Date\none month\nNotice period\nTerms\n-Rent ispaid in advance by the5thof everymonth.",
+    "gold": "RENT AGREEMENT\nLessor Tariq Mehmood\nLessee Ali Raza Khan\nPremises House 14, Street 7, Garden Town, Lakeshore City\nRent per month PKR 128000.00\nDeposit PKR 256000.00\nStart Date 01/07/2026\nEnd Date 31/05/2027\nAgreement Date 14/06/2026\nNotice period one month\nTerms\n- Rent is paid in advance by the 5th "
+  }
+]

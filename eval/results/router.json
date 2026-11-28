@@ -1,0 +1,20 @@
+{
+  "component": "router",
+  "n": 261,
+  "rows": [
+    {
+      "system": "Sniff router (rules only, AI off)",
+      "tool_selection_accuracy": 0.778,
+      "facts_recall": 0.939,
+      "search_recall": 0.281
+    },
+    {
+      "system": "Keyword rules (baseline)",
+      "tool_selection_accuracy": 0.782,
+      "facts_recall": 0.863,
+      "search_recall": 0.531
+    }
+  ],
+  "failures": 58,
+  "updated": "2026-11-28T14:13:48"
+}

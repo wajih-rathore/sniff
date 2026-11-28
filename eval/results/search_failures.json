@@ -1,0 +1,592 @@
+[
+  {
+    "q": "power bill March 2026",
+    "relevant": [
+      "test/Documents/old/Print_2026-04-03.pdf",
+      "test/Documents/old/scan_1804.pdf"
+    ],
+    "got": [
+      "test/Documents/old/scan_4713.pdf",
+      "test/Documents/old/be841ff1.pdf",
+      "test/Downloads/download (7).pdf",
+      "test/Documents/old/Print_2026-04-03.pdf",
+      "test/Documents/old/fbe57422.pdf"
+    ]
+  },
+  {
+    "q": "gas bill June 2026",
+    "relevant": [
+      "test/Desktop/Print_2026-07-04.pdf"
+    ],
+    "got": [
+      "test/Downloads/download (7).pdf",
+      "test/Documents/old/fbe57422.pdf",
+      "test/Desktop/Print_2026-03-02.pdf",
+      "test/Desktop/download (14).pdf",
+      "test/Desktop/file_6636.pdf"
+    ]
+  },
+  {
+    "q": "Northern Electric Supply Co. statement",
+    "relevant": [
+      "test/Desktop/4fb808e0.pdf",
+      "test/Desktop/Document (17).pdf",
+      "test/Desktop/Document (2).pdf",
+      "test/Desktop/Scan 16.pdf",
+      "test/Desktop/af0e1c1a.pdf",
+      "test/Desktop/download (27).pdf",
+      "test/Documents/old/Print_2026-04-03.pdf",
+      "test/Documents/old/be841ff1.pdf",
+      "test/Documents/old/scan_1804.pdf",
+      "test/Documents/old/scan_4713.pdf",
+      "test/Downloads/Print_2026-07-02.pdf",
+      "test/Downloads/download (17).pdf",
+      "test/Downloads/file_1056.pdf"
+    ],
+    "got": [
+      "test/Documents/old/scan_4713.pdf",
+      "test/Desktop/4fb808e0.pdf",
+      "test/Downloads/e1f8cc35.pdf",
+      "test/Downloads/download (17).pdf",
+      "test/Downloads/file_1056.pdf"
+    ]
+  },
+  {
+    "q": "Ali's national identity card",
+    "relevant": [
+      "test/Documents/old/IMG_1906.jpg",
+      "test/Downloads/IMG_6043.jpg"
+    ],
+    "got": [
+      "test/Documents/old/Screenshot 2024-05-02 at 15.15.44.png",
+      "test/Documents/old/file_5800.pdf",
+      "test/Documents/old/photo_29.png",
+      "test/Downloads/Screenshot 2026-06-15 at 9.50.59.png",
+      "test/WhatsApp Images/IMG-20210414-WA0164.jpg"
+    ]
+  },
+  {
+    "q": "Nusrat's identity card",
+    "relevant": [
+      "test/Downloads/photo_29.png"
+    ],
+    "got": [
+      "test/Documents/old/Screenshot 2024-05-02 at 15.15.44.png",
+      "test/Documents/old/file_5800.pdf",
+      "test/WhatsApp Images/IMG-20210414-WA0164.jpg",
+      "test/Downloads/Document (19).pdf",
+      "test/Documents/old/CamScanner 11-06-2019 18.33.pdf"
+    ]
+  },
+  {
+    "q": "Ali's work ID badge",
+    "relevant": [
+      "test/WhatsApp Images/IMG-20240109-WA0538.jpg"
+    ],
+    "got": [
+      "test/Desktop/Document (3).pdf",
+      "test/Documents/old/Scan 4.pdf",
+      "test/Documents/old/Print_2021-02-24.pdf",
+      "test/Downloads/download (26).pdf",
+      "test/Documents/old/caf99ac0.pdf"
+    ]
+  },
+  {
+    "q": "national ID cards",
+    "relevant": [
+      "test/Documents/old/Document (1).pdf",
+      "test/Documents/old/IMG_1906.jpg",
+      "test/Documents/old/Screenshot 2024-05-02 at 15.15.44.png",
+      "test/Documents/old/file_5800.pdf",
+      "test/Downloads/CamScanner 12-01-2025 8.42.pdf",
+      "test/Downloads/IMG_6043.jpg",
+      "test/Downloads/Screenshot 2021-10-12 at 12.10.56.png",
+      "test/Downloads/photo_29.png"
+    ],
+    "got": [
+      "test/Documents/old/Screenshot 2024-05-02 at 15.15.44.png",
+      "test/Documents/old/file_5800.pdf",
+      "test/Desktop/Document (22).pdf",
+      "test/Documents/old/Scan 4.pdf",
+      "test/Documents/old/IMG_1906.jpg"
+    ]
+  },
+  {
+    "q": "Ali's MBA",
+    "relevant": [
+      "test/Documents/old/CamScanner 01-01-2019 21.17.pdf"
+    ],
+    "got": [
+      "test/Downloads/download (14).pdf",
+      "test/Documents/old/Scan 18.pdf",
+      "test/Desktop/CamScanner 01-01-2019 20.24.pdf",
+      "test/Desktop/download (30).pdf",
+      "test/Downloads/Screenshot 2026-06-15 at 9.50.59.png"
+    ]
+  },
+  {
+    "q": "all of Sara's certificates",
+    "relevant": [
+      "test/Desktop/Scan 9.pdf",
+      "test/Desktop/download (5).pdf",
+      "test/Documents/old/b51ae56d.pdf",
+      "test/Downloads/Print_2025-07-10.pdf",
+      "test/Downloads/Scan 19.pdf",
+      "test/Downloads/Scan 3.pdf",
+      "test/Downloads/file_3957.pdf",
+      "test/WhatsApp Images/IMG-20200331-WA0309.jpg"
+    ],
+    "got": [
+      "test/Documents/old/file_7810.pdf",
+      "test/Documents/old/Document (5).pdf",
+      "test/Downloads/Document (2).pdf",
+      "test/WhatsApp Images/IMG-20220902-WA0794.jpg",
+      "test/Documents/old/b51ae56d.pdf"
+    ]
+  },
+  {
+    "q": "laptop receipt with warranty",
+    "relevant": [
+      "test/Desktop/Screenshot 2026-09-13 at 18.59.10.png",
+      "test/Documents/old/Document (3).pdf",
+      "test/Documents/old/Document (8).pdf",
+      "test/WhatsApp Images/IMG-20260408-WA0109.jpg",
+      "test/WhatsApp Images/IMG-20260421-WA0984.jpg",
+      "test/WhatsApp Images/IMG-20260612-WA0839.jpg"
+    ],
+    "got": [
+      "test/Documents/old/Document (3).pdf",
+      "test/Documents/old/Document (8).pdf",
+      "test/WhatsApp Images/IMG-20260216-WA0227.jpg",
+      "test/Desktop/Scan 21.pdf",
+      "test/WhatsApp Images/IMG-20260612-WA0839.jpg"
+    ]
+  },
+  {
+    "q": "phone purchase receipt",
+    "relevant": [
+      "test/Desktop/IMG_0138.jpg",
+      "test/Documents/old/24dff1e9.pdf",
+      "test/Downloads/Document (25).pdf",
+      "test/Downloads/IMG_5033.jpg",
+      "test/Downloads/Print_2026-05-01.pdf",
+      "test/Downloads/download (4).pdf",
+      "test/WhatsApp Images/IMG-20260907-WA0436.jpg"
+    ],
+    "got": [
+      "test/Desktop/download (23).pdf",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/Desktop/Scan 21.pdf",
+      "test/WhatsApp Images/IMG-20260515-WA0708.jpg",
+      "test/WhatsApp Images/IMG-20260612-WA0839.jpg"
+    ]
+  },
+  {
+    "q": "receipts that include warranty information",
+    "relevant": [
+      "test/Desktop/IMG_0138.jpg",
+      "test/Desktop/PXL_20260516_150553.jpg",
+      "test/Desktop/Screenshot 2026-09-13 at 18.59.10.png",
+      "test/Desktop/file_4108.pdf",
+      "test/Documents/old/24dff1e9.pdf",
+      "test/Documents/old/Document (3).pdf",
+      "test/Documents/old/Document (8).pdf",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/Documents/old/Print_2025-06-21.pdf",
+      "test/Documents/old/Print_2026-06-04.pdf",
+      "test/Documents/old/Screenshot 2026-02-14 at 13.53.48.png",
+      "test/Downloads/Document (25).pdf",
+      "test/Downloads/IMG_0640.jpg",
+      "test/Downloads/IMG_2568.jpg",
+      "test/Downloads/IMG_5033.jpg",
+      "test/Downloads/IMG_6839.jpg",
+      "test/Downloads/Print_2026-05-01.pdf",
+      "test/Downloads/Screenshot 2025-08-01 at 14.52.59.png",
+      "test/Downloads/download (4).pdf",
+      "test/Downloads/photo_18.png",
+      "test/WhatsApp Images/IMG-20250317-WA0352.jpg",
+      "test/WhatsApp Images/IMG-20251105-WA0365.jpg",
+      "test/WhatsApp Images/IMG-20260216-WA0227.jpg",
+      "test/WhatsApp Images/IMG-20260408-WA0109.jpg",
+      "test/WhatsApp Images/IMG-20260421-WA0984.jpg",
+      "test/WhatsApp Images/IMG-20260612-WA0839.jpg",
+      "test/WhatsApp Images/IMG-20260907-WA0436.jpg"
+    ],
+    "got": [
+      "test/Desktop/Scan 21.pdf",
+      "test/Documents/old/Scan 24.pdf",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/Documents/old/Print_2026-06-04.pdf",
+      "test/Desktop/Print_2026-01-20.pdf"
+    ]
+  },
+  {
+    "q": "grocery shopping bills",
+    "relevant": [
+      "test/Desktop/IMG_3217.jpg",
+      "test/Desktop/PXL_20260825_174690.jpg",
+      "test/Desktop/file_249.pdf",
+      "test/Desktop/photo_18.png",
+      "test/Documents/old/download (24).pdf",
+      "test/Documents/old/file_5324.pdf",
+      "test/Documents/old/photo_7.png",
+      "test/Downloads/IMG_2813.jpg",
+      "test/Downloads/Print_2026-09-21.pdf",
+      "test/Downloads/Print_2026-10-19.pdf",
+      "test/Downloads/Screenshot 2026-04-26 at 10.24.54.png",
+      "test/WhatsApp Images/IMG-20260102-WA0326.jpg",
+      "test/WhatsApp Images/IMG-20260110-WA0178.jpg",
+      "test/WhatsApp Images/IMG-20260714-WA0980.jpg",
+      "test/WhatsApp Images/IMG-20261107-WA0971.jpg",
+      "test/WhatsApp Images/IMG-20261110-WA0030.jpg"
+    ],
+    "got": [
+      "test/Documents/old/photo_7.png",
+      "test/Downloads/Screenshot 2026-04-26 at 10.24.54.png",
+      "test/Desktop/PXL_20260825_174690.jpg",
+      "test/Downloads/IMG_2813.jpg",
+      "test/Desktop/file_2633.pdf"
+    ]
+  },
+  {
+    "q": "medicine purchase from the pharmacy",
+    "relevant": [
+      "test/Documents/old/Screenshot 2026-01-23 at 19.12.43.png",
+      "test/Downloads/Document (26).pdf",
+      "test/Downloads/photo_27.png",
+      "test/WhatsApp Images/IMG-20260126-WA0001.jpg",
+      "test/WhatsApp Images/IMG-20260212-WA0433.jpg",
+      "test/WhatsApp Images/IMG-20260624-WA0572.jpg",
+      "test/WhatsApp Images/IMG-20261029-WA0435.jpg"
+    ],
+    "got": [
+      "test/Documents/old/Document (15).pdf",
+      "test/WhatsApp Images/IMG-20260212-WA0433.jpg",
+      "test/WhatsApp Images/IMG-20260126-WA0001.jpg",
+      "test/WhatsApp Images/IMG-20261029-WA0435.jpg",
+      "test/Documents/old/file_3347.pdf"
+    ]
+  },
+  {
+    "q": "petrol fuel receipt",
+    "relevant": [
+      "test/Desktop/IMG_6923.jpg",
+      "test/Desktop/Print_2026-07-02.pdf",
+      "test/Documents/old/Screenshot 2026-08-26 at 15.31.43.png",
+      "test/Documents/old/file_7374.pdf",
+      "test/WhatsApp Images/IMG-20260219-WA0462.jpg",
+      "test/WhatsApp Images/IMG-20260515-WA0708.jpg",
+      "test/WhatsApp Images/IMG-20260928-WA0520.jpg"
+    ],
+    "got": [
+      "test/WhatsApp Images/IMG-20260928-WA0520.jpg",
+      "test/Documents/old/file_7374.pdf",
+      "test/Documents/old/scan_4713.pdf",
+      "test/Documents/old/scan_1804.pdf",
+      "test/Desktop/Document (17).pdf"
+    ]
+  },
+  {
+    "q": "headphones I bought",
+    "relevant": [
+      "test/Desktop/PXL_20260516_150553.jpg",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/Documents/old/Screenshot 2026-02-14 at 13.53.48.png",
+      "test/Downloads/Screenshot 2026-10-02 at 22.16.28.png"
+    ],
+    "got": [
+      "test/Desktop/PXL_20260516_150553.jpg",
+      "test/Documents/old/Screenshot 2026-02-14 at 13.53.48.png",
+      "test/Documents/old/Scan 24.pdf",
+      "test/Desktop/IMG_0138.jpg",
+      "test/Documents/old/24dff1e9.pdf"
+    ]
+  },
+  {
+    "q": "clothes shopping receipt",
+    "relevant": [
+      "test/Desktop/file_2863.pdf",
+      "test/Desktop/file_6924.pdf",
+      "test/Desktop/photo_5.png",
+      "test/Downloads/PXL_20260225_143320.jpg",
+      "test/WhatsApp Images/IMG-20260604-WA0163.jpg",
+      "test/WhatsApp Images/IMG-20261003-WA0780.jpg"
+    ],
+    "got": [
+      "test/Desktop/download (23).pdf",
+      "test/Desktop/photo_5.png",
+      "test/Documents/old/photo_7.png",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/Desktop/file_2633.pdf"
+    ]
+  },
+  {
+    "q": "restaurant dinner bill",
+    "relevant": [
+      "test/Documents/old/PXL_20251014_95671.jpg",
+      "test/Documents/old/Screenshot 2026-02-03 at 14.28.35.png",
+      "test/Downloads/photo_10.png",
+      "test/Downloads/photo_16.png"
+    ],
+    "got": [
+      "test/Downloads/photo_16.png",
+      "test/Downloads/photo_10.png",
+      "test/Documents/old/scan_4713.pdf",
+      "test/Documents/old/CamScanner 11-05-2026 11.19.pdf",
+      "test/Documents/old/PXL_20251014_95671.jpg"
+    ]
+  },
+  {
+    "q": "book store purchase",
+    "relevant": [
+      "test/Desktop/Screenshot 2026-07-15 at 22.19.58.png",
+      "test/Desktop/file_2633.pdf",
+      "test/Documents/old/Screenshot 2026-03-10 at 22.49.37.png",
+      "test/WhatsApp Images/IMG-20260114-WA0256.jpg"
+    ],
+    "got": [
+      "test/Downloads/2eb0807c.pdf",
+      "test/Downloads/e1f8cc35.pdf",
+      "test/Desktop/IMG_4967.jpg",
+      "test/Documents/old/file_3347.pdf",
+      "test/Desktop/IMG_2146.jpg"
+    ]
+  },
+  {
+    "q": "computer monitor receipt",
+    "relevant": [
+      "test/Documents/old/PXL_20260827_122296.jpg",
+      "test/WhatsApp Images/IMG-20251105-WA0365.jpg",
+      "test/WhatsApp Images/IMG-20260216-WA0227.jpg"
+    ],
+    "got": [
+      "test/WhatsApp Images/IMG-20260216-WA0227.jpg",
+      "test/WhatsApp Images/IMG-20251105-WA0365.jpg",
+      "test/Desktop/download (23).pdf",
+      "test/Documents/old/IMG_3154.jpg",
+      "test/WhatsApp Images/IMG-20260612-WA0839.jpg"
+    ]
+  },
+  {
+    "q": "air fryer purchase",
+    "relevant": [
+      "test/Desktop/PXL_20260416_176795.jpg",
+      "test/Downloads/IMG_0640.jpg",
+      "test/Downloads/IMG_6839.jpg"
+    ],
+    "got": [
+      "test/Downloads/IMG_0640.jpg",
+      "test/WhatsApp Images/IMG-20260518-WA0729.jpg",
+      "test/Documents/old/PXL_20250315_125849.jpg",
+      "test/WhatsApp Images/IMG-20250115-WA0576.jpg",
+      "test/Desktop/f4126893.pdf"
+    ]
+  },
+  {
+    "q": "air conditioner invoice",
+    "relevant": [
+      "test/Desktop/file_4108.pdf",
+      "test/Documents/old/Print_2025-06-21.pdf"
+    ],
+    "got": [
+      "test/Downloads/IMG_0640.jpg",
+      "test/Desktop/Screenshot 2026-09-13 at 18.59.10.png",
+      "test/WhatsApp Images/IMG-20260421-WA0984.jpg",
+      "test/Desktop/scan_2564.pdf",
+      "test/Documents/old/CamScanner 11-05-2026 11.19.pdf"
+    ]
+  },
+  {
+    "q": "cover letter for a job application",
+    "relevant": [
+      "test/Desktop/217d4415.pdf",
+      "test/Downloads/Document (17).pdf"
+    ],
+    "got": [
+      "test/Desktop/3d01aadb.pdf",
+      "test/Downloads/355eff20.pdf",
+      "test/Desktop/download (17).pdf",
+      "test/Desktop/download (3).pdf",
+      "test/Downloads/download (10).pdf"
+    ]
+  },
+  {
+    "q": "travel itinerary",
+    "relevant": [
+      "test/Documents/old/Document (25).pdf",
+      "test/WhatsApp Images/IMG-20260427-WA0220.jpg"
+    ],
+    "got": [
+      "test/WhatsApp Images/IMG-20260427-WA0220.jpg",
+      "test/Desktop/file_1763.pdf",
+      "test/Documents/old/b4245552.pdf",
+      "test/Desktop/Document (28).pdf",
+      "test/Desktop/file_3556.pdf"
+    ]
+  },
+  {
+    "q": "my weekly to-do list",
+    "relevant": [
+      "test/Desktop/df728af3.pdf",
+      "test/Documents/old/file_4143.pdf"
+    ],
+    "got": [
+      "test/Desktop/file_3556.pdf",
+      "test/Downloads/download (30).pdf",
+      "test/Desktop/Document (1).pdf",
+      "test/Desktop/df728af3.pdf",
+      "test/Downloads/Screenshot 2026-04-26 at 10.24.54.png"
+    ]
+  },
+  {
+    "q": "old expired passports",
+    "relevant": [
+      "test/Desktop/CamScanner 01-01-2019 17.12.pdf",
+      "test/Desktop/IMG_2397.jpg",
+      "test/Desktop/IMG_7377.jpg",
+      "test/Desktop/PXL_20190101_205924.jpg",
+      "test/Desktop/photo_19.png",
+      "test/Documents/old/CamScanner 01-01-2019 11.21.pdf",
+      "test/Documents/old/CamScanner 09-15-2020 13.39.pdf",
+      "test/Documents/old/Document (11).pdf",
+      "test/Documents/old/Document (24).pdf",
+      "test/Documents/old/Document (4).pdf",
+      "test/Documents/old/Document (6).pdf",
+      "test/Documents/old/photo_25.png",
+      "test/Documents/old/scan_4283.pdf",
+      "test/Downloads/PXL_20190101_96194.jpg",
+      "test/Downloads/Scan 6.pdf",
+      "test/WhatsApp Images/IMG-20190101-WA0956.jpg",
+      "test/WhatsApp Images/IMG-20190104-WA0408.jpg",
+      "test/WhatsApp Images/IMG-20190705-WA0799.jpg"
+    ],
+    "got": [
+      "test/Desktop/df728af3.pdf",
+      "test/Downloads/PXL_20190101_96194.jpg",
+      "test/Desktop/IMG_7377.jpg",
+      "test/Desktop/photo_19.png",
+      "test/Documents/old/CamScanner 09-15-2020 13.39.pdf"
+    ]
+  },
+  {
+    "q": "Sara's university transcripts",
+    "relevant": [
+      "test/Desktop/CamScanner 02-20-2023 17.35.pdf",
+      "test/Documents/old/file_6938.pdf",
+      "test/Downloads/Document (27).pdf",
+      "test/Downloads/PXL_20240222_121865.jpg",
+      "test/Downloads/download (2).pdf",
+      "test/Downloads/file_5443.pdf",
+      "test/Downloads/file_81.pdf",
+      "test/WhatsApp Images/IMG-20240723-WA0393.jpg"
+    ],
+    "got": [
+      "test/WhatsApp Images/IMG-20220902-WA0794.jpg",
+      "test/Downloads/Print_2025-07-10.pdf",
+      "test/Downloads/file_81.pdf",
+      "test/Downloads/file_5443.pdf",
+      "test/Desktop/CamScanner 02-20-2023 17.35.pdf"
+    ]
+  },
+  {
+    "q": "Crescent Bank statements",
+    "relevant": [
+      "test/Desktop/Document (25).pdf",
+      "test/Desktop/Print_2026-07-31.pdf",
+      "test/Desktop/Print_2026-10-31.pdf",
+      "test/Desktop/file_9034.pdf",
+      "test/Documents/old/Document (15).pdf",
+      "test/Documents/old/PXL_20260831_214817.jpg",
+      "test/Documents/old/download (7).pdf",
+      "test/Downloads/Document (3).pdf",
+      "test/Downloads/download (11).pdf",
+      "test/Downloads/photo_25.png",
+      "test/Downloads/scan_0770.pdf"
+    ],
+    "got": [
+      "test/Downloads/photo_25.png",
+      "test/Desktop/Document (25).pdf",
+      "test/Desktop/scan_7901.pdf",
+      "test/Desktop/Print_2026-07-31.pdf",
+      "test/Desktop/file_9034.pdf"
+    ]
+  },
+  {
+    "q": "health insurance policy",
+    "relevant": [
+      "test/Desktop/4644ae55.pdf",
+      "test/Desktop/d01f5b02.pdf",
+      "test/Documents/old/Print_2025-07-01.pdf",
+      "test/Documents/old/download (18).pdf",
+      "test/Downloads/PXL_20230701_98693.jpg",
+      "test/Downloads/Screenshot 2026-07-01 at 18.21.33.png"
+    ],
+    "got": [
+      "test/Desktop/d01f5b02.pdf",
+      "test/Documents/old/Print_2025-07-01.pdf",
+      "test/Downloads/PXL_20230701_98693.jpg",
+      "test/Documents/old/download (18).pdf",
+      "test/Desktop/CamScanner 11-01-2026 11.34.pdf"
+    ]
+  },
+  {
+    "q": "car insurance schedule",
+    "relevant": [
+      "test/Desktop/Print_2025-03-15.pdf",
+      "test/Documents/old/Print_2021-03-15.pdf",
+      "test/Documents/old/Print_2026-03-15.pdf",
+      "test/Documents/old/file_8915.pdf",
+      "test/Downloads/scan_9950.pdf",
+      "test/WhatsApp Images/IMG-20230316-WA0902.jpg"
+    ],
+    "got": [
+      "test/Documents/old/file_8915.pdf",
+      "test/Documents/old/Print_2026-03-15.pdf",
+      "test/Downloads/scan_9950.pdf",
+      "test/Desktop/CamScanner 11-01-2026 11.34.pdf",
+      "test/Downloads/download (21).pdf"
+    ]
+  },
+  {
+    "q": "our house rent agreement",
+    "relevant": [
+      "test/Desktop/CamScanner 01-01-2019 10.34.pdf",
+      "test/Desktop/CamScanner 07-01-2026 16.57.pdf",
+      "test/Desktop/PXL_20230701_90922.jpg",
+      "test/Desktop/download (20).pdf",
+      "test/Desktop/download (21).pdf",
+      "test/Documents/old/PXL_20240701_205121.jpg",
+      "test/Documents/old/scan_0770.pdf",
+      "test/Downloads/CamScanner 07-01-2020 16.21.pdf",
+      "test/Downloads/Document (11).pdf",
+      "test/WhatsApp Images/IMG-20190101-WA0938.jpg",
+      "test/WhatsApp Images/IMG-20190702-WA0436.jpg",
+      "test/WhatsApp Images/IMG-20220702-WA0039.jpg"
+    ],
+    "got": [
+      "test/Desktop/download (21).pdf",
+      "test/Desktop/CamScanner 07-01-2026 16.57.pdf",
+      "test/WhatsApp Images/IMG-20220901-WA0889.jpg",
+      "test/Desktop/download (20).pdf",
+      "test/Desktop/Document (5).pdf"
+    ]
+  },
+  {
+    "q": "Hamza's college fee vouchers",
+    "relevant": [
+      "test/Documents/old/download (15).pdf",
+      "test/Downloads/IMG_9878.jpg",
+      "test/Downloads/Screenshot 2026-11-16 at 8.19.50.png",
+      "test/Downloads/file_4258.pdf",
+      "test/Downloads/file_7103.pdf",
+      "test/WhatsApp Images/IMG-20260803-WA0647.jpg"
+    ],
+    "got": [
+      "test/Downloads/file_7103.pdf",
+      "test/Documents/old/download (15).pdf",
+      "test/Downloads/file_4258.pdf",
+      "test/Downloads/Document (9).pdf",
+      "test/WhatsApp Images/IMG-20260803-WA0647.jpg"
+    ]
+  }
+]

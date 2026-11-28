@@ -1,0 +1,32 @@
+{
+  "component": "search",
+  "n": 78,
+  "rows": [
+    {
+      "system": "Sniff (hybrid BM25 + embeddings)",
+      "Recall@5 (capped)": 0.760897435897436,
+      "MRR": 0.7878205128205129
+    },
+    {
+      "system": "Keyword only (BM25)",
+      "Recall@5 (capped)": 0.6153846153846154,
+      "MRR": 0.6393162393162394
+    },
+    {
+      "system": "Embeddings only",
+      "Recall@5 (capped)": 0.7826923076923077,
+      "MRR": 0.8049145299145299
+    },
+    {
+      "system": "File-name search (baseline)",
+      "Recall@5 (capped)": 0.005128205128205128,
+      "MRR": 0.008974358974358974
+    }
+  ],
+  "latency_ms": {
+    "p50": 33,
+    "p95": 205
+  },
+  "failures": 32,
+  "updated": "2026-11-28T14:04:38"
+}
