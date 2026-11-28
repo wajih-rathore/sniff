@@ -1,12 +1,12 @@
 # Evaluation
 
 How we test each AI part of Sniff: the test sets, the metrics, the baseline each part is compared with, and the
-exact commands. It answers feedback points 1 (8 GB laptop), 2 (stronger reference model), 8 (router on its own),
-12 (realistic and poor-quality documents) and 13 (cross-document questions).
+exact commands. It covers running on an 8 GB laptop, a stronger reference model, the router on its own,
+realistic and poor-quality documents, and cross-document questions.
 
 **Status:** the final run on the `test`, `hard` and `real` sets was on 28 Nov 2026; its numbers are in
 [Results](#results) and [Error analysis](#error-analysis). Anything that was not run says so. The model comparison
-(Gemma 3 1B, Qwen3-8B), the embedding comparison and the A4 checks below have not been run yet.
+(Gemma 3 1B, Qwen3-8B), the embedding comparison and the safety and robustness checks below have not been run yet.
 
 Rules we keep:
 - Test documents never appear in prompts or few-shot examples. The generator uses different seeds and people for `dev` and `test`.
@@ -25,7 +25,7 @@ Rules we keep:
 | `own` | `data/own/<member>` | optional | Team members' own documents, personal numbers blurred; never committed | Hand-written, see `data/own/README.md` |
 | ask | `data/eval/ask.jsonl` | 261: single_fact 92, cross_doc_total 62, semantic 54, expiring_window 18, duplicates 13, conflict 12, unanswerable 10 | Questions with gold answers and sources, each with a `category` | From the generator's code |
 | search | `data/eval/search.jsonl` | 78 | Queries with the relevant files | From the generator |
-| injection | `data/injection/out` | 120 files: 20 visible, 20 hidden and 20 retrieved attacks, each with a clean twin; 20 questions | Prompt-injection set, see the A4 section | From `data/injection/make_injection.py` (seed 11) |
+| injection | `data/injection/out` | 120 files: 20 visible, 20 hidden and 20 retrieved attacks, each with a clean twin; 20 questions | Prompt-injection set, see the safety and robustness section | From `data/injection/make_injection.py` (seed 11) |
 
 The `duplicates`, `conflict` and `unanswerable` categories are small (13, 12 and 10 questions), so their per-category
 numbers show whether the feature works on those cases; they are not a precise rate.
@@ -401,7 +401,7 @@ keyword rules.
 | False abstention on answerable questions | 0.167 |
 | Latency, end to end | p50 76 ms, p95 384 ms |
 
-By category (cross-document categories first, feedback point 13):
+By category (cross-document categories first):
 
 | Category | n | Correct | Citation correct | Router accuracy | Keyword router |
 |---|---|---|---|---|---|
@@ -550,9 +550,9 @@ weight, on `dev`.
 | Wrong route | 33 (all semantic) | "What institution issued Sara's degree?" answered with a date | The router fixes above |
 | Answered a question that has no answer | 4 | "When does my gym membership expire?" listed the expiry dates of other documents | When the question names a thing no document type covers ("gym membership", "visa"), refuse instead of dropping the type filter |
 
-## A4 checks: injection, robustness, MCP against direct reading, human ratings
+## Safety and robustness checks: injection, robustness, MCP against direct reading, human ratings
 
-Four more harnesses for the A4 rubric (robustness and safety, agents and tool calling, human evaluation). They are
+Four more harnesses (robustness and safety, agents and tool calling, human evaluation). They are
 written and tested with stub models only. None has been run on the real models yet, so there are no numbers here.
 Run them after the main evaluation, from `backend/`, with both model servers up and `run_index.py` already done for
 the sets they use.
