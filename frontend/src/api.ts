@@ -108,6 +108,8 @@ export type AiSettings = {
   default_model: string
 }
 export type AiSave = Pick<AiSettings, 'provider' | 'base_url' | 'model' | 'allow'> & { key?: string } // key: "" removes it
+// GET /ai/local, desktop back end only (backend/sniff/desktop.py): This laptop's model file and its download. error: the back end's words.
+export type LocalModel = { name: string; size: number; have: number; ready: boolean; running: boolean; error: string | null }
 // GET /ai/preview: exactly what each model call would send, masked as sent. While AI is off, what a cloud provider would get.
 // note: for a document not sorted into a type yet, what sorting it means for what is sent.
 export type AiPreview = { provider: AiProvider; leaves_laptop: boolean; note: string | null; calls: { purpose: string; messages: { role: string; content: string }[] }[] }
@@ -194,5 +196,7 @@ export const api = {
   aiSettings: () => call<AiSettings>('GET', '/ai/settings'),
   saveAi: (s: AiSave) => call<AiSettings>('PUT', '/ai/settings', s),
   aiTest: () => call<{ ok: boolean; error?: string }>('POST', '/ai/test'), // one token, nothing from your files
+  localModel: () => call<LocalModel>('GET', '/ai/local'),
+  downloadLocal: () => call<LocalModel>('POST', '/ai/local/download'), // starts or resumes; a second call while it runs does nothing
   aiPreview: (o: { file_id: number } | { question: string }) => call<AiPreview>('GET', `/ai/preview?${new URLSearchParams(Object.entries(o).map(([k, v]) => [k, String(v)]))}`),
 }
