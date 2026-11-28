@@ -1,0 +1,19 @@
+{
+  "component": "ask",
+  "n": 261,
+  "rows": [
+    {
+      "system": "Sniff (facts table, AI off: no written answers)",
+      "correct": 0.406,
+      "citation_correct": 0.797,
+      "abstention_on_unanswerable": 0.6,
+      "false_abstention": 0.167
+    }
+  ],
+  "latency_ms": {
+    "p50": 76,
+    "p95": 384
+  },
+  "failures": 155,
+  "updated": "2026-11-28T14:13:48"
+}

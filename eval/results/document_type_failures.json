@@ -1,0 +1,1587 @@
+[
+  {
+    "set": "test",
+    "file": "test/Documents/old/Scan 13.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "utility_bill",
+    "pred": "other",
+    "error": null,
+    "text": "FASTLINK INTERNET INVOICE-INTERNET SERVICE Account. Customer.. FL-1930-9677 Address.. Ali Raza Khan Period.. House 14, Street 7,Garden Town,Lakeshore City Invoice date. November 2026 05Dec2026 Package Charges (50 Mbps) Add-ons PKR 2930.00 Taxes PKR172.00 PKR345.00 Charges for the month Previous Bala"
+  },
+  {
+    "set": "test",
+    "file": "test/WhatsApp Images/IMG-20220902-WA0794.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "id_card",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore University STUDENTCARD Name Sara Khan Roll No. 22L-3487 Date of Birth 2003-03-21 Issued 2022-09-01 Valid Thru 2026-12-31 Ifound pleaseretumtotheregistrar'soffice"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/file_8661.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore Foods Ltd Canal Bank Road, Lakeshore City Ref: HR/2013/777 Date: 15/03/2013 Ali Raza Khan House 14, Street 7, Garden Town, Lakeshore City Subject: Offer of Employment Dear Ali Raza Khan, We are pleased to offer you the position of Operations Manager at Lakeshore Foods Ltd. The main terms o"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/f8f8438d.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Academic Transcript Name of Student Ayesha Khan Reg No 2000-NC-EDU-213 Programme Bachelor of Education Issued on 08 Feb 2002 Fall 2000 EDU-101 Philosophy of Education 3 B- EDU-102 Child Development 3 A- EDU-103 General Methods of Teaching 3 B- SGPA 3.00 Spring 2001 EDU-104 Educati"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/download (18).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Academic Transcript Name of Student Ayesha Khan Reg No 2000-NC-EDU-213 Programme Bachelor of Education Issued on 2001-02-11 Fall 2000 EDU-101 Philosophy of Education 3 B- EDU-102 Child Development 3 A- EDU-103 General Methods of Teaching 3 B- SGPA 3.00 CGPA 3.00 Credits completed:"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/Document (29).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Mixora WARRANTYCERTIFICATE Covered against manutacturing detects for2years. Product Model Blender1.5L MX-BL15 Serial Number Purchase Date MX75B2633813 2022-10-01 Valid unti Dealer 2024-10-01 GalaxyHomeStore CustomerName:AyeshaKhan The warranty covers parts and labour for faults in normal home use. I"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/Screenshot 2019-01-01 at 16.17.11.png",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "NORTHFIELDCOLLEGE Office of the Controller ofExaminations TRANSCRIPTOFACADEMICRECORD Student Name: Ayesha Khan Program: Bachelor of Education Reqistratlon No. Date of Birth Date of Issue: 2000-NC-EDU-213 1982-09-03 2003-02-20 Code Transcript No: EDU-T-381895 Course Title Fall2000 Credit Hours EDU-10"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/scan_7545.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Brightpath School GardenTown,Lakeshore City Ref:HR/2025/237 Ayesha Khan Date:10Mar2025 House14,Street7,GardenTown,LakeshoreCity Subject:Offer of Employment Dear Ayesha Khan, main termsof the offer are givenbelow.Thefull terms are in the employment contract youwill sign on joining. Wearepleased to of"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/2eb0807c.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore Commercial Bank Ltd Account Statement Ayesha Khan House 14, Street 7, Garden Town, Lakeshore City Account Number: 9136-91851385-10 IBAN: EA72LCBK0091369185138510 Branch: Mall Road Branch (0127) Statement Period: 01.01.2025 to 31.03.2025 Statement Date: 02.04.2025 Opening Balance: 96,350.00"
+  },
+  {
+    "set": "test",
+    "file": "test/Documents/old/download (10).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Academic Transcript Name of Student Hamza Khan Reg No 2025-NC-SE-089 Programme BS Software Engineering Issued on 06.02.2026 Fall 2025 SE-101 Programming Fundamentals 3 C+ SE-102 Applied Physics 3 B+ SE-103 Functional English 3 B SGPA 2.89 CGPA 2.89 Credits completed: 9 Grades: A ="
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/e1f8cc35.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore Commercial Bank Ltd Account Statement Ayesha Khan House 14, Street 7, Garden Town, Lakeshore City Account No.: 9136-91851385-10 IBAN: EA72LCBK0091369185138510 Branch: Mall Road Branch (0127) Statement Period: 01.04.2026 to 30.06.2026 Statement Date: 03.07.2026 Opening Balance: 1,345,561.65"
+  },
+  {
+    "set": "test",
+    "file": "test/Documents/old/Document (12).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College College Road,Lakeshore City Date:2022-08-01 Ref:HR/2022/752 Ayesha Khan House14,Street7,GardenTown,LakeshoreCity Subject:Offerof Employment Dear Ayesha Khan, We arepleased to offeryou thepositionof Visiting Lecturer at NorthfieldCollege.Themain termsof theoffer aregivenbelow.Thefu"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/PXL_20200418_128682.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Homestar WARRANTYCERTIFICATE Covered aganstmaruntacturng delectslor5years Appiancs Model Ceiling Fan 56in HS-CF56 Seral Numbe aegestapmd HS89A1553102 18/04/2020 Vadunu Dealer 18/04/2025 GalaxyHome Store CustomerName:AyeshaKhan Thewaty ovorsparsandbour for lauts nnoathoms tdoesngt cover damage tromsu"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/IMG_9878.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Fee Voucher Voucher No: 55404348 Name of Student: Hamza Khan Reg No: 2025-NC-SE-089 Program: BS Software Engineering Session: Spring2026 Date of Issue: 2026-01-05 Last Date: 2026-01-24 Particulars Amount TuitionFee PKR68000.00 LabFee PKR4800.00 ExamFee PKR2700.00 SportsFee PKR1000"
+  },
+  {
+    "set": "test",
+    "file": "test/Desktop/IMG_4967.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Zenkai WARRANTYCERTIFICATE Covered againstmanufacturing defects for 1year. Model Appliance ZK-W2 Smart Watch Purchase Date Serial Number 26.12.2025 ZK89C8387892 Dealer Valid until Online order 26.12.2026 CustomerName:SaraKhan The warranty covers parts and labour for faults in normal home use. It doe"
+  },
+  {
+    "set": "test",
+    "file": "test/WhatsApp Images/IMG-20260518-WA0729.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Chillex WARRANTYCERTIFICATE Covered againstmanufacturing defects for 1year. Product Model Air Cooler CX-AC40 Serial Number Purchase Date CX18G4477053 15.05.2026 Valid until Doaler 15.05.2027 GalaxyHomeStore CustomerName:AyeshaKhan The warranly covers parts and labour for laults in normal nome use. d"
+  },
+  {
+    "set": "test",
+    "file": "test/WhatsApp Images/IMG-20260803-WA0647.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Fee Voucher VoucherNo: 96539620 Name ol Stuident Hamza Khan FegNo: 2025-NC-SE-089 Program. BS Software Engineering Semester Fall2026 Date of Issue 03/08/2026 LastDate 21/08/2026 Particulars Amount Tuition Fee Rs.72,000 LabFee Rs.5.000 Exam Fee Rs.2,900 SportsFee Rs.1,100 TotalAmou"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/CamScanner 07-09-2026 14.35.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College AcademicTranscript Name of Student Hamza Khan Reg No 2025-NC-SE-089 Programmo BS Software Engineering lssuedon Fall2025 2026-07-09 SE-101 Programming Fundamentals SE-102 AppliedPhysics SE-103 Functional English 3C+ 3B+ 3B Spring 2026 SGPA2.89 SE-104 Object OrientedProgramming SE-1"
+  },
+  {
+    "set": "test",
+    "file": "test/Desktop/file_5860.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Summit Online Learning Online Ref: HR/2024/282 Date: 20.05.2024 Sara Khan House 14, Street 7, Garden Town, Lakeshore City Subject: Offer of Employment Dear Sara Khan, We are pleased to offer you the position of Teaching Assistant Intern at Summit Online Learning. The main terms of the offer are give"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/download (9).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "FastLink Internet Blue Area, Lakeshore City Ref: HR/2025/456 Date: 02.06.2025 Hamza Khan House 14, Street 7, Garden Town, Lakeshore City Subject: Offer of Employment Dear Hamza Khan, We are pleased to offer you the position of Customer Support Intern at FastLink Internet. The main terms of the offer"
+  },
+  {
+    "set": "test",
+    "file": "test/WhatsApp Images/IMG-20240723-WA0393.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore University Academic Transcript SaraKhan PagNo 2021-LU-CS-117 BS Computer Sclence Fall2021 2024-07-20 CS-102Calius1 CS-101 ProgramingFundarmentais Fall2023 3A CS301 Operatng Systms 3B 3A 3A 34 Spring 2022 3B+ CS-104ObjectOrentedProgramming 3A Spring2024 SGPA356 CS106 Digital Logic Design 3A"
+  },
+  {
+    "set": "test",
+    "file": "test/Desktop/download (30).pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Academic Transcript Name of Student Ali Raza Khan Reg No 2006-NC-MBA-058 Programme Master of Business Administration Issued on 21 Feb 2007 Fall 2006 MBA-101 Financial Accounting 3 B MBA-102 Business Statistics 3 B- MBA-103 Organizational Behavior 3 C+ SGPA 2.67 CGPA 2.67 Credits c"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/file_7103.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Fee Voucher Voucher No: 52592853 Name of Student: Hamza Khan Reg No: 2025-NC-SE-089 Program: BS Software Engineering Semester: Spring 2026 Date of Issue: 2026-01-28 Last Date: 2026-02-10 Particulars Amount Tuition Fee 68,000/- Lab Fee 4,800/- Exam Fee 2,700/- Sports Fee 1,000/- To"
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/PXL_20240222_121865.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHOREUNIVERSITY Office of the Controller of Examinamioms TRANSCRIPT OF ACADEMICRECORD SaraKhan Rogistalon No 2021-LU-CS-117 BS Computer Science sD 22.02.2024 21.03.2003 CS-T-682685 Code Course Title Credit Hours Grade Fall2021 CS-101 Programmng Fundan CS-102 CacausI A CS-103 English Cempoiton A "
+  },
+  {
+    "set": "test",
+    "file": "test/Documents/old/Screenshot 2023-06-20 at 15.16.22.png",
+    "variant": null,
+    "effects": null,
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL FEEVOUOHER.NTURONOM VOUESTCOSCORY 35924158 OhelNo 35924158 20 Jun2023 35924158 20 Jun2023 20Jun2023 10Jul2023 10 Jul2023 HamzaKhan 10 Juf2023 LO Hamza Klran HamzaKhan BPS-1734 BPS-1734 Class10 BPS-1734 Class10 Class10 July to September 2023 July "
+  },
+  {
+    "set": "test",
+    "file": "test/Documents/old/file_3347.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHORE COMMERCIAL BANK LTD Mall Road Branch (0127) e-Statement Customer: Ayesha Khan Account No.: 9136-91851385-10 IBAN: EA72LCBK0091369185138510 Period From: 2026-07-01 Period To: 2026-09-30 Date Description Debit Credit Balance 2026-07-01 Balance brought forward 1,601,404.65 2026-07-01 Salary c"
+  },
+  {
+    "set": "test",
+    "file": "test/Documents/old/Screenshot 2022-07-20 at 11.30.33.png",
+    "variant": null,
+    "effects": null,
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Nordik WARRANTYCERTIFICATE Covered agninstmanufacturng detecls for 10years MGdHd Proauct NK-DF12 Deep Freezer 12cft Purchase Dne Seriai Nunber 2022-07-20 NK79B7406696 Deller Valid unt Galaxy HomeStore 2032-07-20 Customer Name:AyeshaKhan The waranty coversparts and labour lor lault inrormal home use "
+  },
+  {
+    "set": "test",
+    "file": "test/Downloads/file_4258.pdf",
+    "variant": null,
+    "effects": null,
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Fee Voucher Voucher No: 96539620 Name of Student: Hamza Khan Reg No: 2025-NC-SE-089 Program: BS Software Engineering Semester: Fall 2026 Date of Issue: 03/08/2026 Last Date: 21/08/2026 Particulars Amount Tuition Fee Rs. 72,000 Lab Fee Rs. 5,000 Exam Fee Rs. 2,900 Sports Fee Rs. 1,"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Desktop/f4126893.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Nordik WARRANTYCERTIFICATE Coveredagainstmanufacturing defects fort0yes Mode Product NK-DF12 DeepFreezer12cft Purchase Date Serial Number 2022-07-20 NK79B7406696"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Downloads/download (2).jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHOREUNIVERSITY Office ofthe Controller ofExaminations TRANSCRIPTOFACADEMICRECORD SaraKhan Registration No: 2021-LU-CS-117 Student Name Program: BS Computer Science Date ollssue: 07/02/2025 Date of Birth: 21/03/2003 Transcript No: CS-T-682687 Course Title Credit Hours Grade Code Fall2021 A CS-10"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Downloads/file_6715.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "insurance_policy",
+    "pred": "other",
+    "error": null,
+    "text": "SAFENESTHOMEINSURANCE CERTIFICATEOFINSURANCE InsuredPerson AliRazaKhan Polcy Number SN-HC-2023-271071 EndDate 2024-10-31 StartDate 2023-11-01"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Desktop/download (17).jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "METROTEXTILESPVTLTD Human Resouroes Depatiment OFFERLETTER Dated:10.01.2001 To:AliRazaKhan House 14.Street7,Garden Town,Lakeshore City Dear Ali Follcwingyourinterview,we are happyto offeryouajobwithus.Please read the termsbelow andlet usknowyourdecision. Candidate Name AliRaza Khan Designation Accou"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Downloads/Document (20).jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "utility_bill",
+    "pred": "receipt",
+    "error": null,
+    "text": "FASTLINK INTERNET INVOICE-INTERNET SERVICE Account. FL-1930-9677 Customer. Ali Raza Khan Address.. House 14, Street 7, Garden Town, Lakeshore City Period. May-2026 Invoicedate.. 2026-06-01 Package Charges (50 Mbps) Rs.3,125"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Downloads/355eff20.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "GREENFIELDGRAMMARSCHOOL Humian ResourcesDepartment OFFERLETTER Dated:20/07/2012 To:Ayesha Khan House 14,Street 7,Gardeh Town,Lakeshore City DearAyesha, Followingyourinterview,we are happy to offeryoua job withus.Please readthe terms below andletusknowyourdecision Candidate Name Ayesha Khan Designati"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Desktop/3d01aadb.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHOREGARMENTS HumanResourcesDepartment OFFERLETTER Dated:1998-03-01 To:Nusrat Khan House 14,Street7,GardenTown,LakeshoreCity Dear Nusrat, Followingyourinterview,we are happy toofferyoua job with us.Please read the termsbelow andletusknowyourdecision. Candidate Name Nusrat Khan Designation Tailor"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Documents/old/a7de44d6.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_top",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "insurance_policy",
+    "pred": "other",
+    "error": null,
+    "text": "SN-HC-2024-867115 AliRazaKhan StartDate EndDate 01NoV2024 31Oct2025 Premium Sum Insured PKR15800.00 PKR2500000.00 Cover:Home contents Keep this certificate with you.ltisvalid only for theperiod shownabove."
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Desktop/Document (12).jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_top",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Statemene Period; 2026-09-01to2026-09-30 2026-10-04 95,000.00 216,672.91 Total Credits: Opening Balance: 280,941.91 30,731.00 Closing Balance: Total Debits: Debit Credit Balance Date Description 216,672.91 Balance brought foward 95,000.00 311,672.91 2026-09-01 Salary credt-Brightwave Systems 300.640"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Downloads/9b50afba.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "HarborLogisticsPvtLtd Port Road,Lakeshore Cily Date:01/12/2023 Ret:HR/2023/846 Ali Raza Khan House14,Street7,GardenTown,LakeshoreCity Subject:OfferofEmployment DearAli Raza Khan, We are pleased to offeryou the position of General Manager Operations at Harbor Logistics Pvt Lid.Themain terms of the of"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Documents/old/download (23).jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "NORTHFIELDCOLLEGE Officeof theController of Examinations TRANSCRIPTOFACADEMICRECORD 2000-NC-EDU-213 Registration No 19:07/2003 Isse Date: EDU-T-381896 Ayesha Khan Student Name Transcnpt No: Bachelor ot Education Grade Program: Credit Hours 0309/1982 Date ol Bit: B- 3 A Course Tite 3 B Code 3 GPA:3.0"
+  },
+  {
+    "set": "hard",
+    "file": "hard/cutoff/Desktop/Print_2026-10-31.jpg",
+    "variant": "cutoff",
+    "effects": [
+      "cut_bottom",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "CrescentBankLimited AccountStatement Ali RazaKhan House 14,Steet7,GardenTown,Lakeshore City Account No. 8371-77432942-16 IBAN: EA86CRES0083717743294216 Branch: GardenTown Branch(0412) Statement Period 01Oct2026to31Oct2026 Statement Date: 02NoV2026 Balance B/F: 2,171,782.12 Total Credits: 285,000.00"
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Downloads/Document (29).jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Mixora WARRANTYCERTIFICATE Blender1.SLMX-BL15 ProductModel Coveredagainstmanufacturingdefectyfor2years MX75B26338132022-10-01 SerialNumberPurchaseDate ValiduntilDealer CustomerName.AyeshaKhan 2024-10-01GalaxyHomeStore doeynotcoverdamagefrommisuse,powerwrgeyorunauthorisedrepair. Thewarrantycoverypart"
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Desktop/scan_5048.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "receipt",
+    "error": null,
+    "text": "PRESSAWARRANTYCARD Product:Steamlrow ModeLNo.:PS-S12 DateofPurchase:30/06/2026 WarrantyPeriod:2yeary Warrantyvaliduntil:3o/06/2028 Dealer:GalaxyHomeStore CuytomerName:Nusratkhan KeepHhiycardwithyorurpurchasereceipt."
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/WhatsApp Images/IMG-20230109-WA0612.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "GRIDSAFEWARRANTYCARD Product:voltageStabilizer5kvA ModeLNo.:GS-ST5 SerialNo.:GS59K4798814 DateofPurchase:09/01/2023 WarrantyPeriod:3years warantyvaliduntil:09/01/2026 Dealer:CityElectronics CustomerName:AliRazaKhan Keep this cardwith yourpurchasereceipt."
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Documents/old/Screenshot 2022-07-20 at 11.30.33.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "WARRANTYCERTIFICATE Coveredagainstmanufacturingdefectsfor10years. Productmodel DeepFreezer12cf+NK-DF12 SerialNumberPurchaseDate NK79B74066962022-07-20 ValiduntilDealer 2032-07-20GalaxyHomeS+ore CustomerName:AyeshaKhan Thewarrantycoverspartsandlabourforfaultsinnormal homeuse. I+doesnotcover damagefro"
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Desktop/PXL_20211205_92000.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "HEATWELLWARRANTYCARD ProductName:GasGeyser35Gallon ModelNo.:Hw-GG35 SerialNumber:HW25B9616845 DateofPurchase:05Dec2021 warrantyPeriod:3years valid Till:05Dec2024 Dealer:Galaxy Howe Store CustomerName:AliRazaKhan Keep thiscardwithyour purchasereceipt."
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Desktop/Print_2026-01-20.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Lumio CoveredagainstmanufacturingdefectyforIyear. WARRANTYCERTIFICATE ApplianceModel Tablet1OinLM-T10 SerialNumberPurchaseDate LM69G615885320/01/2026 ValiduntilDealer CustomerNameSaraKhan 20/01/2027CityElectronicy Show-thiycertificateandthepurchaseinvoicewhenyowaskforservice Hdoeynotcoverdamagefromm"
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/WhatsApp Images/IMG-20260518-WA0729.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "other",
+    "error": null,
+    "text": "Chiulex WARRANTYCERTIFICATE CoveredagainstmanufacturingdefectyforIyear. ProductModel AirCoolerCX-ACAO SerialNumberPurchaseDate CX18G447705315.05.2026 ValiduntilDealer 15.05.2o27GalaxyHomeStore CustomerName:AyeshaKhan Thewarrantycoverypartyandlabourforfauultyinnormalhomeuse. Itdoeynotcoverdamagefromm"
+  },
+  {
+    "set": "hard",
+    "file": "hard/handwriting/Desktop/file_9173.jpg",
+    "variant": "handwriting",
+    "effects": [
+      "handwriting",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "warranty_card",
+    "pred": "receipt",
+    "error": null,
+    "text": "HOMESTARWARRANTYCARD ProductName:RoomHeater ModelNo:HS-RH2 SerialNumber:HS87K4658754 DateofPurchase:25Nov2023 WarrantyPeriod.3yeary ValidTill:2sNov2026 Dealer:GalaxyHomeStore CustomerName:NusratKhan Keepthiycardwithyourpurchasereceipt."
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Work/Backup/Document (27).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHOREUNIVERSITY Oolraf CorllerEtn TRANSCRIPTOFACADEMICRECORD Sara Khan Dl B BS Computer Sclence 2021-LU-CS-117 21 Mar2003 15AI2025 Coda Courwe Tile CS-T-682680 Fali2021 C101 Piegtwnning Funda Cdil Heun CSHO Cahin! Englah Canposhen A Spng 2022 A CS-104 CeprctOoedPngranuing 5 CS:105 Dnoote Srutnm "
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/CamScanner 06-20-2022 20.26.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL FEEVOUCHEI-STUDENT COHY FEEVOUCHE.NGTIUTICNCOIY FEEVOUOHERSANN OONT Chalon Nis 58715660 09951295 CHLtANE 58715660 e Da 20.06.2022 20.06.2022 20.06.2022 DDME 10.07.2022 Due Datis 10.07.2022 DueDe 10.07.2022 Sudnn Name Hamza Khan Suder lame Hamu Kh"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Downloads/Document (3).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "CRESCENTBANKLIMITED GdenTon nh (oa) eSuiemn Ali Fazs Khan 0371-77432942-16 EABCCRES0083717743294216 01Feb2024 Prod Ti 28 Fob 2026 Dute Descnption 01 Feo2024 Creda 01F20M CFo3026 BpmeNm E Sy C 594.005.00 10Feb202 25,000.00 POspnh-FeNuin Gncan 24.00 11 Fe 200 Bopayn-FarUa emet 2LO4TOO 858.001.00 18F62"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/Document (12).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Collega Foad,Lakaunote City Date:2022-08-01 Ret:HR/2022/752 Ayesha Khan House 14,Streot 7.Garden Town,Lakeshore City Subject:Offer of Employment Dear Ayesha Khan, We are pleased to offer you the position of Visiting Lecturer at Northfield College.The main on joining. Position: Vis"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/photo_29.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "id_card",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College STUDENTGARD Ali Raza Khan 06L-4822 1978-05-14 2006-09-01 2008-08-31"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/WhatsApp Images/IMG-20220901-WA0889.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "tenancy_agreement",
+    "pred": "other",
+    "error": null,
+    "text": "RENTAGREEMENT Ro 1,za UentyRoLik Cmy 1000 g20 Terms Re s peit in adinoe by Fe seat Regans Fem nerah eear"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/PXL_20220801_161939.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore Unlversity 2OH1-UU-CS-117 Dcpum khnee Pal Tfm 1500 .700A Toun Amount"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Downloads/Document (27).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHOREUNIVERSITY Office ofthe Controllerof Examinations TRANSCRIPTOFACADEMICRECORD Stbdert Name Sara Khan Program, BS Computer Science Registratan No Date ol Birth lsue Date 2021-LU-CS-117 21Mar2003 15Jul2025 Code Transcnpi No CS-T-682688 Course Title Fall2021 CS-101 ProgramumingFundamentals Cred"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Downloads/photo_25.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Crescent Bank Limited"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/CamScanner 04-01-2022 10.33.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "tenancy_agreement",
+    "pred": "other",
+    "error": null,
+    "text": "RENTAGREEMENT Nusrat IKhan Wehwish Anoar Ripermon Flmt 2.loek B,Canal Vew Aparnenta.Lkeshore Cty PKR41500.00 PKR76000.00 01 Apr2022 20 Feb 2023 Agmwh 16Mar 2022 Noicn Hiod one month Terms Ront spid nacvan byme Sih dveymonh -Uelry biharepad by lte lessee -Repis homnoml welrarel woniny The depost ismu"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/scan_2271.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Brightpath School Feu Voucher VocheNo 15574406 Pame oi Snol Hamza Khan Rat No BPS-1734 Classe Tenml January to Mareh 2022 DiAa 2021-12-20 rDule 2022-01-10 Partieuiarn Tulon Foe Amount Computor Lnb PKR 27000.00 Spors Fee PKA 1600.00 Total Amount PKA 700.00 Artounl ahr due dae PKR29300.00 PRR 31300.00"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Downloads/scan_3550.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "tenancy_agreement",
+    "pred": "other",
+    "error": null,
+    "text": "RENTAGREEMENT Leppor Nusrat Khan Faisal lqbal Premisas Flat 2,Block B,Canal View Apartments,Lakeshore City Rent permonin 35.000/- Deposit 64,000/- 2020-03-01 End Date 2021-01-31 Agresment Date 2020-02-11 Notice period one month Terms -Rent is paidin advance by the 5th ot every month -Utility bilis a"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/Document (11).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "passport",
+    "pred": "other",
+    "error": null,
+    "text": "EASTLAND FS40062I Ai RaraKrun Eastlander 14061678 Llrhore City 00/05/2006 08052011 013000472"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Desktop/scan_7901.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL BRIGHTPATH SCHOOL FETOUOHER-BWSCOR TEEYOAOHUOTTMTONCOR 13070554 13876554 13976554 20:5ep2023 25202 205p 2025 100c1222 10012022 DuD 10-0e12023 Haiua Khah Hanra Khan Hamva Khan BP5-1734 PoAer IPS-ITH BPS-1734 CA10 Cious10 Class.10 Oetaber to Decnmber202 Octeber to D"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/WhatsApp Images/IMG-20230322-WA0284.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Brightpath School Fee Veucher Fouuhm 76933546 Hamua KMan FuTN BPS-1734 Class10 Aprl oJup2025 20032023 LNI Dve 10645003 Parceuar TuonfM Spoms Fe Total Amount 32.000. Anoure affer due daay"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/download (6).pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "certificate",
+    "pred": "other",
+    "error": null,
+    "text": "BRIGHTPATHACADEMY O nhAmr C confen upon HamzaKhan the cenifieate in Typingand ComputerBasics sall chr rieh and pllee peg sher Given this 25th day'of July, 2023 Pugnmmr Duocor .D5047"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/WhatsApp Images/IMG-20240109-WA0538.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "id_card",
+    "pred": "other",
+    "error": null,
+    "text": "Harbor LogisticsPvt Ltd STAFF IDCARD All Raza Khan EMP-37833 Deedth 14.05.1978 08.01.2024"
+  },
+  {
+    "set": "hard",
+    "file": "hard/lowres/Documents/old/file_3347.pdf",
+    "variant": "lowres",
+    "effects": [
+      "low_resolution",
+      "grey",
+      "jpeg"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHORECOMIMIERCIALBANKLTD Mu nnh oth Arrha chan F136-51861365-10 BUAN LA7LC00091309199134510 2035-07-01 Point Tc 2021-09-30 Dela Deiunoe hrougnt lonwant 201-42-41 Semy oeh - Beghpah Scoa 10000.00 U2104M FO5 purdae- Utan Thad 13.91-9 HH CpCn Lt 1015.00 7521-0512 Otre tontle e Nrat shan 201-41-18 4"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/IMG_9878.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College emceKhan 0025-1C-SE-009 BS Bohere Engk Spriog 202s 2028-01-05 2026-01-24 An PKR6000 EsFee PKR4800.00 SsonsFos PKR2700.00 Totai Amturt PKR1000.00 0 POR7750000"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/Scan 9.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "certificate",
+    "pred": "other",
+    "error": null,
+    "text": "SUMIMIT ONLINE LEARNING teArcdelc Col coafes opon Sara Khan cifaten Introduction to Machine Learning paormgthere 7y.2018"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/Scan 13.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light"
+    ],
+    "gold": "id_card",
+    "pred": "other",
+    "error": null,
+    "text": "Sorthtield College Ayesha Khan 00L-2095 03.09.1982 01.09.2000 31.08.2004"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/PXL_20260831_214817.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "ESCYNTHANKIIMITED \u4e09"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/file_5443.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Lakeshore University AcademieTransorpr 21.07.2022 BS Computer Sclence 2021-LU-CS-117 Sara Khan Fal2021 CS-101N 3A CS-100E Spring 2022 3A 3A CS104 COe 3A CS10sDeSuc CS10 DgiLageDes Credesco CGPA 3.72"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/Screenshot 2025-08-04 at 21.12.47.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Brightwave Systems (Pvt) Ltd PCHR2025294 SaraKhan Subject:Onler ol Emg Dear SarsKon Aaeyties 225-0901 e Mnem Tow"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/PXL_20190101_205924.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "passport",
+    "pred": "other",
+    "error": null,
+    "text": "EASTLAND RR7530978 AliRaza Khan Eastlander 14Uay1978 Lakeshore Clty 14Apr2016 14Apr2026 861477116"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Work/Backup/file_4500.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "utility_bill",
+    "pred": "other",
+    "error": null,
+    "text": "FASTLINK INTERNET IVOIC-INTERNET SRRVICE rL-1930-9677 ALL Rata Khan foase 1Btreet Perio Aoguet 2026 2026-09-03 Fackage () 3,050/- Aad-ons 179/- Tanes -/est Currest Chargei 3,58/- Frevious Balance 0/- Net Anont Doe 3,588/- 23sp2026"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/Document (23).jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY LAKESHORE UNIVERSITY 38946834 30945834 30946834 02062021 02:062021 022:082021 20042021 20.062021 20-062021 Sara Khan SacaKhan SaraKhan 2021-LU-CS-117 2021-L0-C5-117 2021-4U-C5-117 DS Computer Se BS Computer S BS ConpulerScin Fall2021 Fll2021 Fat2021 Tuton Fe"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/CamScanner 01-01-2019 17.15.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "NORTHFIELDCOLLEGE TRANSCRIPT OF ACADEUC RECORD CGPA! 114.00"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Work/Backup/file_6074.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Crescent Shipping Ltd Ret:HR/2026827 Ali Raza Khan De:2026-10-05 House 14,Street7,GardenTow,Lashore Ciy Subject:Ofter ot Employment DearAi RazaKhan, We are pleasedto ofter you thepostion of Head f OperationsatCrescentShipping Lid.The main terms of the offer aregivenbelow.The tull term o sign on join"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/WhatsApp Images/IMG-20260803-WA0647.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "fee_voucher",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College Fee Voucher Vogicter No Name of Stodet 96539620 RogNo Hamza Khan Prograni: 2025-NC-SE-089 Somestor BS Software Engineering Dateof ts Fall2026 Laat Date 03/08/2026 21/08/2026 Pariculars Tuition Fee Lab Fee Amount Exam Fee Rs.72.000 SportsFee Rs.5,000 Total Amount Rs.2,900 Amount af"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/Print_2026-06-30.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow",
+      "low_light"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Unity Bank Limited SaraKhan 14.201.00 31125.00 8t.575.00"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/e028a217.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light"
+    ],
+    "gold": "tenancy_agreement",
+    "pred": "other",
+    "error": null,
+    "text": "NONIUDICTALSTAMIPPAFER R.SOO TENANCYAGREEMENT ISoynci atLalobaer Cty behrem theparti Nosrat Kbas \u4e09 MehwihAowar R.35.000 Fat 2.Block B,Caal View Aparten,Lakeore City Rx.76.000 Fap Da 0U04/2021 2802/2022 2p6.y L.TheTen lpay thehy fRsomade yet dayfe sapaid doe 4.Oeereilire by a uicreof 1opcn 3.The ty f"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/Scan 22.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Orchard Soflware hictoteet tnploym 06.01.2025 000 11.00 amonts g#dmy a 0.12.2021 HedeHra"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/eae468fa.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "NORTHFIELDCOLLEGE OfficeoftheControllerofExaminations TRANSCRIPTOFACADEMICRECORD Registration No: 2000-NC-EDU-213 Student Name AyeshaKhan 11/02/2004 Date ofIssue: Program: Bachelorof Education EDU-T-381897 Transcript No: Date of Birth: 03/09/1982 Credit Hours Grade Code CourseTitle Fall2000 3 B Phil"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/1a297fee.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow",
+      "low_light"
+    ],
+    "gold": "bank_statement",
+    "pred": "other",
+    "error": null,
+    "text": "Mll Road Boch (0127) LAKESHORE COMMERCIALBANKLTD Ayesha Khan 9136-91851385-10 01.01.2026 EA72LCBK0091369185138510 31.03.2026 Date Description 01.01206 Bnce brougfrd 01.012026 06.01.2026 Onine tansfer to Nusrat Khan 20.012026 Bit payment -Metro Gas Lad 128000.00 1064.45.65 26012026 d mg-uledpie 5.752"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Downloads/file_8661.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light"
+    ],
+    "gold": "offer_letter",
+    "pred": "receipt",
+    "error": null,
+    "text": "Lakeshore Foods Ltd Raet112013777 AL Rea Khun Subject:Oter ofEmp Dear Ai Racs Kun 15042013 PKR120000.0 TKR300.00 1000 3o 1 mo30p,oniy te Fio 25032012"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/download (10).jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College 06.02.2026 Buyaeugbugauemyos sa 2025-NC-SE-089 3C 38 38 SOPAZA Credis completed9 CGPA 2.89 Controller ot Exa"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/file_3520.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light"
+    ],
+    "gold": "utility_bill",
+    "pred": "other",
+    "error": null,
+    "text": "FASTLINK INTERNET 1496-061-14 H24t 2024-03 04.04.2024 2.58/- 150p) 176/- Tanes 3,480/ 3.400/- ttevious eelaAcs Laoust Feyable 21.04.2024"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/IMG_0138.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow",
+      "low_light"
+    ],
+    "gold": "receipt",
+    "pred": "other",
+    "error": null,
+    "text": "CRAHD TOTAL"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Desktop/CamScanner 01-01-2019 20.24.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "shadow"
+    ],
+    "gold": "transcript",
+    "pred": "other",
+    "error": null,
+    "text": "Northfield College AcademcTranicr AliRaza Khan 2006-NC-MBA-058 60-20-8002 Fa 200s A MA-00 Tet00? A A2041 CGPA"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/Print_2025-09-10.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "offer_letter",
+    "pred": "other",
+    "error": null,
+    "text": "Metro Institute of Technology Ret:HR/2025.957 Date:10/09/2025 Hamza Khan Hous 14,Street 7.Garcen Tow,Lakho Cily Subject:Offer of Employment Dear Hamza Khan, Weape fyupoif LbAstant aeetroltt TechlogyTeintm thelr agivenlowThefermarein the mlyent contact youwlignonjoining. Lab Assistant (part-time) Rob"
+  },
+  {
+    "set": "hard",
+    "file": "hard/photo/Documents/old/d3b46165.jpg",
+    "variant": "photo",
+    "effects": [
+      "perspective",
+      "rotation",
+      "blur",
+      "jpeg",
+      "low_light",
+      "shadow"
+    ],
+    "gold": "utility_bill",
+    "pred": "other",
+    "error": null,
+    "text": "YASTLINK INTERNET IRVOICE TRTREHRtBE 3.617 11\uff1a2927"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/038.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/047.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/061.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/063.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/064.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/071.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/074.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/096.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/136.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/147.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/185.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/192.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/226.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/228.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/321.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/331.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/370.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/374.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/381.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/404.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/406.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/429.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/437.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/444.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/508.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/519.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/548.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/560.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/564.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/570.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/573.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/579.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  },
+  {
+    "set": "real",
+    "file": "real/sroie/584.jpg",
+    "variant": null,
+    "effects": null,
+    "gold": null,
+    "pred": null,
+    "error": null,
+    "text": null,
+    "redacted": "SROIE content left out until its terms are confirmed (#15)"
+  }
+]

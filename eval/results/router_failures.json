@@ -1,0 +1,1098 @@
+[
+  {
+    "q": "What is Ali's date of birth?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "When was Ali's Master of Business Administration issued?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What is Ayesha's date of birth?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What is Sara's date of birth?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What is Hamza's date of birth?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What is Nusrat's date of birth?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "When does Sara's student card expire?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What institution issued Sara's degree?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "issue_date",
+      "op": "latest",
+      "filters": {
+        "holder": "sara",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the account number on the gas bill?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "account_number",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the account number on the internet bill?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "account_number",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "internet",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the account number on the electricity bill?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "account_number",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the title of Hamza's school certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "hamza",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the ID number on Nusrat's identity card?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "id_card",
+      "field": "id_number",
+      "op": "latest",
+      "filters": {
+        "holder": "nusrat",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the first item on the project kickoff meeting agenda?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "insurance_policy",
+      "field": "premium",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "first",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in January 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "january 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in February 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "february 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in March 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "march 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in April 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "april 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in May 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "may 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in June 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "june 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in July 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "july 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in August 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "august 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in September 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "september 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in October 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "october 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in November 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "november 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many kWh of electricity did we use in December 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "electric",
+        "year": null,
+        "month": "december 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in January 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "january 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in April 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "april 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in July 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "july 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in October 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "october 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in November 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "november 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How many m3 of gas did we use in December 2026?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "provider",
+      "op": "count",
+      "filters": {
+        "holder": null,
+        "provider": "gas",
+        "year": null,
+        "month": "december 2026",
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ayesha's First Aid and CPR certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ayesha",
+        "provider": "first",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ayesha's Bachelor of Education certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ayesha",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Sara's Technical Writing Workshop certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "sara",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Hamza's Typing and Computer Basics certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "hamza",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ayesha's Classroom Management certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ayesha",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ali's Leadership and Team Management certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ali",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ali's Excel for Business certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ali",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the certificate number on Ali's Defensive Driving Course certificate?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "certificate",
+      "field": "title",
+      "op": "latest",
+      "filters": {
+        "holder": "ali",
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the serial number of the Mixora blender?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "When does Sara start at Brightwave Systems?",
+    "category": "conflict",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What date is on Sara's offer letter from Brightwave Systems?",
+    "category": "conflict",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "When does Ali start at Crescent Shipping Ltd?",
+    "category": "single_fact",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "How much did we pay Brightpath School in fees in 2022?",
+    "category": "cross_doc_total",
+    "gold": "facts",
+    "pred": "search",
+    "query": null
+  },
+  {
+    "q": "What is the sum insured on our CareFirst health insurance?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "insurance_policy",
+      "field": "premium",
+      "op": "sum",
+      "filters": {
+        "holder": null,
+        "provider": "carefirst health",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "Which car is covered by our Highway Motor insurance?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "insurance_policy",
+      "field": "premium",
+      "op": "list",
+      "filters": {
+        "holder": null,
+        "provider": "highway motor",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How much notice must we give to end our tenancy agreement?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "tenancy_agreement",
+      "field": "end_date",
+      "op": "list",
+      "filters": {
+        "holder": null,
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How much is the medical allowance in Ali's Crescent Shipping offer?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "offer_letter",
+      "field": "monthly_salary",
+      "op": "latest",
+      "filters": {
+        "holder": "ali",
+        "provider": "crescent shipping",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What was Hamza's semester GPA in Fall 2025?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "transcript",
+      "field": "cgpa",
+      "op": "latest",
+      "filters": {
+        "holder": "hamza",
+        "provider": null,
+        "year": 2025,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "Which branch holds the Crescent Bank account?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "bank_statement",
+      "field": "closing_balance",
+      "op": "list",
+      "filters": {
+        "holder": null,
+        "provider": "crescent",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the IBAN of the Unity Bank account?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "bank_statement",
+      "field": "closing_balance",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "unity",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "What is the tuition fee on Sara's Fall 2026 voucher?",
+    "category": "semantic",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "fee_voucher",
+      "field": "amount",
+      "op": "latest",
+      "filters": {
+        "holder": "sara",
+        "provider": null,
+        "year": 2026,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How much was our water bill?",
+    "category": "unanswerable",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "amount_due",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": "water",
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "When does my gym membership expire?",
+    "category": "unanswerable",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": null,
+      "field": "expiry_date",
+      "op": "list",
+      "filters": {
+        "holder": null,
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "When does my visa expire?",
+    "category": "unanswerable",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": null,
+      "field": "expiry_date",
+      "op": "list",
+      "filters": {
+        "holder": null,
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "How much was the hospital bill?",
+    "category": "unanswerable",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": "utility_bill",
+      "field": "amount_due",
+      "op": "latest",
+      "filters": {
+        "holder": null,
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  },
+  {
+    "q": "When is my next dentist appointment?",
+    "category": "unanswerable",
+    "gold": "search",
+    "pred": "facts",
+    "query": {
+      "route": "facts",
+      "doc_type": null,
+      "field": "expiry_date",
+      "op": "next_expiring",
+      "filters": {
+        "holder": null,
+        "provider": null,
+        "year": null,
+        "month": null,
+        "date_from": null,
+        "date_to": null,
+        "period": null,
+        "of_document": null
+      }
+    }
+  }
+]
