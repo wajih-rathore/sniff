@@ -181,6 +181,7 @@ does arithmetic.
 | Provider | What it needs |
 |---|---|
 | Anthropic | Your API key. The model is `claude-haiku-5-5` unless you name another |
+| Groq (free tier) | Your own free key from console.groq.com/keys. A preset of OpenAI-compatible: base URL `https://api.groq.com/openai/v1`, model `openai/gpt-oss-20b` (on Groq's free plan, with JSON output). Groq lists 30 requests a minute and 1,000 a day for it on the free plan; when a limit is used up Sniff says so and carries on as for any failed call. Groq does not train on what it gets and keeps none of it by default; it may keep it up to 30 days to fix faults or check for abuse, unless zero data retention is on in Groq's Data Controls |
 | OpenAI-compatible | Base URL, model and key: OpenAI, OpenRouter, Groq, Gemini's OpenAI-compatible endpoint, or a local Ollama, LM Studio or llama.cpp server (a local server needs no key) |
 | This laptop | The bundled `llama-server` and Qwen3-1.7B, offered when the model file is downloaded. Nothing leaves the computer |
 

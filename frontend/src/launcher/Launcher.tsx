@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import {
   Ban, Bell, Bot, CalendarClock, CalendarPlus, Check, ChevronDown, ChevronRight, ClipboardCheck, Copy, Download, ExternalLink, Eye, Files, Folder, FolderOpen, History,
-  Cpu, Info, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
+  Cpu, Info, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, Zap, type LucideIcon,
 } from 'lucide-react'
 import {
   api, type AiPreview, type AiProvider, type AiSave, type AiSettings, type Answer, type Document, type Fact, type Hit, type LocalModel, type McpLogEntry, type McpSettings, type Overview,
@@ -20,8 +20,13 @@ const PARENT: Record<Level, Level> = { top: 'top', agent: 'top', advanced: 'top'
 type AiField = 'base_url' | 'model' | 'key'
 const PROVIDERS: Record<AiProvider, [name: string, note: string]> = {
   off: ['Off', 'Rules and code only'], anthropic: ['Anthropic', 'Claude, with your API key'],
-  openai: ['OpenAI-compatible', 'OpenAI, Groq, Gemini, Ollama and others'], local: ['This laptop', 'The bundled model. Nothing leaves this laptop'],
+  openai: ['OpenAI-compatible', 'OpenAI, Gemini, Ollama and others'], local: ['This laptop', 'The bundled model. Nothing leaves this laptop'],
 }
+// A preset of the OpenAI-compatible route (console.groq.com/docs/openai). The model is on Groq's free plan and gives JSON
+// (docs/structured-outputs). Each person pastes their own free key; Sniff ships none.
+const GROQ = { base_url: 'https://api.groq.com/openai/v1', model: 'openai/gpt-oss-20b', keys: 'https://console.groq.com/keys' }
+const isGroq = (s: AiSettings | null) => s?.provider === 'openai' && /^https?:\/\/api\.groq\.com([:/]|$)/i.test(s.base_url)
+const aiName = (s: AiSettings) => (isGroq(s) ? 'Groq' : PROVIDERS[s.provider][0])
 type Src = { file_id: number; path: string; name: string; page: number }
 type Item = { id: string; kind: 'file' | 'fold' | 'cmd' | 'add'; title: ReactNode; type?: string | null; icon?: LucideIcon; acc?: string; why: string; src?: Src; hit?: Hit; run?: () => void }
 type PAct = { icon: LucideIcon; name: string; keys?: string[]; run: () => void }
@@ -435,16 +440,20 @@ export default function Launcher() {
       ctx: 'It runs here, so nothing leaves this laptop. Once it is here, pick This laptop under Provider' }
   }
   const aiRows = (): SRow[] => !ai ? [] : [
-    { id: 'provider', icon: Sparkles, t: 'Provider', m: PROVIDERS[ai.provider][0], chev: true, act: 'Change', run: () => sub('provider'),
+    { id: 'provider', icon: Sparkles, t: 'Provider', m: isGroq(ai) ? 'Groq (free tier)' : PROVIDERS[ai.provider][0], chev: true, act: 'Change', run: () => sub('provider'),
       ctx: ai.provider === 'off' ? 'Search, facts and sums work without AI' : 'AI only fills gaps: fields the rules missed, and written answers' },
+    ...(isGroq(ai) ? [{ id: 'groqdata', icon: Info, t: "Groq does not train on what you send and keeps none of it by default. It may keep it up to 30 days to fix faults or check for abuse, unless you turn on zero data retention in Groq's Data Controls.", pl: true }] : []),
     ...(ai.provider === 'openai' ? [{ id: 'base_url', icon: Link, t: 'Base URL', m: ai.base_url || 'Not set', right: ai.base_url ? undefined : <St kind="warn">Needed</St>,
       act: 'Change', run: () => startEdit('base_url'), ctx: 'Such as https://api.openai.com/v1, or http://localhost:11434/v1 for Ollama' }] : []),
     ...(remote ? [{ id: 'model', icon: Cpu, t: 'Model', m: ai.model || (ai.default_model ? `${ai.default_model}, the default` : 'Not set'),
       right: ai.model || ai.default_model ? undefined : <St kind="warn">Needed</St>, act: 'Change', run: () => startEdit('model'),
-      ctx: ai.provider === 'anthropic' ? 'A small, fast model unless you name another' : 'The model name your endpoint expects' },
-    { id: 'key', icon: KeyRound, t: 'API key', m: ai.key_saved ? "In the system's password store" : ai.provider === 'openai' ? 'None. A local server needs none' : 'Not saved',
-      right: ai.key_saved ? <St kind="ok">Saved</St> : ai.provider === 'anthropic' ? <St kind="warn">Needed</St> : undefined,
-      act: ai.key_saved ? 'Replace' : 'Add', run: () => startEdit('key'), ctx: 'Sniff never shows the key again' }] : []),
+      ctx: ai.provider === 'anthropic' ? 'A small, fast model unless you name another'
+        : isGroq(ai) ? `${GROQ.model} is on Groq's free plan: 30 requests a minute, 1,000 a day` : 'The model name your endpoint expects' },
+    { id: 'key', icon: KeyRound, t: 'API key', m: ai.key_saved ? "In the system's password store" : ai.provider === 'openai' && !isGroq(ai) ? 'None. A local server needs none' : 'Not saved',
+      right: ai.key_saved ? <St kind="ok">Saved</St> : ai.provider === 'anthropic' || isGroq(ai) ? <St kind="warn">Needed</St> : undefined,
+      act: ai.key_saved ? 'Replace' : 'Add', run: () => startEdit('key'), ctx: 'Sniff never shows the key again' },
+    ...(isGroq(ai) && !ai.key_saved ? [{ id: 'groqkey', icon: ExternalLink, t: 'Get a free key', m: 'console.groq.com/keys', act: 'Copy link',
+      run: () => copy(GROQ.keys, 'Copied the link. Open it in your browser, then add the key here'), ctx: 'Sign in to Groq, make a key, then add it above' }] : [])] : []),
     ...(ai.provider !== 'off' ? [{ id: 'test', icon: PlugZap, t: 'Test the connection',
       m: aiTest === 'busy' ? 'Testing…' : aiTest ? aiTest.error : 'Not tested yet',
       right: aiTest && aiTest !== 'busy' ? (aiTest.ok ? <St kind="ok">Works</St> : <St kind="warn">Failed</St>) : undefined,
@@ -460,9 +469,12 @@ export default function Launcher() {
     }) : []),
   ]
   const providerRows = (): SRow[] => (Object.keys(PROVIDERS) as AiProvider[]).filter((p) => p !== 'local' || ai?.local_available || ai?.provider === 'local')
-    .map((p) => ({ id: `p${p}`, icon: { off: Power, anthropic: Sparkles, openai: Link, local: Cpu }[p], t: PROVIDERS[p][0], m: PROVIDERS[p][1],
-      right: ai?.provider === p ? <St kind="ok">In use</St> : undefined, act: 'Use',
-      run: () => { saveAi({ provider: p, model: p === ai?.provider ? ai.model : '' }).then((ok) => ok && sub('ai')) } }))
+    .flatMap((p) => [{ id: `p${p}`, icon: { off: Power, anthropic: Sparkles, openai: Link, local: Cpu }[p], t: PROVIDERS[p][0], m: PROVIDERS[p][1],
+      right: ai?.provider === p && !isGroq(ai) ? <St kind="ok">In use</St> : undefined, act: 'Use',
+      run: () => { saveAi({ provider: p, model: p === ai?.provider ? ai.model : '' }).then((ok) => ok && sub('ai')) } },
+    ...(p === 'openai' ? [{ id: 'pgroq', icon: Zap, t: 'Groq (free tier)', m: 'Open models, with your own free key',
+      right: isGroq(ai) ? <St kind="ok">In use</St> : undefined, act: 'Use',
+      run: () => { saveAi({ provider: 'openai', base_url: GROQ.base_url, model: (isGroq(ai) && ai?.model) || GROQ.model }).then((ok) => ok && sub('ai')) } }] : [])])
   const pvRows = (): SRow[] => {
     if (!aiPv) return (pvDocs ?? []).map((d, i) => ({ id: `d${d.id}`, head: i ? undefined : 'Or pick a document', tile: <Tile type={d.doc_type} size="xs" />,
       t: d.title || d.name, act: 'Preview', run: () => loadPv({ file_id: d.id }, d.title || d.name) }))
@@ -486,7 +498,7 @@ export default function Launcher() {
       m: watch?.counts?.[f] ? plural(watch.counts[f].files, 'file', 'files') : undefined, right: folderStatus(f), act: 'Show in File Explorer', run: () => reveal(f) })),
     { id: 'add', head: watch?.folders.length ? undefined : 'Folders', icon: Plus, t: 'Add folder…', add: true, act: 'Add', run: () => { setAdding(true); setQ('') } },
     { id: 'agent', head: 'More', icon: Bot, t: 'Agent access', m: mcp ? (mcp.enabled ? `On for ${plural(types.filter(allowed).length, 'document type', 'document types')}` : 'Off') : '', chev: true, act: 'Open', run: () => sub('agent') },
-    { id: 'ai', icon: Sparkles, t: 'AI', m: ai ? (ai.provider === 'off' ? 'Off' : PROVIDERS[ai.provider][0]) : '', chev: true, act: 'Open', run: () => sub('ai') },
+    { id: 'ai', icon: Sparkles, t: 'AI', m: ai ? (ai.provider === 'off' ? 'Off' : aiName(ai)) : '', chev: true, act: 'Open', run: () => sub('ai') },
     { id: 'advanced', icon: Wrench, t: 'Advanced', m: `Start with Windows: ${autostart ? 'on' : 'off'}`, chev: true, act: 'Open', run: () => sub('advanced') },
   ] : level === 'agent' ? [
     { id: 'mcp', icon: Bot, t: 'Let AI agents read Sniff',
@@ -901,7 +913,7 @@ export default function Launcher() {
       </div>
     )
     const where = aiPv?.r?.provider === 'off' ? 'AI is off, so nothing is sent. This is what a cloud provider would get'
-      : aiPv?.r?.leaves_laptop ? `Exactly this would go to ${PROVIDERS[aiPv.r.provider][0]}, with ID numbers masked` : 'This stays on this laptop'
+      : aiPv?.r?.leaves_laptop ? `Exactly this would go to ${ai && ai.provider === aiPv.r.provider ? aiName(ai) : PROVIDERS[aiPv.r.provider][0]}, with ID numbers masked` : 'This stays on this laptop'
     const pvCtx = !aiPv ? 'Type a question and press Enter, or pick a document'
       : !aiPv.r ? (aiPv.doc ? `Reading ${aiPv.of} again` : 'Working out what would be sent') : aiPv.doc ? `${aiPv.of}. ${where}` : where
     const ctx = orow ? rCur?.ctx ?? '' : adding ? 'Sniff reads the folder now, then keeps it up to date'

@@ -254,7 +254,8 @@ export async function mock(method: string, path: string, body?: unknown): Promis
   if (p === '/ai/local') return delay(localModel(), 50)
   if (p === '/ai/test') return delay(ai.provider === 'off' ? { ok: false, error: 'AI is off.' }
     : ai.provider === 'openai' && !(ai.base_url && ai.model) ? { ok: false, error: 'Set the base URL and the model first.' }
-    : ai.provider === 'anthropic' && !keys.anthropic ? { ok: false, error: 'No API key is saved.' } : { ok: true }, 900)
+    : ai.provider === 'anthropic' && !keys.anthropic ? { ok: false, error: 'No API key is saved.' }
+    : ai.base_url.startsWith('https://api.groq.com/') && !keys.openai ? { ok: false, error: 'The provider refused the key.' } : { ok: true }, 900)
   if (p === '/ai/preview') return delay(aiPreview({ file_id: url.searchParams.get('file_id'), question: url.searchParams.get('question') }), 300)
   if (p === '/calendar/status') return delay({ connected: false })
   if (p === '/reminders/preview') {
