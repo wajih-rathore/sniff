@@ -13,7 +13,7 @@ from datetime import date
 import baselines
 from common import Timer, db_path, jsonl, latency, norm, rel, save, stay_awake, stratified
 
-from sniff import ask, db
+from sniff import ai_settings, ask, db
 
 TODAY = date(2026, 11, 22)  # the generator's reference date, so "next to expire" has a fixed answer
 
@@ -96,21 +96,23 @@ def main(limit: int | None):
             tot[key] += v
     div = lambda a, b: round(a / b, 3) if b else None
     n = tot["n"]
+    off = ai_settings.current()["provider"] == "off"  # no model: rules route, nothing is written, so no RAG baseline
     save("router", {"n": n, "rows": [
-        {"system": "Sniff router (LLM fills a query template)", "tool_selection_accuracy": div(tot["route_ok"], n),
+        {"system": "Sniff router (rules only, AI off)" if off else "Sniff router (LLM fills a query template)", "tool_selection_accuracy": div(tot["route_ok"], n),
          "facts_recall": div(tot["route_ok_facts"], tot["gold_facts"]), "search_recall": div(tot["route_ok_search"], tot["gold_search"])},
         {"system": "Keyword rules (baseline)", "tool_selection_accuracy": div(tot["kw_route_ok"], n),
          "facts_recall": div(tot["kw_ok_facts"], tot["gold_facts"]), "search_recall": div(tot["kw_ok_search"], tot["gold_search"])},
     ]}, route_fail)
     save("ask", {"n": n, "rows": [
-        {"system": "Sniff (facts table + RAG)", "correct": div(tot["ok"], n), "citation_correct": div(tot["cite_ok"], tot["with_sources"]),
+        {"system": "Sniff (facts table, AI off: no written answers)" if off else "Sniff (facts table + RAG)", "correct": div(tot["ok"], n), "citation_correct": div(tot["cite_ok"], tot["with_sources"]),
          "abstention_on_unanswerable": div(tot["abstained"], tot["unanswerable"]),
          "false_abstention": div(tot["abstained_wrongly"], tot["answerable"])},
+    ] + ([] if off else [
         {"system": "Plain RAG (baseline)", "correct": div(tot["rag_ok"], n), "citation_correct": div(tot["rag_cite_ok"], tot["with_sources"]),
          "abstention_on_unanswerable": div(tot["rag_abstained"], tot["unanswerable"])},
-    ], "latency_ms": latency(ms)}, fails)
+    ]), "latency_ms": latency(ms)}, fails)
     save("ask_by_category", {"n": n, "rows": [
-        {"category": c, "n": k["n"], "Sniff_correct": div(k["ok"], k["n"]), "plain_RAG_correct": div(k["rag_ok"], k["n"]),
+        {"category": c, "n": k["n"], "Sniff_correct": div(k["ok"], k["n"]), **({} if off else {"plain_RAG_correct": div(k["rag_ok"], k["n"])}),
          "citation_correct": div(k["cite_ok"], k["with_sources"]), "router_accuracy": div(k["route_ok"], k["n"]),
          "keyword_router_accuracy": div(k["kw_route_ok"], k["n"]),
          **({"conflicts_flagged": div(k["conflicts_flagged"], k["n"])} if c == "conflict" else {})}

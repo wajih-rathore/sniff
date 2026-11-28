@@ -88,7 +88,7 @@ def headline(R: dict) -> list[dict]:
         add("Router", "ask questions", d["n"], "tool selection accuracy", sn["tool_selection_accuracy"], "Keyword rules", bl["tool_selection_accuracy"])
     if d := R.get("ask"):
         sn, bl = first_sniff(d["rows"]), pick(d["rows"], "baseline")
-        add("Ask", "ask questions", d["n"], "answer correct", sn["correct"], "Plain RAG", bl["correct"])
+        add("Ask", "ask questions", d["n"], "answer correct", sn["correct"], "Plain RAG", bl["correct"] if bl else None)  # AI off: none
     if d := R.get("robustness"):
         a = pick(d["rows"], "all", "variant")
         if a:
