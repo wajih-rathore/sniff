@@ -2,11 +2,11 @@
 // Layout, copy and motion follow the approved mockup (sniff-agents/design-mockup.html v4).
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import {
-  Ban, Bell, Bot, CalendarClock, CalendarPlus, Check, ChevronDown, ChevronRight, ClipboardCheck, Copy, ExternalLink, Eye, Files, Folder, FolderOpen, History,
+  Ban, Bell, Bot, CalendarClock, CalendarPlus, Check, ChevronDown, ChevronRight, ClipboardCheck, Copy, Download, ExternalLink, Eye, Files, Folder, FolderOpen, History,
   Cpu, Info, KeyRound, Keyboard, LayoutGrid, Link, ListX, Pencil, PlugZap, Plus, Power, Scale, Search, SlidersHorizontal, Sparkles, TriangleAlert, Wrench, X, type LucideIcon,
 } from 'lucide-react'
 import {
-  api, type AiPreview, type AiProvider, type AiSave, type AiSettings, type Answer, type Document, type Fact, type Hit, type McpLogEntry, type McpSettings, type Overview,
+  api, type AiPreview, type AiProvider, type AiSave, type AiSettings, type Answer, type Document, type Fact, type Hit, type LocalModel, type McpLogEntry, type McpSettings, type Overview,
   type ReminderPreview, type ReviewItem, type Source, type UpcomingItem, type WatchInfo,
 } from '../api'
 import { label, money, plural, show, typeName } from '../ui'
@@ -32,6 +32,7 @@ const EXPIRY = ['expiry_date', 'warranty_until', 'end_date']
 const ACTION_DATES = [...EXPIRY, 'due_date'] // ACTION_DATE_FIELDS in schemas.py: dates a reminder can be made for
 const msg = (e: unknown) => (e as Error)?.message ?? String(e)
 const plain = (v: string) => (/^-?\d+(\.\d+)?$/.test(v) ? money(v) : /^\d{4}-\d{2}-\d{2}$/.test(v) ? fmtDay(v) : v) // a stored value as people read it
+const mb = (n: number) => Math.round(n / 1e6).toLocaleString('en-US') // megabytes, as the first-run screen counts them
 const words = (q: string) => q.toLowerCase().split(/\W+/).filter((w) => w.length > 1)
 const shortTitle = (s: Pick<Source, 'title' | 'name'>, type?: string | null) => (s.title || s.name).replace(type ? `, ${typeName(type)}` : /, (utility bill|receipt|bank statement|fee voucher)(?=,)/, '')
 const dayDiff = (iso: string) => Math.round((new Date(new Date().toDateString()).getTime() - new Date(new Date(iso).toDateString()).getTime()) / 86_400_000)
@@ -138,6 +139,7 @@ export default function Launcher() {
   const [mcp, setMcp] = useState<McpSettings | null>(null)
   const [log, setLog] = useState<McpLogEntry[] | null>(null)
   const [ai, setAi] = useState<AiSettings | null>(null)
+  const [lm, setLm] = useState<LocalModel | null>(null) // This laptop's model file; null on a back end without GET /ai/local (the dev one)
   const [aiTest, setAiTest] = useState<'busy' | { ok: boolean; error?: string } | null>(null)
   const [editing, setEditing] = useState<AiField | null>(null) // typing a base URL, model or key in the bar
   const [aiPv, setAiPv] = useState<{ of: string; doc: boolean; r: AiPreview | null } | null>(null) // the preview of what is sent, and for what
@@ -215,6 +217,16 @@ export default function Launcher() {
 
   useEffect(() => { const t = setTimeout(() => setPvSel(sel), preview ? 120 : 0); return () => clearTimeout(t) }, [sel, preview]) // the dwell keeps arrowing instant
 
+  // This laptop's model: follow its download once a second while Settings is open. When it is done, Provider offers it.
+  useEffect(() => {
+    if (screen !== 'settings' || !lm?.running) return
+    const t = setInterval(() => api.localModel().then((v) => {
+      setLm(v)
+      if (v.ready && !v.running) { api.aiSettings().then(setAi, () => {}); say("This laptop's model is ready. Pick This laptop under Provider") }
+    }, () => {}), 1000)
+    return () => clearInterval(t)
+  }, [screen, lm?.running])
+
   /* ---------- screens ---------- */
   const go = (s: Screen) => {
     setScreen(s); setSel(0); setQ(''); setPanel(false); setPreview(false); setErr(''); setEdit(null); setEditErr(''); setCapturing(false); setAdding(false); setEditing(null)
@@ -234,6 +246,7 @@ export default function Launcher() {
       api.mcpSettings().then(setMcp, fail('load agent access'))
       api.mcpLog().then(setLog, () => setLog([]))
       api.aiSettings().then(setAi, fail('load the AI settings'))
+      api.localModel().then(setLm, () => setLm(null))
     }
     input.current?.focus()
   }
@@ -410,6 +423,17 @@ export default function Launcher() {
     setAiPv({ of, doc, r: null }); setSel(0); setPvOpen({}); setErr('')
     api.aiPreview(o).then((r) => setAiPv({ of, doc, r }), (e) => { setAiPv(null); fail('make the preview')(e) })
   }
+  // This laptop's model, as the first-run screen downloads the search model: its size, then progress, paused, or the back end's error
+  const downloadLocal = () => api.downloadLocal().then(setLm, fail('start the download'))
+  const localRow = (m: LocalModel): SRow => {
+    const started = m.running || m.have > 0
+    return { id: 'local', icon: Download, t: "This laptop's model",
+      m: started ? `${mb(m.have)} of ${mb(m.size)} MB${m.running ? '' : ', paused'}` : `Not downloaded yet, ${mb(m.size)} MB`,
+      right: m.error ? <St kind="warn">{m.running ? 'Retrying' : 'Failed'}</St>
+        : started ? <span className="prog"><b style={{ '--p': `${Math.round((m.have / m.size) * 100)}%` } as CSSProperties} /></span> : undefined,
+      act: m.running ? undefined : m.have ? 'Resume download' : 'Download', run: m.running ? undefined : downloadLocal,
+      ctx: 'It runs here, so nothing leaves this laptop. Once it is here, pick This laptop under Provider' }
+  }
   const aiRows = (): SRow[] => !ai ? [] : [
     { id: 'provider', icon: Sparkles, t: 'Provider', m: PROVIDERS[ai.provider][0], chev: true, act: 'Change', run: () => sub('provider'),
       ctx: ai.provider === 'off' ? 'Search, facts and sums work without AI' : 'AI only fills gaps: fields the rules missed, and written answers' },
@@ -427,6 +451,7 @@ export default function Launcher() {
       act: 'Test', run: runTest, ctx: 'Asks for one token. Nothing from your files is sent' }] : []),
     { id: 'aipreview', icon: Eye, t: 'Preview what is sent', m: ai.provider === 'local' ? 'Nothing leaves this laptop' : 'For a question or a document',
       chev: true, act: 'Open', run: openAiPreview, ctx: 'Shows exactly what would be sent, before anything is' },
+    ...(lm && !lm.ready ? [localRow(lm), ...(lm.error ? [{ id: 'localerr', icon: TriangleAlert, t: lm.error, pl: true }] : [])] : []), // the error in full
     ...(remote ? ai.hidden.map((t, i): SRow => {
       const on = ai.allow.includes(t)
       return { id: `h${t}`, head: i ? undefined : 'Sent only if you allow it', tile: <Tile type={t} size="xs" />, t: t === 'other' ? 'Unsorted files' : label(typeName(t, 2)),

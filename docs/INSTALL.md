@@ -65,9 +65,11 @@ The chat model for Settings > AI > This laptop is not part of the first run, and
 |---|---|---|
 | Qwen3-1.7B, Q4_K_M (chat) | `qwen3-1.7b-q4_k_m.gguf` | 1,359,279,776 bytes (1.36 GB) |
 
-`POST /ai/local/download` fetches it the same way (resumable, sha256 checked) and `GET /ai/local` reports its progress
-(`size`, `have`, `running`, `error`, `ready`). This laptop is offered only once the file is there. A button for it in
-Settings > AI is planned.
+To get it, open Settings > AI and press Enter on "This laptop's model". The row shows the size, then the progress, and
+"Resume download" after a pause; if the download fails, the back end's reason shows under it. Once the file is there,
+This laptop is offered under Provider. Behind the row, `POST /ai/local/download` fetches it the same way (resumable,
+sha256 checked) and `GET /ai/local` reports its progress (`size`, `have`, `running`, `error`, `ready`). A back end run
+from source has neither route, so the row shows only in the desktop app.
 
 ### Running
 
