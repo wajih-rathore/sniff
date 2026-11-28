@@ -186,6 +186,16 @@ def test_a_failed_call_keeps_the_rules_facts(conn, sent, monkeypatch, reply):
     assert events[-1][0] == "answer" and events[-1][1].route == "none"
 
 
+def test_groqs_free_limit_is_said_plainly_and_the_rules_facts_stay(conn, sent):
+    use(conn, "openai", base_url="https://api.groq.com/openai/v1", model="openai/gpt-oss-20b")
+    sent.reply = lambda req: (429, {"error": {"message": "Rate limit reached for model openai/gpt-oss-20b", "type": "tokens"}})
+    assert llm.check() == {"ok": False, "error": "Groq's free limit is used up for now. Try again in a minute."}
+    facts = {f["field"]: f["value"] for f in REAL_EXTRACT("utility_bill", [(1, BILL)])}
+    assert facts["amount_due"] == "4320.0" and "current_charges" not in facts  # as for any failed call
+    use(conn, "openai")  # another server's 429 keeps the general reason
+    assert llm.check()["error"] == "The provider is limiting requests, or the account has no credit left."
+
+
 def test_timeouts_are_set_and_retries_are_few(conn, store):
     use(conn, "openai")
     p = llm.provider()

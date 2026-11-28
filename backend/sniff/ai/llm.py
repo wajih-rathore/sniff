@@ -8,6 +8,7 @@ and any failure becomes Unavailable with a plain reason, never the SDK's text: a
 import re
 from functools import lru_cache
 from typing import TypeVar
+from urllib.parse import urlsplit
 
 import anthropic
 from openai import OpenAI
@@ -18,6 +19,7 @@ from ..mcp_settings import mask_ids
 from . import server
 
 TIMEOUT = 30.0
+GROQ_LIMIT = "Groq's free limit is used up for now. Try again in a minute."
 
 
 class Unavailable(Exception):
@@ -51,6 +53,7 @@ class OpenAICompatible:
 
     def __init__(self, base_url: str, model: str, key: str | None):
         self.client, self.model = OpenAI(base_url=base_url, api_key=key or "none", timeout=TIMEOUT, max_retries=1), model
+        self.groq = urlsplit(base_url).hostname == "api.groq.com"  # its free plan answers 429 once a limit is used up
 
     def chat(self, messages: list[dict], response_format=None, **_) -> str:
         fmt = {"response_format": response_format} if response_format else {}
@@ -131,11 +134,14 @@ def outgoing(messages: list[dict], remote: bool) -> list[dict]:
     return [{**m, "content": mask_ids(m["content"])} for m in messages] if remote else messages
 
 
-def plain(e: Exception) -> str:
-    """A reason the user can act on, from a provider's error. Never the error's own text: it can quote the key."""
+def plain(e: Exception, p=None) -> str:
+    """A reason the user can act on, from a provider's error. Never the error's own text: it can quote the key.
+    p: the provider that failed, for a reason that names it."""
     if isinstance(e, Unavailable):
         return str(e)
     code = getattr(e, "status_code", None)
+    if code == 429 and getattr(p, "groq", False):
+        return GROQ_LIMIT
     if code in (401, 403):
         return "The provider refused the key."
     if code == 404:
@@ -158,7 +164,7 @@ def chat(messages: list[dict], p=None, **kw) -> str:
     try:
         return clean(p.chat(outgoing(messages, True), **kw))
     except Exception as e:
-        why = plain(e)
+        why = plain(e, p)
     raise Unavailable(why)  # raised outside the except: the provider's error, which can quote the key, is not chained to it
 
 
@@ -172,7 +178,7 @@ def chat_stream(messages: list[dict], p=None, **kw):
         yield from p.stream(outgoing(messages, True), **kw)
         return
     except Exception as e:
-        why = plain(e)
+        why = plain(e, p)
     raise Unavailable(why)
 
 
